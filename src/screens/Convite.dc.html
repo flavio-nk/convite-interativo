@@ -37,7 +37,7 @@ body{margin:0}
   </sc-if>
 
   <sc-if value="{{isClosed}}" hint-placeholder-val="{{ true }}">
-    <dc-import name="Abertura" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{coverTitle}}" data="{{dateDots}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
+    <dc-import name="Abertura" headline="{{opening.headline}}" hint="{{opening.hint}}" trigger="{{opening.trigger}}" initials="{{opening.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{opening.title}}" data="{{opening.subtitle}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
   </sc-if>
 
   <sc-if value="{{isPages}}" hint-placeholder-val="{{ false }}">
@@ -507,6 +507,15 @@ class Component extends DCLogic {
       kicker: inv.kicker || '',
       coverTitle: inv.coverTitle || inv.title,
       dateDots: api.fmt.dots(inv.eventDate),
+      opening: (() => {
+        const o = inv.opening || {};
+        return {
+          headline: o.headline === undefined ? 'Você recebeu um convite' : o.headline,
+          hint: o.hint || '', trigger: o.trigger || 'toque', initials: o.initials || '',
+          title: o.title || inv.coverTitle || inv.title,
+          subtitle: o.subtitle || api.fmt.dots(inv.eventDate)
+        };
+      })(),
       blocks, nav, hasNav: pages.length > 1,
       pageKey: cur.id,
       onOpen: () => { const ok = this.musicStart(); this.setState({ musicPlaying: ok }); },

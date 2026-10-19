@@ -187,7 +187,7 @@ button,input,select,textarea{font-family:inherit}
         <sc-if value="{{isOpeningView}}" hint-placeholder-val="{{ false }}">
           <div style="width: 340px; height: 720px; overflow: hidden">
             <div style="width: 390px; height: 844px; transform: scale(0.8718); transform-origin: top left">
-              <dc-import name="Abertura" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{coverKicker}}" titulo="{{coverTitle}}" data="{{coverDate}}" btn-radius="{{T.radius}}" show-link="{{noLink}}" music="{{musicCfg}}" hint-size="390px,844px"></dc-import>
+              <dc-import name="Abertura" key="{{openingKey}}" headline="{{op.headlineValue}}" hint="{{op.hint}}" trigger="{{op.trigger}}" initials="{{op.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{coverKicker}}" titulo="{{op.titleValue}}" data="{{op.subtitleValue}}" btn-radius="{{T.radius}}" show-link="{{noLink}}" music="{{musicCfg}}" hint-size="390px,844px"></dc-import>
             </div>
           </div>
         </sc-if>
@@ -195,18 +195,93 @@ button,input,select,textarea{font-family:inherit}
     </main>
 
     <aside aria-label="Propriedades" style="flex: 1 1 320px; background: #FFFFFF; border-left: 1px solid #E3E1EA; padding: 16px 20px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
-      <div role="tablist" aria-label="Painel" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #F1EFF6">
+      <div role="tablist" aria-label="Painel" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #F1EFF6">
         <button role="tab" onClick="{{panelBlock}}" aria-selected="{{blockSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{blockTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Bloco</button>
         <button role="tab" onClick="{{panelTheme}}" aria-selected="{{themeSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{themeTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
           Tema
           <sc-if value="{{T.modified}}" hint-placeholder-val="{{ false }}"><span aria-label="personalizado" style="width: 8px; height: 8px; border-radius: 50%; background: #5B3FD6"></span></sc-if>
         </button>
+        <button role="tab" onClick="{{panelOpening}}" aria-selected="{{openingSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{openingTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Abertura</button>
         <button role="tab" onClick="{{panelMusic}}" aria-selected="{{musicSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{musicTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
           Música
           <sc-if value="{{mus.active}}" hint-placeholder-val="{{ true }}"><span aria-label="ativada" style="width: 8px; height: 8px; border-radius: 50%; background: #1E7A4C"></span></sc-if>
         </button>
         <button role="tab" onClick="{{panelEvent}}" aria-selected="{{eventSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{eventTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Evento</button>
       </div>
+
+      <sc-if value="{{isOpeningPanel}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div>
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">Tela de abertura</h2>
+            <p style="margin: 4px 0 0; font-size: 13px; color: #5E5A6B">O convite chega fechado. Isto é o que o convidado vê antes de abrir. A prévia ao lado mostra o resultado: toque no celular para testar.</p>
+          </div>
+          <div>
+            <label class="lbl" for="op-anim">Animação</label>
+            <select class="fld" id="op-anim" value="{{T.anim}}" onChange="{{onOpenAnim}}">
+              <option value="envelope">Carta se abrindo</option>
+              <option value="cortina">Cortina</option>
+              <option value="portas">Portas duplas</option>
+              <option value="lacre">Lacre de cera</option>
+              <option value="presente">Caixa de presente</option>
+              <option value="livro">Capa de livro</option>
+              <option value="iris">Íris</option>
+              <option value="neblina">Neblina</option>
+              <option value="nenhuma">Sem abertura (já abre o convite)</option>
+            </select>
+          </div>
+          <sc-if value="{{hasOpeningAnim}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div>
+                <label class="lbl" for="op-trigger">Como o convidado abre</label>
+                <select class="fld" id="op-trigger" value="{{op.trigger}}" onChange="{{op.onTrigger}}">
+                  <option value="toque">Toque em qualquer lugar</option>
+                  <option value="botao">Tocando no botão</option>
+                  <option value="deslizar">Deslizando para cima</option>
+                </select>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #E3E1EA; border-radius: 12px">
+                <input type="color" id="op-paper" value="{{T.paper}}" onChange="{{op.onPaper}}" style="width: 40px; height: 40px; padding: 0; border: 0; background: transparent; cursor: pointer; flex: none">
+                <label for="op-paper" style="display: flex; flex-direction: column; line-height: 1.3; cursor: pointer">
+                  <span style="font-size: 14px; font-weight: 600">Cor da abertura</span>
+                  <span style="font-size: 12px; color: #5E5A6B">Papel, cortina, portas ou capa</span>
+                </label>
+              </div>
+              <div>
+                <label class="lbl" for="op-headline">Texto no topo</label>
+                <input class="fld" id="op-headline" value="{{op.headline}}" onChange="{{op.onHeadline}}" placeholder="Deixe vazio para não mostrar">
+              </div>
+              <div>
+                <label class="lbl" for="op-kicker">Chamada (acima do título)</label>
+                <input class="fld" id="op-kicker" value="{{kicker}}" onChange="{{onKicker}}" placeholder="Ex.: Casamento">
+              </div>
+              <div>
+                <label class="lbl" for="op-title">Título</label>
+                <input class="fld" id="op-title" value="{{op.title}}" onChange="{{op.onTitle}}" placeholder="{{op.titlePlaceholder}}">
+                <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Vazio: usa o título da página Capa.</span>
+              </div>
+              <div>
+                <label class="lbl" for="op-subtitle">Linha abaixo do título</label>
+                <input class="fld" id="op-subtitle" value="{{op.subtitle}}" onChange="{{op.onSubtitle}}" placeholder="{{op.subtitlePlaceholder}}">
+                <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Vazio: usa a data do evento (aba Evento).</span>
+              </div>
+              <sc-if value="{{op.usesInitials}}" hint-placeholder-val="{{ true }}">
+                <div>
+                  <label class="lbl" for="op-initials">Iniciais no selo</label>
+                  <input class="fld" id="op-initials" maxlength="5" value="{{op.initials}}" onChange="{{op.onInitials}}" placeholder="{{op.initialsPlaceholder}}">
+                </div>
+              </sc-if>
+              <div>
+                <label class="lbl" for="op-hint">Texto do botão de abrir</label>
+                <input class="fld" id="op-hint" value="{{op.hint}}" onChange="{{op.onHint}}" placeholder="{{op.hintPlaceholder}}">
+              </div>
+            </div>
+          </sc-if>
+          <button onClick="{{replayOpening}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+            Ver abertura na prévia
+          </button>
+        </div>
+      </sc-if>
 
       <sc-if value="{{isEventPanel}}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 14px">
@@ -590,34 +665,10 @@ button,input,select,textarea{font-family:inherit}
             </div>
           </section>
 
-          <section style="display: flex; flex-direction: column; gap: 12px">
+          <section style="display: flex; flex-direction: column; gap: 8px">
             <h2 class="sec">Abertura do convite</h2>
-            <div>
-              <label class="lbl" for="th-anim">Animação de abertura</label>
-              <select class="fld" id="th-anim" value="{{T.anim}}" onChange="{{onOpenAnim}}">
-                <option value="envelope">Carta se abrindo</option>
-                <option value="cortina">Cortina</option>
-                <option value="portas">Portas duplas</option>
-                <option value="lacre">Lacre de cera</option>
-                <option value="presente">Caixa de presente</option>
-                <option value="livro">Capa de livro</option>
-                <option value="iris">Íris</option>
-                <option value="neblina">Neblina</option>
-                <option value="nenhuma">Sem abertura</option>
-              </select>
-            </div>
-            <div>
-              <label class="lbl" for="th-trigger">Como o convidado abre</label>
-              <select class="fld" id="th-trigger">
-                <option>Toque em qualquer lugar</option>
-                <option>Botão “Abrir convite”</option>
-                <option>Deslizar para cima</option>
-              </select>
-            </div>
-            <button onClick="{{viewOpening}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
-              Ver abertura na prévia
-            </button>
+            <p style="margin: 0; font-size: 13px; color: #5E5A6B">Animação, textos e forma de abrir ficam na aba Abertura.</p>
+            <button onClick="{{panelOpening}}" style="min-height: 40px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Configurar abertura</button>
           </section>
 
           <section style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #EEECF3; padding-top: 16px">
@@ -668,6 +719,8 @@ class Component extends DCLogic {
       saveState: 'idle',
       eventDate: null,
       themeBase: null,
+      opening: { headline: 'Você recebeu um convite', title: '', subtitle: '', hint: '', trigger: 'toque', initials: '' },
+      openingRun: 0,
       title: it ? 'Novo convite · ' + (it.name || it.baseName) : 'Casamento Ana & Pedro',
       kicker: it ? (it.kicker || 'Convite') : 'Casamento',
       date: it ? (it.date || 'Data do evento') : '17 · 04 · 2027',
@@ -889,6 +942,7 @@ class Component extends DCLogic {
     this.setState({
       loaded: true, title: inv.title || 'Novo convite', kicker: inv.kicker || 'Convite', eventDate: inv.eventDate || null,
       published: inv.status === 'publicado', theme, themeBase: base, music, pages,
+      opening: Object.assign({ headline: 'Você recebeu um convite', title: '', subtitle: '', hint: '', trigger: 'toque', initials: '' }, inv.opening || {}),
       page: pages[0].id, sel: pages[0].blocks.length ? pages[0].blocks[0].id : null, next: maxId + 1,
       saveState: inv.pages && inv.pages.length ? 'saved' : 'idle'
     });
@@ -912,7 +966,7 @@ class Component extends DCLogic {
     const cover = capa && capa.blocks.find((x) => x.type === 'titulo');
     return {
       id: this.inviteId, title: st.title, kicker: st.kicker, eventDate: st.eventDate, coverTitle: cover ? cover.text : st.title,
-      status: st.published ? 'publicado' : 'rascunho', theme: st.theme, themeBase: st.themeBase || this.baseTheme(), music, pages,
+      status: st.published ? 'publicado' : 'rascunho', theme: st.theme, themeBase: st.themeBase || this.baseTheme(), music, pages, opening: st.opening,
       createdAt: this.createdAt
     };
   }
@@ -948,7 +1002,7 @@ class Component extends DCLogic {
 
   componentDidUpdate(prevProps, prevState) {
     if (!this.state.loaded || !prevState.loaded || !this.inviteId) return;
-    const keys = ['title', 'kicker', 'eventDate', 'theme', 'music', 'pages', 'published'];
+    const keys = ['title', 'kicker', 'eventDate', 'theme', 'music', 'pages', 'published', 'opening'];
     if (keys.some((k) => prevState[k] !== this.state[k])) this.scheduleSave();
   }
 
@@ -1382,11 +1436,40 @@ class Component extends DCLogic {
       panelBlock: () => this.setState({ panel: 'bloco' }),
       panelTheme: () => this.setState({ panel: 'tema' }),
       panelMusic: () => this.setState({ panel: 'musica' }),
+      panelOpening: () => { this.previewStop(); this.setState({ panel: 'abertura', view: 'opening', previewing: '' }); },
+      isOpeningPanel: st.panel === 'abertura',
+      openingSelected: st.panel === 'abertura' ? 'true' : 'false',
+      openingTabBg: st.panel === 'abertura' ? '#FFFFFF' : 'transparent',
+      hasOpeningAnim: st.theme.anim !== 'nenhuma',
+      openingKey: 'op-' + st.openingRun,
+      replayOpening: () => { this.previewStop(); this.setState({ view: 'opening', openingRun: st.openingRun + 1, previewing: '' }); },
+      op: (() => {
+        const o = st.opening;
+        const set = (k) => (e) => this.setState({ opening: Object.assign({}, this.state.opening, { [k]: e.target.value }) });
+        const coverT = coverBlock ? coverBlock.text : st.title;
+        const dots = st.eventDate ? api.fmt.dots(st.eventDate) : (st.date || '');
+        const trig = o.trigger || 'toque';
+        const words = String(o.title || coverT || '').split(' ').filter((w) => w && w !== '&' && w !== 'e');
+        const autoIni = String(o.title || coverT || '').indexOf('&') !== -1 && words.length >= 2 ? words[0][0] + '&' + words[words.length - 1][0] : (words[0] ? words[0].slice(0, 2) : '');
+        return {
+          trigger: trig, headline: o.headline || '', headlineValue: o.headline || '',
+          title: o.title || '', titleValue: o.title || coverT,
+          subtitle: o.subtitle || '', subtitleValue: o.subtitle || dots,
+          hint: o.hint || '', initials: o.initials || '',
+          titlePlaceholder: coverT || 'Título do evento',
+          subtitlePlaceholder: dots || 'Ex.: 17 · 04 · 2027',
+          initialsPlaceholder: autoIni || 'A&P',
+          hintPlaceholder: trig === 'botao' ? 'Abrir convite' : (trig === 'deslizar' ? 'Deslize para cima para abrir' : (st.theme.anim === 'envelope' ? 'Toque para abrir a carta' : 'Toque para abrir')),
+          usesInitials: ['envelope', 'lacre', 'portas'].indexOf(st.theme.anim) !== -1,
+          onTrigger: set('trigger'), onHeadline: set('headline'), onTitle: set('title'), onSubtitle: set('subtitle'), onHint: set('hint'), onInitials: set('initials'),
+          onPaper: (e) => this.patchTheme({ paper: e.target.value })
+        };
+      })(),
       onFont: (e) => this.patchTheme({ fontKey: e.target.value }),
       toggleItalic: () => this.patchTheme({ italic: !st.theme.italic }),
       onLayout: (e) => this.patchTheme({ layout: e.target.value }),
       onRadius: (e) => this.patchTheme({ radiusKey: e.target.value }),
-      onOpenAnim: (e) => { this.patchTheme({ anim: e.target.value }); this.setState({ view: 'opening' }); },
+      onOpenAnim: (e) => { this.patchTheme({ anim: e.target.value }); this.setState({ view: 'opening', openingRun: st.openingRun + 1 }); },
       resetTheme: () => this.setState({ theme: this.baseTheme(), toast: 'Tema ' + T.baseName + ' restaurado neste convite.' }),
       saveAsTheme: () => {
         const th = st.theme;

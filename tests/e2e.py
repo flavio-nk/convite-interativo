@@ -22,7 +22,7 @@ def ok(name, cond, info=''):
 
 def safe(name, fn, *a):
     try:
-        return fn(*a)
+        return fn(*a) if a and a[0] is not None else fn()
     except Exception as e:  # noqa
         results.append((False, name + ' [exceção]', str(e).split('\n')[0][:220]))
 
@@ -249,6 +249,49 @@ def t_custom_theme(pg):
     ok('Excluir tema', count(pg, '[aria-label="Tema Tema Salvo E2E"]') == 0)
 
 
+def t_opening(pg, browser):
+    go(pg, 'Temas', 1300)
+    pg.click('[aria-label="Tema Jardim"]'); pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(1800)
+    wait_saved(pg)
+    oid = pg.url.split('#/Editor/')[1]
+    pg.click('button[role=tab]:has-text("Abertura")'); pg.wait_for_timeout(300)
+    ok('Abertura: aba existe e mostra a prévia fechada', count(pg, 'h2:has-text("Tela de abertura")') == 1 and count(pg, 'main [aria-label="Toque para abrir o convite"]') == 1)
+    pg.select_option('#op-anim', 'lacre'); pg.wait_for_timeout(300)
+    pg.select_option('#op-trigger', 'botao')
+    pg.fill('#op-headline', 'Bem-vindos')
+    pg.fill('#op-title', 'Nosso Grande Dia')
+    pg.fill('#op-subtitle', 'Domingo à tarde')
+    pg.fill('#op-initials', 'JB')
+    pg.fill('#op-hint', 'Abrir agora')
+    pg.wait_for_timeout(300)
+    prev = pg.inner_text('main')
+    ok('Abertura: prévia mostra os textos', all(t in prev for t in ['Bem-vindos'.upper(), 'Nosso Grande Dia', 'Domingo à tarde', 'JB', 'Abrir agora']), prev[:200])
+    wait_saved(pg)
+    pg.reload(); pg.wait_for_timeout(1800)
+    pg.click('button[role=tab]:has-text("Abertura")'); pg.wait_for_timeout(300)
+    ok('Abertura: configurações salvas', pg.input_value('#op-anim') == 'lacre' and pg.input_value('#op-trigger') == 'botao' and pg.input_value('#op-title') == 'Nosso Grande Dia' and pg.input_value('#op-initials') == 'JB' and pg.input_value('#op-hint') == 'Abrir agora')
+    pg.click('header button:has-text("Publicar")'); wait_saved(pg)
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + oid); g.wait_for_timeout(1600)
+    body = g.inner_text('body')
+    ok('Convidado: abertura com os textos configurados', all(t in body for t in ['BEM-VINDOS', 'Nosso Grande Dia', 'Domingo à tarde', 'JB']), body[:200])
+    g.mouse.click(195, 300); g.wait_for_timeout(2200)
+    ok('Convidado (botão): tocar fora do botão não abre', count(g, 'button:has-text("Abrir agora")') == 1)
+    g.click('button:has-text("Abrir agora")'); g.wait_for_timeout(2600)
+    ok('Convidado (botão): o botão abre o convite', count(g, 'nav[aria-label="Páginas do convite"]') == 1)
+    ctx.close()
+    # deslizar
+    pg.select_option('#op-trigger', 'deslizar'); wait_saved(pg)
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + oid); g.wait_for_timeout(1600)
+    g.mouse.click(195, 300); g.wait_for_timeout(1800)
+    ok('Convidado (deslizar): toque simples não abre', count(g, 'nav[aria-label="Páginas do convite"]') == 0)
+    g.mouse.move(195, 600); g.mouse.down(); g.mouse.move(195, 420, steps=6); g.mouse.move(195, 300, steps=6); g.mouse.up()
+    g.wait_for_timeout(2600)
+    ok('Convidado (deslizar): deslizar para cima abre', count(g, 'nav[aria-label="Páginas do convite"]') == 1)
+    ctx.close()
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -275,7 +318,7 @@ with sync_playwright() as p:
     for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                           ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                           ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                          ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                          ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
         safe(name, fn, arg)
     b.close()
 
