@@ -18,7 +18,8 @@ button,input,select,textarea{font-family:inherit}
 .lbl{display:block;font-size:13px;font-weight:600;color:#3D3A4A;margin-bottom:6px}
 .addb:hover{background:#F1EFF8;border-color:#C9C4DB}
 .pg:hover{background:#F1EFF8}
-.blk:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
+.blk:focus-visible{outline:3px solid #5B3FD6;outline-offset:3px}
+.blk:hover{background:rgba(91,63,214,0.06)}
 button:disabled{opacity:.5;cursor:not-allowed}
 .sec{margin:0;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#5E5A6B;font-weight:700}
 </style>
@@ -104,7 +105,35 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <button onClick="{{viewPages}}" aria-pressed="{{pagesPressed}}" style="min-height: 38px; border-radius: 9px; border: 0; background: {{pagesTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Conteúdo</button>
         <button onClick="{{viewOpening}}" aria-pressed="{{openPressed}}" style="min-height: 38px; border-radius: 9px; border: 0; background: {{openTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Abertura</button>
       </div>
-      <div style="font-size: 14px; color: #5E5A6B; text-align: center">{{previewCaption}}</div>
+      <sc-if value="{{isPagesView}}" hint-placeholder-val="{{ true }}">
+        <div style="width: 360px; max-width: 100%; display: flex; flex-direction: column; gap: 8px">
+          <div style="display: flex; align-items: center; gap: 8px">
+            <span id="arr-lbl" style="font-size: 13px; font-weight: 600; color: #3D3A4A; flex: none">Blocos da página</span>
+            <div role="radiogroup" aria-labelledby="arr-lbl" style="flex: 1 1 auto; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #DEDCE6">
+              <button role="radio" aria-checked="{{cv.autoChecked}}" onClick="{{cv.setAuto}}" style="min-height: 36px; border-radius: 9px; border: 0; background: {{cv.autoBg}}; color: #17151F; font-weight: 600; font-size: 13px; cursor: pointer">Automático</button>
+              <button role="radio" aria-checked="{{cv.freeChecked}}" onClick="{{cv.setFree}}" style="min-height: 36px; border-radius: 9px; border: 0; background: {{cv.freeBg}}; color: #17151F; font-weight: 600; font-size: 13px; cursor: pointer">Posição livre</button>
+            </div>
+          </div>
+          <div role="group" aria-label="Ajudas de alinhamento" style="display: flex; flex-wrap: wrap; gap: 6px">
+            <sc-for list="{{cv.toggles}}" as="tg" hint-placeholder-count="3">
+              <button aria-pressed="{{tg.pressed}}" onClick="{{tg.toggle}}" disabled="{{tg.disabled}}" title="{{tg.title}}" style="flex: 1 1 auto; min-height: 34px; padding: 0 10px; border-radius: 999px; border: 1px solid {{tg.ring}}; background: {{tg.bg}}; color: {{tg.fg}}; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tg.icon}}"></path></svg>
+                {{tg.label}}
+              </button>
+            </sc-for>
+          </div>
+          <div role="status" data-testid="check" style="padding: 8px 12px; border-radius: 10px; background: {{cv.checkBg}}; color: {{cv.checkFg}}; font-size: 13px; display: flex; flex-direction: column; gap: 4px">
+            <strong style="font-size: 13px">{{cv.checkTitle}}</strong>
+            <sc-for list="{{cv.issues}}" as="is" hint-placeholder-count="2">
+              <button onClick="{{is.pick}}" style="align-self: flex-start; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: underline; cursor: pointer">{{is.text}}</button>
+            </sc-for>
+            <sc-if value="{{cv.hasInfo}}" hint-placeholder-val="{{ false }}">
+              <span style="opacity: 0.85">{{cv.info}}</span>
+            </sc-if>
+          </div>
+        </div>
+      </sc-if>
+      <div style="font-size: 14px; color: #5E5A6B; text-align: center; max-width: 360px">{{previewCaption}}</div>
 
       <div style="position: relative; width: 360px; max-width: 100%; height: 740px; border: 10px solid #17151F; border-radius: 44px; background: {{T.bg}}; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box">
         <sc-if value="{{isPagesView}}" hint-placeholder-val="{{ true }}">
@@ -114,75 +143,59 @@ button:disabled{opacity:.5;cursor:not-allowed}
               <div style="position: absolute; inset: 0; background: {{T.bg}}; opacity: {{pageBg.dimOpacity}}"></div>
             </div>
           </sc-if>
-          <div style="position: relative; flex: 1 1 auto; overflow-y: auto; padding: 18px 14px; display: flex; flex-direction: column; color: {{T.fg}}; font-family: {{T.body}}">
-            <div style="flex: 1 0 auto; display: flex; flex-direction: column; gap: 10px; padding: {{T.framePad}}; border: {{T.frame}}; border-left: {{T.band}}; text-align: {{T.align}}">
-              <sc-for list="{{blocks}}" as="b" hint-placeholder-count="5">
-                <button class="blk" onClick="{{b.pick}}" aria-pressed="{{b.pressed}}" aria-label="Bloco {{b.typeLabel}}" style="display: block; width: 100%; padding: 6px; border-radius: 12px; border: 2px dashed {{b.outline}}; background: transparent; color: inherit; cursor: pointer; text-align: inherit; position: relative; font-family: inherit">
-                  <sc-if value="{{b.isFoto}}" hint-placeholder-val="{{ false }}">
-                    <span style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; overflow: hidden; aspect-ratio: {{b.ratio}}; width: {{T.photoW}}; margin: {{T.photoM}}; border-radius: {{T.photoR}}; transform: {{T.photoRot}}; border: {{T.photoBorder}}; background: {{T.ph}}; color: {{T.fg}}; font-size: 13px">
-                      <sc-if value="{{b.hasMedia}}" hint-placeholder-val="{{ false }}">
-                        <img src="{{b.mediaUrl}}" alt="{{b.label}}" style="{{b.imgStyle}}">
+          <div data-scroll="1" style="position: relative; flex: 1 1 auto; overflow-y: auto; overflow-x: hidden">
+            <div style="position: relative; width: 340px; height: {{cv.outerH}}">
+              <div data-canvas="1" style="position: absolute; left: 0; top: 0; width: 390px; min-height: {{cv.minH}}; transform: scale({{cv.s}}); transform-origin: top left">
+                <dc-import name="Convite" invite="{{canvasInvite}}" preview="{{ true }}" edit="{{ true }}" edit-page="{{cv.pageId}}" hint-size="390px,844px"></dc-import>
+                <div data-overlay="1" onPointerMove="{{cv.move}}" onPointerUp="{{cv.up}}" onPointerCancel="{{cv.up}}" style="position: absolute; inset: 0; {{cv.gridBg}}">
+                  <sc-if value="{{cv.showMargins}}" hint-placeholder-val="{{ true }}">
+                    <div aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: 20px; border-left: 1.5px dashed rgba(91, 63, 214, 0.55); pointer-events: none"></div>
+                    <div aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: 370px; border-left: 1.5px dashed rgba(91, 63, 214, 0.55); pointer-events: none"></div>
+                    <div aria-hidden="true" style="position: absolute; top: 0; bottom: 0; left: 195px; border-left: 1px dotted rgba(91, 63, 214, 0.35); pointer-events: none"></div>
+                    <div aria-hidden="true" style="position: absolute; left: 0; right: 0; top: {{cv.foldY}}; border-top: 2px dashed rgba(229, 72, 77, 0.75); pointer-events: none">
+                      <span style="position: absolute; right: 6px; top: -24px; padding: 2px 8px; border-radius: 999px; background: #E5484D; color: #FFFFFF; font: 700 12px 'Plus Jakarta Sans', sans-serif; white-space: nowrap">Fim da 1ª tela do celular</span>
+                    </div>
+                  </sc-if>
+
+                  <sc-for list="{{cv.boxes}}" as="bx" hint-placeholder-count="5">
+                    <div class="blk" role="button" tabindex="0" aria-label="{{bx.aria}}" aria-pressed="{{bx.pressed}}" data-ovl="{{bx.id}}" onPointerDown="{{bx.down}}" onKeyDown="{{bx.key}}" style="{{bx.style}}">
+                      <sc-if value="{{bx.hasAnim}}" hint-placeholder-val="{{ false }}">
+                        <span style="position: absolute; top: -11px; right: 8px; padding: 1px 8px; border-radius: 999px; background: #5B3FD6; color: #FFFFFF; font: 700 12px 'Plus Jakarta Sans', sans-serif; pointer-events: none">{{bx.animLabel}}</span>
                       </sc-if>
-                      <sc-if value="{{b.noMedia}}" hint-placeholder-val="{{ true }}">
-                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.6"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
-                        <span style="opacity: 0.8">{{b.label}}</span>
+                      <sc-if value="{{bx.hasWarn}}" hint-placeholder-val="{{ false }}">
+                        <span style="position: absolute; top: -11px; left: 8px; padding: 1px 8px; border-radius: 999px; background: {{bx.warnColor}}; color: #FFFFFF; font: 700 12px 'Plus Jakarta Sans', sans-serif; pointer-events: none; white-space: nowrap">{{bx.warn}}</span>
                       </sc-if>
-                    </span>
+                      <sc-if value="{{bx.showHandles}}" hint-placeholder-val="{{ false }}">
+                        <span data-handle="l" aria-hidden="true" onPointerDown="{{bx.resizeL}}" style="position: absolute; left: -8px; top: 50%; width: 14px; height: 34px; margin-top: -17px; border-radius: 7px; background: #FFFFFF; border: 2px solid #5B3FD6; box-sizing: border-box; cursor: ew-resize; touch-action: none"></span>
+                        <span data-handle="r" aria-hidden="true" onPointerDown="{{bx.resizeR}}" style="position: absolute; right: -8px; top: 50%; width: 14px; height: 34px; margin-top: -17px; border-radius: 7px; background: #FFFFFF; border: 2px solid #5B3FD6; box-sizing: border-box; cursor: ew-resize; touch-action: none"></span>
+                      </sc-if>
+                    </div>
+                  </sc-for>
+
+                  <sc-if value="{{cv.hasGhost}}" hint-placeholder-val="{{ false }}">
+                    <div aria-hidden="true" style="{{cv.ghostStyle}}"></div>
                   </sc-if>
-                  <sc-if value="{{b.isVideoPlayable}}" hint-placeholder-val="{{ false }}">
-                    <video src="{{b.mediaUrl}}" muted="{{ true }}" autoplay="{{ true }}" loop="{{ true }}" playsinline="{{ true }}" style="display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 10px; background: #000000"></video>
+                  <sc-if value="{{cv.hasInsert}}" hint-placeholder-val="{{ false }}">
+                    <div aria-hidden="true" data-testid="insert-line" style="{{cv.insertStyle}}">
+                      <span style="position: absolute; left: -6px; top: -6px; width: 10px; height: 10px; border-radius: 50%; background: #5B3FD6"></span>
+                      <span style="position: absolute; right: -6px; top: -6px; width: 10px; height: 10px; border-radius: 50%; background: #5B3FD6"></span>
+                    </div>
                   </sc-if>
-                  <sc-if value="{{b.isVideoPlaceholder}}" hint-placeholder-val="{{ false }}">
-                    <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; aspect-ratio: 16 / 9; border-radius: 10px; background: {{T.ph}}; color: {{T.fg}}; font-size: 13px">
-                      <span style="width: 48px; height: 48px; border-radius: 50%; background: {{T.accent}}; color: {{T.btnFg}}; display: flex; align-items: center; justify-content: center">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
-                      </span>
-                      {{b.label}}
-                    </span>
+                  <sc-for list="{{cv.lines}}" as="ln" hint-placeholder-count="2">
+                    <div aria-hidden="true" data-testid="guide" style="{{ln.style}}"></div>
+                  </sc-for>
+                  <sc-for list="{{cv.marks}}" as="mk" hint-placeholder-count="2">
+                    <div aria-hidden="true" style="{{mk.line}}"></div>
+                    <span aria-hidden="true" style="{{mk.labelStyle}}">{{mk.label}}</span>
+                  </sc-for>
+                  <sc-if value="{{cv.hasTip}}" hint-placeholder-val="{{ false }}">
+                    <span aria-hidden="true" style="{{cv.tipStyle}}">{{cv.tip}}</span>
                   </sc-if>
-                  <sc-if value="{{b.isTitulo}}" hint-placeholder-val="{{ false }}">
-                    <span style="display: block; font-family: {{T.font}}; font-size: {{T.titleSize}}; line-height: 1.05; font-weight: {{T.weight}}; font-style: {{T.fstyle}}">{{b.text}}</span>
+                  <sc-if value="{{noBlocks}}" hint-placeholder-val="{{ false }}">
+                    <p style="position: absolute; left: 30px; right: 30px; top: 140px; margin: 0; text-align: center; color: {{T.fg}}; opacity: 0.8; font: 500 15px 'Plus Jakarta Sans', sans-serif">Página vazia. Adicione blocos pelo painel à esquerda.</p>
                   </sc-if>
-                  <sc-if value="{{b.isTexto}}" hint-placeholder-val="{{ false }}">
-                    <span style="display: block; font-size: 14px; opacity: 0.88; white-space: pre-line">{{b.text}}</span>
-                  </sc-if>
-                  <sc-if value="{{b.isOrient}}" hint-placeholder-val="{{ false }}">
-                    <span style="display: block; text-align: left; padding: 12px 14px; border-radius: 10px; border: 1px solid {{T.line}}; font-size: 13px; white-space: pre-line">{{b.text}}</span>
-                  </sc-if>
-                  <sc-if value="{{b.isContagem}}" hint-placeholder-val="{{ false }}">
-                    <span style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; text-align: center">
-                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">{{b.cd.d}}</span><span style="font-size: 10px; opacity: 0.8">dias</span></span>
-                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">{{b.cd.h}}</span><span style="font-size: 10px; opacity: 0.8">horas</span></span>
-                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">{{b.cd.m}}</span><span style="font-size: 10px; opacity: 0.8">min</span></span>
-                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">{{b.cd.s}}</span><span style="font-size: 10px; opacity: 0.8">seg</span></span>
-                    </span>
-                  </sc-if>
-                  <sc-if value="{{b.isMapa}}" hint-placeholder-val="{{ false }}">
-                    <span style="display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; border: 1px solid {{T.line}}">
-                      <span style="height: 120px; background: {{T.ph}}; display: flex; align-items: center; justify-content: center; color: {{T.accent}}">
-                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
-                      </span>
-                      <span style="padding: 8px 10px; font-size: 13px; text-align: left; display: flex; flex-direction: column"><strong>{{b.text}}</strong><span style="opacity: 0.8">{{b.address}}</span></span>
-                    </span>
-                  </sc-if>
-                  <sc-if value="{{b.isBotao}}" hint-placeholder-val="{{ false }}">
-                    <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 22px; border-radius: {{T.radius}}; background: {{T.accent}}; color: {{T.btnFg}}; font-weight: 700; font-size: 14px">{{b.text}}</span>
-                  </sc-if>
-                  <sc-if value="{{b.isRsvp}}" hint-placeholder-val="{{ false }}">
-                    <span style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 10px; border: 1px solid {{T.line}}; text-align: left; font-size: 12px">
-                      <span style="opacity: 0.85">Nome completo</span><span style="height: 34px; border-radius: 8px; background: {{T.surface}}"></span>
-                      <span style="opacity: 0.85">Você vai?</span><span style="display: flex; gap: 6px"><span style="flex: 1; height: 34px; border-radius: 8px; background: {{T.surface}}"></span><span style="flex: 1; height: 34px; border-radius: 8px; background: {{T.surface}}"></span></span>
-                      <span style="margin-top: 4px; height: 40px; border-radius: {{T.radius}}; background: {{T.accent}}; color: {{T.btnFg}}; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 13px">Enviar resposta</span>
-                    </span>
-                  </sc-if>
-                  <sc-if value="{{b.hasAnim}}" hint-placeholder-val="{{ false }}">
-                    <span style="position: absolute; top: -8px; right: 8px; padding: 1px 8px; border-radius: 999px; background: #5B3FD6; color: #FFFFFF; font-size: 10px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif">{{b.animLabel}}</span>
-                  </sc-if>
-                </button>
-              </sc-for>
-              <sc-if value="{{noBlocks}}" hint-placeholder-val="{{ false }}">
-                <p style="margin: 40px 12px; text-align: center; opacity: 0.8; font-size: 14px">Página vazia. Adicione blocos pelo painel à esquerda.</p>
-              </sc-if>
+                </div>
+              </div>
             </div>
           </div>
           <nav aria-label="Páginas do convite" style="position: relative; display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}; font-family: 'Plus Jakarta Sans', sans-serif">
@@ -401,6 +414,25 @@ button:disabled{opacity:.5;cursor:not-allowed}
                 </div>
               </div>
 
+              <sc-if value="{{pos.show}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: #F7F6FB">
+                  <span class="lbl" style="margin: 0">Posição na página</span>
+                  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+                    <div><label class="lbl" for="pos-x" style="font-size: 12px">X (px)</label><input class="fld" id="pos-x" type="number" value="{{pos.x}}" onChange="{{pos.onX}}"></div>
+                    <div><label class="lbl" for="pos-y" style="font-size: 12px">Y (px)</label><input class="fld" id="pos-y" type="number" value="{{pos.y}}" onChange="{{pos.onY}}"></div>
+                    <div><label class="lbl" for="pos-w" style="font-size: 12px">Largura</label><input class="fld" id="pos-w" type="number" min="40" max="390" value="{{pos.w}}" onChange="{{pos.onW}}"></div>
+                  </div>
+                  <div role="group" aria-label="Alinhar bloco" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+                    <sc-for list="{{pos.aligns}}" as="al" hint-placeholder-count="4">
+                      <button onClick="{{al.run}}" aria-label="{{al.label}}" title="{{al.label}}" style="min-height: 40px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{al.icon}}"></path></svg>
+                      </button>
+                    </sc-for>
+                  </div>
+                  <span style="font-size: 12px; color: #5E5A6B">Arraste o bloco na prévia. Setas do teclado movem 1 px (com Shift, 10 px). Segure Alt para soltar sem encaixar nas guias.</span>
+                </div>
+              </sc-if>
+
               <sc-if value="{{sel.isMedia}}" hint-placeholder-val="{{ true }}">
                 <div style="display: flex; flex-direction: column; gap: 12px">
                   <div>
@@ -575,10 +607,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
               </div>
 
               <div style="display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid #EEECF3; padding-top: 16px">
-                <button onClick="{{moveUp}}" aria-label="Mover bloco para cima" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
+                <button onClick="{{moveUp}}" aria-label="{{moveUpLabel}}" title="{{moveUpLabel}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>
                 </button>
-                <button onClick="{{moveDown}}" aria-label="Mover bloco para baixo" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
+                <button onClick="{{moveDown}}" aria-label="{{moveDownLabel}}" title="{{moveDownLabel}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
                 </button>
                 <button onClick="{{removeBlock}}" style="margin-left: auto; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px">
@@ -877,6 +909,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #17151F; color: #FFFFFF; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 16px">
       {{toast}}
+      <sc-if value="{{hasToastAction}}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{runToastAction}}" style="border: 0; background: transparent; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer; min-height: 32px; text-decoration: underline">{{toastActionLabel}}</button>
+      </sc-if>
       <button onClick="{{closeToast}}" aria-label="Fechar aviso" style="border: 0; background: transparent; color: #C9BEFF; font-weight: 700; font-size: 14px; cursor: pointer; min-height: 32px">OK</button>
     </div>
   </sc-if>
@@ -1102,6 +1137,8 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
+    this.measTimer = setInterval(() => this.scheduleMeasure(), 500);
+    this.scheduleMeasure();
     if (!this.inviteId) return;
     api.getInvite(this.inviteId)
       .then((inv) => this.applyInvite(inv))
@@ -1185,6 +1222,12 @@ class Component extends DCLogic {
   }
 
   componentDidUpdate(prevProps, prevState) {
+    this.scheduleMeasure();
+    if (this.state.toast && this.state.toast !== prevState.toast) {
+      clearTimeout(this.toastTimer);
+      const t = this.state.toast;
+      this.toastTimer = setTimeout(() => { if (!this.unmounted && this.state.toast === t) this.setState({ toast: '', toastAction: null }); }, this.state.toastAction ? 10000 : 6000);
+    }
     if (!this.state.loaded || !prevState.loaded || !this.inviteId) return;
     const keys = ['title', 'kicker', 'eventDate', 'theme', 'music', 'pages', 'published', 'opening'];
     if (keys.some((k) => prevState[k] !== this.state[k])) this.scheduleSave();
@@ -1196,6 +1239,7 @@ class Component extends DCLogic {
 
   componentWillUnmount() {
     this.unmounted = true;
+    clearInterval(this.measTimer);
     this.previewStop();
     if (this.onBeforeUnload) window.removeEventListener('beforeunload', this.onBeforeUnload);
     this.flushSave();
@@ -1264,15 +1308,7 @@ class Component extends DCLogic {
   }
 
   move(dir) {
-    const sid = this.state.sel;
-    this.setBlocks((bs) => {
-      const i = bs.findIndex((x) => x.id === sid);
-      const j = i + dir;
-      if (i < 0 || j < 0 || j >= bs.length) return bs;
-      const out = bs.slice();
-      const t = out[i]; out[i] = out[j]; out[j] = t;
-      return out;
-    });
+    if (this.state.sel) this.moveBlock(this.state.sel, dir);
   }
 
   patchPage(pid, fn) {
@@ -1434,6 +1470,405 @@ class Component extends DCLogic {
     };
   }
 
+  // ---------- prévia editável: medidas, arrastar, guias ----------
+  screenH() { return this.state.pages.length > 1 ? 784 : 844; }
+
+  rectsFor(cur) {
+    const m = this.state.meas;
+    return m && m.page === cur.id ? m.rects : {};
+  }
+
+  scheduleMeasure() {
+    if (this.measReq || this.unmounted || typeof window === 'undefined') return;
+    const raf = window.requestAnimationFrame ? window.requestAnimationFrame.bind(window) : (f) => setTimeout(f, 16);
+    this.measReq = raf(() => { this.measReq = 0; this.measure(); });
+  }
+
+  measure() {
+    if (this.unmounted || typeof document === 'undefined' || !this.state.loaded) return;
+    const c = document.querySelector('[data-canvas]');
+    if (!c) return;
+    const cr = c.getBoundingClientRect();
+    const sc = cr.width / 390 || 1;
+    const q = (v) => Math.round(v * 2) / 2;
+    const rects = {};
+    let maxB = 0;
+    c.querySelectorAll('[data-bid]').forEach((el) => {
+      const r = el.getBoundingClientRect();
+      const o = { x: q((r.left - cr.left) / sc), y: q((r.top - cr.top) / sc), w: q(r.width / sc), h: q(r.height / sc) };
+      rects[el.getAttribute('data-bid')] = o;
+      maxB = Math.max(maxB, o.y + o.h);
+    });
+    const root = c.firstElementChild;
+    const rootH = root && !root.hasAttribute('data-overlay') ? root.offsetHeight : 0;
+    const h = Math.max(rootH, Math.ceil(maxB + 28), this.screenH());
+    const cur = this.curPage();
+    const key = JSON.stringify([cur.id, h, rects]);
+    if (key !== this.measKey) { this.measKey = key; this.setState({ meas: { page: cur.id, h, rects } }); }
+    if (cur.free && !this.dragInfo && maxB > 0) {
+      const fh = Math.ceil(maxB + 28);
+      if (Math.abs((cur.freeH || 0) - fh) > 2) this.patchPage(cur.id, (p) => Object.assign({}, p, { freeH: fh }));
+    }
+  }
+
+  moveBlock(id, dir) {
+    const pid = this.curPage().id;
+    this.setState((s) => ({
+      pages: s.pages.map((p) => {
+        if (p.id !== pid) return p;
+        const bs = p.blocks.slice();
+        const i = bs.findIndex((x) => x.id === id);
+        const j = i + dir;
+        if (i < 0 || j < 0 || j >= bs.length) return p;
+        const t = bs[i]; bs[i] = bs[j]; bs[j] = t;
+        return Object.assign({}, p, { blocks: bs });
+      })
+    }));
+  }
+
+  focusBox(id) {
+    setTimeout(() => { try { const el = document.querySelector('[data-ovl="' + id + '"]'); if (el) el.focus(); } catch (e) {} }, 40);
+  }
+
+  setFree(on) {
+    const cur = this.curPage();
+    if (!!cur.free === on) return;
+    const before = this.state.pages;
+    if (on) {
+      const rects = this.rectsFor(cur);
+      let y = 22, maxB = 0;
+      const blocks = cur.blocks.map((b) => {
+        const r = rects[b.id];
+        const pos = r ? { x: Math.round(r.x), y: Math.round(r.y), w: Math.round(r.w) } : { x: 20, y, w: 350 };
+        const hh = r ? r.h : 60;
+        y = pos.y + hh + 14;
+        maxB = Math.max(maxB, pos.y + hh);
+        return Object.assign({}, b, { pos });
+      });
+      this.patchPage(cur.id, (p) => Object.assign({}, p, { free: true, freeH: Math.ceil(maxB + 28), blocks }));
+      const msg = 'Posição livre: arraste os blocos para qualquer lugar. As guias aparecem quando eles se alinham.';
+      this.setState({ toast: msg, toastAction: null });
+    } else {
+      const py = (b) => (b.pos ? b.pos.y : 0), px = (b) => (b.pos ? b.pos.x : 0);
+      const blocks = cur.blocks.slice().sort((a, b) => (py(a) - py(b)) || (px(a) - px(b))).map((b) => { const o = Object.assign({}, b); delete o.pos; return o; });
+      this.patchPage(cur.id, (p) => { const o = Object.assign({}, p, { free: false, blocks }); delete o.freeH; return o; });
+      const msg = 'A página voltou ao modo automático: os blocos foram empilhados de cima para baixo.';
+      this.setState({ toast: msg, toastAction: { for: msg, label: 'Desfazer', run: () => this.setState({ pages: before, toast: '', toastAction: null }) } });
+    }
+  }
+
+  setPos(id, patch) {
+    const cur = this.curPage();
+    const b = cur.blocks.find((x) => x.id === id);
+    if (!b || !b.pos) return;
+    const p = Object.assign({}, b.pos, patch);
+    p.w = Math.max(40, Math.min(390, Math.round(p.w)));
+    p.x = Math.round(p.x); p.y = Math.max(0, Math.round(p.y));
+    this.patchBlock(id, { pos: p });
+  }
+
+  cvDown(e, id, kind) {
+    if (e.button != null && e.button !== 0) return;
+    e.stopPropagation();
+    const cur = this.curPage();
+    const rects = this.rectsFor(cur);
+    const r = rects[id];
+    const blk = cur.blocks.find((b) => b.id === id);
+    if (this.state.sel !== id || this.state.panel !== 'bloco') this.setState({ sel: id, panel: 'bloco' });
+    if (!r || !blk) return;
+    try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+    const c = document.querySelector('[data-canvas]');
+    const sc = c ? (c.getBoundingClientRect().width / 390 || 1) : 1;
+    const ovl = e.currentTarget.closest ? e.currentTarget.closest('[data-ovl]') : null;
+    const grabY = ovl ? (e.clientY - ovl.getBoundingClientRect().top) / sc : r.h / 2;
+    const scroller = document.querySelector('[data-scroll]');
+    const free = !!cur.free && !!blk.pos;
+    const box = (b) => (free && b.pos ? { x: b.pos.x, y: b.pos.y, w: b.pos.w, h: rects[b.id].h } : rects[b.id]);
+    this.dragInfo = {
+      id, kind: free ? (kind || 'move') : 'move', free, sx: e.clientX, sy: e.clientY, sc, scroller,
+      st0: scroller ? scroller.scrollTop : 0, started: false, orig: box(blk), grabY,
+      others: cur.blocks.filter((b) => b.id !== id && rects[b.id]).map((b) => Object.assign({ id: b.id }, box(b)))
+    };
+  }
+
+  cvMove(e) {
+    const di = this.dragInfo;
+    if (!di) return;
+    const sc = di.scroller;
+    if (sc && di.started) {
+      const br = sc.getBoundingClientRect();
+      if (e.clientY > br.bottom - 28) sc.scrollTop += 12;
+      else if (e.clientY < br.top + 28) sc.scrollTop -= 12;
+    }
+    const dScroll = sc ? sc.scrollTop - di.st0 : 0;
+    const dx = (e.clientX - di.sx) / di.sc, dy = (e.clientY - di.sy + dScroll) / di.sc;
+    if (!di.started) {
+      if (Math.hypot(dx, dy) < 4) return;
+      di.started = true;
+    }
+    this.setState({ drag: di.free ? this.freeDrag(di, dx, dy, !!e.altKey) : this.autoDrag(di, dy) });
+  }
+
+  cvUp() {
+    const di = this.dragInfo;
+    this.dragInfo = null;
+    const d = this.state.drag;
+    if (!di || !di.started || !d) { if (d) this.setState({ drag: null }); return; }
+    if (d.free) {
+      this.patchBlock(d.id, { pos: { x: d.x, y: Math.max(0, d.y), w: d.w } });
+    } else {
+      const cur = this.curPage();
+      const blk = cur.blocks.find((b) => b.id === d.id);
+      const rest = cur.blocks.filter((b) => b.id !== d.id);
+      rest.splice(d.index, 0, blk);
+      if (rest.some((b, i) => b !== cur.blocks[i])) this.setBlocks(() => rest);
+    }
+    this.setState({ drag: null });
+  }
+
+  autoDrag(di, dy) {
+    const o = di.orig, others = di.others;
+    const cy = o.y + (di.grabY != null ? di.grabY : o.h / 2) + dy;
+    let index = 0;
+    others.forEach((r) => { if (r.y + r.h / 2 < cy) index++; });
+    let insertY = o.y;
+    if (others.length) {
+      if (index === 0) insertY = others[0].y - 7;
+      else if (index >= others.length) { const l = others[others.length - 1]; insertY = l.y + l.h + 7; }
+      else insertY = (others[index - 1].y + others[index - 1].h + others[index].y) / 2;
+    }
+    return { id: di.id, auto: true, index, ghostY: o.y + dy, insertY };
+  }
+
+  freeDrag(di, dx, dy, alt) {
+    const st = this.state;
+    const o = di.orig;
+    const W = 390, SH = this.screenH();
+    const CH = st.meas ? st.meas.h : SH;
+    const snapOn = st.cvGuides !== false && !alt;
+    const grid = !!st.cvGrid && !alt;
+    const th = 6;
+    const kind = di.kind;
+    let x = o.x, y = o.y, w = o.w;
+    const h = o.h;
+    if (kind === 'move') { x = o.x + dx; y = o.y + dy; }
+    else if (kind === 'r') { w = Math.max(60, o.w + dx); }
+    else { const nx = Math.min(o.x + o.w - 60, o.x + dx); w = o.x + o.w - nx; x = nx; }
+    const xT = [{ v: 0 }, { v: 20 }, { v: 195 }, { v: 370 }, { v: W }];
+    const yT = [{ v: 22 }, { v: SH / 2 }, { v: SH }];
+    di.others.forEach((r) => {
+      [r.x, r.x + r.w / 2, r.x + r.w].forEach((v) => xT.push({ v, r }));
+      [r.y, r.y + r.h / 2, r.y + r.h].forEach((v) => yT.push({ v, r }));
+    });
+    const best = (targets, ms) => {
+      let b = null;
+      targets.forEach((t) => ms.forEach((m) => { const dd = t.v - m; if (Math.abs(dd) <= th && (b === null || Math.abs(dd) < Math.abs(b))) b = dd; }));
+      return b;
+    };
+    let sx = false, sy = false;
+    if (snapOn) {
+      if (kind === 'move') {
+        const bx = best(xT, [x, x + w / 2, x + w]); if (bx !== null) { x += bx; sx = true; }
+        const by = best(yT, [y, y + h / 2, y + h]); if (by !== null) { y += by; sy = true; }
+      } else if (kind === 'r') {
+        const bx = best(xT, [x + w]); if (bx !== null && w + bx >= 60) { w += bx; sx = true; }
+      } else {
+        const bx = best(xT, [x]); if (bx !== null && w - bx >= 60) { x += bx; w -= bx; sx = true; }
+      }
+    }
+    if (grid) {
+      if (kind === 'move') { if (!sx) x = Math.round(x / 10) * 10; if (!sy) y = Math.round(y / 10) * 10; }
+      else if (kind === 'r' && !sx) w = Math.max(60, Math.round((x + w) / 10) * 10 - x);
+      else if (kind === 'l' && !sx) { const nx = Math.round(x / 10) * 10; w += x - nx; x = nx; }
+    }
+    const neighbors = () => {
+      let above = null, below = null;
+      di.others.forEach((r) => {
+        if (!(r.x < x + w && r.x + r.w > x)) return;
+        if (r.y + r.h <= y + 0.5 && (!above || r.y + r.h > above.y + above.h)) above = r;
+        if (r.y >= y + h - 0.5 && (!below || r.y < below.y)) below = r;
+      });
+      return { above, below };
+    };
+    let nb = neighbors();
+    let equal = false;
+    if (kind === 'move' && snapOn && !sy && nb.above && nb.below) {
+      const ga = y - (nb.above.y + nb.above.h), gb = nb.below.y - (y + h);
+      if (Math.abs(ga - gb) <= th) { y += (gb - ga) / 2; equal = true; }
+    }
+    x = Math.round(x); y = Math.round(y); w = Math.round(w);
+    nb = neighbors();
+
+    const MAG = '#FF2D8A', BLUE = '#2D6BFF';
+    const lines = [];
+    if (snapOn) {
+      const seen = {};
+      const mvX = kind === 'move' ? [x, x + w / 2, x + w] : (kind === 'r' ? [x + w] : [x]);
+      xT.forEach((t) => {
+        if (seen['x' + t.v] || !mvX.some((m) => Math.abs(m - t.v) < 0.6)) return;
+        seen['x' + t.v] = 1;
+        const top = t.r ? Math.min(y, t.r.y) - 10 : 0, bot = t.r ? Math.max(y + h, t.r.y + t.r.h) + 10 : CH;
+        lines.push({ style: 'position: absolute; left: ' + (t.v - 0.75) + 'px; top: ' + top + 'px; height: ' + (bot - top) + 'px; width: 0; border-left: 1.5px solid ' + MAG + '; pointer-events: none' });
+      });
+      if (kind === 'move') {
+        const mvY = [y, y + h / 2, y + h];
+        yT.forEach((t) => {
+          if (seen['y' + t.v] || !mvY.some((m) => Math.abs(m - t.v) < 0.6)) return;
+          seen['y' + t.v] = 1;
+          const l = t.r ? Math.min(x, t.r.x) - 10 : 0, r = t.r ? Math.max(x + w, t.r.x + t.r.w) + 10 : W;
+          lines.push({ style: 'position: absolute; top: ' + (t.v - 0.75) + 'px; left: ' + l + 'px; width: ' + (r - l) + 'px; height: 0; border-top: 1.5px solid ' + MAG + '; pointer-events: none' });
+        });
+      }
+    }
+    const marks = [];
+    const pill = (left, top, label, color) => 'position: absolute; left: ' + left + 'px; top: ' + top + 'px; transform: translate(-50%, -50%); padding: 1px 7px; border-radius: 6px; background: ' + color + '; color: #FFFFFF; font: 700 12px \'Plus Jakarta Sans\', sans-serif; white-space: nowrap; pointer-events: none';
+    const vMark = (cx, a, b, color) => {
+      if (b - a < 1) return;
+      marks.push({ line: 'position: absolute; left: ' + (cx - 0.5) + 'px; top: ' + a + 'px; height: ' + (b - a) + 'px; border-left: 1px dashed ' + color + '; pointer-events: none', labelStyle: pill(cx + 18, (a + b) / 2, '', color), label: Math.round(b - a) + '' });
+    };
+    const hMark = (cy, a, b, color) => {
+      if (b - a < 1) return;
+      marks.push({ line: 'position: absolute; top: ' + (cy - 0.5) + 'px; left: ' + a + 'px; width: ' + (b - a) + 'px; border-top: 1px dashed ' + color + '; pointer-events: none', labelStyle: pill((a + b) / 2, cy - 12, '', color), label: Math.round(b - a) + '' });
+    };
+    if (kind === 'move') {
+      const cx = x + w / 2;
+      if (nb.above) vMark(cx, nb.above.y + nb.above.h, y, equal ? MAG : BLUE);
+      if (nb.below) vMark(cx, y + h, nb.below.y, equal ? MAG : BLUE);
+      const lft = x, rgt = W - x - w;
+      const centered = Math.abs(lft - rgt) < 1;
+      hMark(y + h / 2, 0, x, centered ? MAG : BLUE);
+      hMark(y + h / 2, x + w, W, centered ? MAG : BLUE);
+    }
+    const tipTop = y >= 34 ? y - 22 : y + h + 16;
+    return {
+      id: di.id, free: true, x, y, w, h, lines, marks,
+      tip: (kind === 'move' ? 'x ' + x + ' · y ' + y : 'largura ' + w) + (equal ? ' · espaços iguais' : ''),
+      tipStyle: 'position: absolute; left: ' + Math.max(4, x) + 'px; top: ' + tipTop + 'px; transform: translateY(-50%); padding: 3px 8px; border-radius: 6px; background: #17151F; color: #FFFFFF; font: 700 12px \'Plus Jakarta Sans\', sans-serif; white-space: nowrap; pointer-events: none'
+    };
+  }
+
+  cvKey(e, id) {
+    const k = e.key;
+    if (k === 'Enter' || k === ' ') { e.preventDefault(); this.setState({ sel: id, panel: 'bloco' }); return; }
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(k) === -1) return;
+    const cur = this.curPage();
+    const blk = cur.blocks.find((b) => b.id === id);
+    if (!blk) return;
+    if (cur.free && blk.pos) {
+      e.preventDefault();
+      const step = e.shiftKey ? 10 : 1;
+      const dx = k === 'ArrowLeft' ? -step : (k === 'ArrowRight' ? step : 0);
+      const dy = k === 'ArrowUp' ? -step : (k === 'ArrowDown' ? step : 0);
+      this.setPos(id, { x: blk.pos.x + dx, y: blk.pos.y + dy });
+      if (this.state.sel !== id) this.setState({ sel: id, panel: 'bloco' });
+    } else if (k === 'ArrowUp' || k === 'ArrowDown') {
+      e.preventDefault();
+      this.moveBlock(id, k === 'ArrowUp' ? -1 : 1);
+      this.setState({ sel: id, panel: 'bloco' });
+      this.focusBox(id);
+    }
+  }
+
+  cvVals(T, cur) {
+    const st = this.state;
+    const sc = 340 / 390;
+    const rects = this.rectsFor(cur);
+    const SH = this.screenH();
+    const h = st.meas && st.meas.page === cur.id ? st.meas.h : SH;
+    const free = !!cur.free;
+    const d = st.drag;
+    const M = this.meta();
+    const animNames = { surgir: 'Surgir', deslizar: 'Deslizar', zoom: 'Zoom' };
+    const live = (b) => (d && d.free && d.id === b.id && rects[b.id] ? { x: d.x, y: d.y, w: d.w, h: rects[b.id].h } : rects[b.id]);
+
+    const warn = {};
+    const items = cur.blocks.map((b, i) => ({ b, i, r: live(b) })).filter((o) => o.r);
+    if (free) {
+      items.forEach((o) => { if (o.r.x < -1 || o.r.x + o.r.w > 391) warn[o.b.id] = ['Fora da tela', '#C2410C']; });
+      for (let i = 0; i < items.length; i++) {
+        for (let j = i + 1; j < items.length; j++) {
+          const a = items[i].r, b = items[j].r;
+          const ix = Math.min(a.x + a.w, b.x + b.w) - Math.max(a.x, b.x);
+          const iy = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
+          if (ix > 2 && iy > 2) {
+            if (!warn[items[i].b.id]) warn[items[i].b.id] = ['Sobreposto', '#D92D20'];
+            if (!warn[items[j].b.id]) warn[items[j].b.id] = ['Sobreposto', '#D92D20'];
+          }
+        }
+      }
+    }
+    const nameOf = (o) => M[o.b.type].label + ' (' + (o.i + 1) + 'º bloco)';
+    const issues = items.filter((o) => warn[o.b.id]).map((o) => ({
+      text: nameOf(o) + ': ' + (warn[o.b.id][0] === 'Sobreposto' ? 'sobreposto a outro bloco' : 'sai da tela'),
+      pick: () => { this.setState({ sel: o.b.id, panel: 'bloco' }); this.focusBox(o.b.id); }
+    }));
+    const belowFold = items.filter((o) => o.r.y >= SH).length;
+
+    const boxes = items.map((o) => {
+      const b = o.b, r = o.r;
+      const on = b.id === st.sel && st.panel === 'bloco';
+      const dragging = d && d.id === b.id;
+      const wn = warn[b.id];
+      let deco = '';
+      if (on) deco = 'box-shadow: 0 0 0 2.5px #5B3FD6, inset 0 0 0 1px rgba(255, 255, 255, 0.85);';
+      else if (wn) deco = 'outline: 2px dashed ' + wn[1] + ';';
+      const style = 'position: absolute; left: ' + r.x + 'px; top: ' + r.y + 'px; width: ' + r.w + 'px; height: ' + Math.max(8, r.h) + 'px; box-sizing: border-box; border-radius: 4px; ' + deco +
+        ' cursor: ' + (free ? 'move' : (dragging ? 'grabbing' : 'grab')) + '; touch-action: ' + (on ? 'none' : 'pan-y') + '; opacity: ' + (dragging && !free ? '0.4' : '1') + '; user-select: none';
+      return {
+        id: b.id, style,
+        aria: 'Bloco ' + M[b.type].label + ', ' + (o.i + 1) + 'º da página. ' + (free ? 'Arraste ou use as setas para posicionar.' : 'Arraste ou use as setas para cima e para baixo para mudar a ordem.'),
+        pressed: on ? 'true' : 'false',
+        hasAnim: !!(b.anim && b.anim !== 'nenhuma'), animLabel: animNames[b.anim] || '',
+        hasWarn: !!wn, warn: wn ? wn[0] : '', warnColor: wn ? wn[1] : '',
+        showHandles: free && on && !!b.pos,
+        down: (e) => this.cvDown(e, b.id, 'move'),
+        resizeL: (e) => this.cvDown(e, b.id, 'l'),
+        resizeR: (e) => this.cvDown(e, b.id, 'r'),
+        key: (e) => this.cvKey(e, b.id)
+      };
+    });
+
+    const auto = d && d.auto;
+    const ghostR = auto ? rects[d.id] : null;
+    const tog = (key, label, title, icon, disabled) => {
+      const on = st[key] !== undefined ? !!st[key] : key !== 'cvGrid';
+      return {
+        label, title, icon, disabled: !!disabled, pressed: on ? 'true' : 'false',
+        bg: on ? '#EFECFB' : '#FFFFFF', ring: on ? '#5B3FD6' : '#D6D3E0', fg: on ? '#3B26A8' : '#3D3A4A',
+        toggle: () => this.setState({ [key]: !on })
+      };
+    };
+    let checkTitle, checkBg, checkFg;
+    if (!free) { checkTitle = 'Modo automático: os blocos ficam empilhados e alinhados pelo tema.'; checkBg = '#F1EFF6'; checkFg = '#3D3A4A'; }
+    else if (issues.length) { checkTitle = issues.length === 1 ? '1 aviso de enquadramento' : issues.length + ' avisos de enquadramento'; checkBg = '#FDECEA'; checkFg = '#8C1D13'; }
+    else { checkTitle = 'Enquadramento ok: nenhum bloco sobreposto ou fora da tela.'; checkBg = '#E3F3EA'; checkFg = '#1E6B43'; }
+    return {
+      s: String(Math.round(sc * 100000) / 100000), pageId: cur.id,
+      outerH: Math.ceil(h * sc) + 'px', minH: SH + 'px', foldY: SH + 'px',
+      showMargins: st.cvMargins !== false,
+      gridBg: st.cvGrid ? 'background-image: linear-gradient(to right, rgba(91, 63, 214, 0.16) 1px, transparent 1px), linear-gradient(to bottom, rgba(91, 63, 214, 0.16) 1px, transparent 1px); background-size: 10px 10px' : '',
+      boxes,
+      hasGhost: !!ghostR,
+      ghostStyle: ghostR ? 'position: absolute; left: ' + ghostR.x + 'px; top: ' + d.ghostY + 'px; width: ' + ghostR.w + 'px; height: ' + ghostR.h + 'px; box-sizing: border-box; border: 2px dashed #5B3FD6; border-radius: 6px; background: rgba(91, 63, 214, 0.10); pointer-events: none' : '',
+      hasInsert: !!auto,
+      insertStyle: auto ? 'position: absolute; left: 14px; right: 14px; top: ' + (d.insertY - 2) + 'px; height: 4px; border-radius: 2px; background: #5B3FD6; pointer-events: none' : '',
+      lines: d && d.free ? d.lines : [], marks: d && d.free ? d.marks : [],
+      hasTip: !!(d && d.free), tip: d && d.free ? d.tip : '', tipStyle: d && d.free ? d.tipStyle : '',
+      move: (e) => this.cvMove(e), up: () => this.cvUp(),
+      autoChecked: free ? 'false' : 'true', freeChecked: free ? 'true' : 'false',
+      autoBg: free ? 'transparent' : '#FFFFFF', freeBg: free ? '#FFFFFF' : 'transparent',
+      setAuto: () => this.setFree(false), setFree: () => this.setFree(true),
+      toggles: [
+        tog('cvGuides', 'Guias', free ? 'Encaixar nas guias ao arrastar (Alt desliga na hora)' : 'Disponível na posição livre', 'M12 3v18M3 12h18', !free),
+        tog('cvGrid', 'Grade', 'Mostrar grade de 10 px' + (free ? ' e encaixar nela' : ''), 'M3 3h18v18H3zM9 3v18M15 3v18M3 9h18M3 15h18', false),
+        tog('cvMargins', 'Margens', 'Mostrar margens, centro e o fim da 1ª tela', 'M4 4h16v16H4zM8 4v16M16 4v16', false)
+      ],
+      checkTitle, checkBg, checkFg, issues,
+      hasInfo: belowFold > 0,
+      info: belowFold === 1 ? '1 bloco fica abaixo da 1ª tela: o convidado rola para ver.' : belowFold + ' blocos ficam abaixo da 1ª tela: o convidado rola para ver.'
+    };
+  }
+
   themeVals() {
     const th = this.state.theme;
     const base = this.baseTheme();
@@ -1522,7 +1957,7 @@ class Component extends DCLogic {
         numFg: on ? '#FFFFFF' : '#3D3A4A',
         tabFg: on ? T.accent : T.fg,
         tabLine: on ? T.accent : 'transparent',
-        pick: () => this.setState({ page: p.id, view: 'pages', sel: p.blocks.length ? p.blocks[0].id : null })
+        pick: () => { this.dragInfo = null; this.setState({ page: p.id, view: 'pages', drag: null, sel: p.blocks.length ? p.blocks[0].id : null }); }
       };
     });
 
@@ -1536,6 +1971,11 @@ class Component extends DCLogic {
       add: () => {
         const id = 'n' + st.next;
         const nb = Object.assign({ id: id, type: type, text: '', label: '', src: 'upload', anim: 'nenhuma' }, defaults[type]);
+        if (cur.free) {
+          const rs = this.rectsFor(cur);
+          const bottom = cur.blocks.reduce((m, x) => Math.max(m, rs[x.id] ? rs[x.id].y + rs[x.id].h : (x.pos ? x.pos.y + 60 : 0)), 8);
+          nb.pos = { x: 20, y: Math.round(bottom + 14), w: 350 };
+        }
         this.setBlocks((bs) => bs.concat([nb]));
         this.setState({ sel: id, next: st.next + 1, panel: 'bloco', view: 'pages' });
       }
@@ -1662,8 +2102,34 @@ class Component extends DCLogic {
       status: bgObj && bgObj.uploading ? 'Enviando' + (bgObj.uploadPct ? ' · ' + bgObj.uploadPct + '%' : '…') : (bgObj && api.photo.isEdited(bgObj.edit) ? 'Foto editada' : 'Sem edições')
     };
     const pid = cur.id;
+    const ser = this.serialize(true);
+    let canvasInvite = ser;
+    if (st.drag && st.drag.free) {
+      const dd = st.drag;
+      canvasInvite = Object.assign({}, ser, { pages: ser.pages.map((p) => (p.id !== cur.id ? p : Object.assign({}, p, { blocks: p.blocks.map((x) => (x.id === dd.id ? Object.assign({}, x, { pos: { x: dd.x, y: dd.y, w: dd.w } }) : x)) }))) });
+    }
+    const posB = s && cur.free && s.pos ? s : null;
+    const pos = {
+      show: !!posB,
+      x: posB ? String(posB.pos.x) : '', y: posB ? String(posB.pos.y) : '', w: posB ? String(posB.pos.w) : '',
+      onX: (e) => posB && this.setPos(posB.id, { x: Number(e.target.value) || 0 }),
+      onY: (e) => posB && this.setPos(posB.id, { y: Number(e.target.value) || 0 }),
+      onW: (e) => posB && this.setPos(posB.id, { w: Number(e.target.value) || 40 }),
+      aligns: [
+        { label: 'Alinhar à margem esquerda', icon: 'M4 3v18M8 7h12v4H8zM8 14h7v4H8z', run: () => posB && this.setPos(posB.id, { x: 20 }) },
+        { label: 'Centralizar na largura da tela', icon: 'M12 3v18M6 7h12v4H6zM8 14h8v4H8z', run: () => posB && this.setPos(posB.id, { x: Math.round(195 - posB.pos.w / 2) }) },
+        { label: 'Alinhar à margem direita', icon: 'M20 3v18M4 7h12v4H4zM9 14h7v4H9z', run: () => posB && this.setPos(posB.id, { x: 370 - posB.pos.w }) },
+        { label: 'Ocupar a largura entre as margens', icon: 'M3 3v18M21 3v18M6 12h12M9 9l-3 3 3 3M15 9l3 3-3 3', run: () => posB && this.setPos(posB.id, { x: 20, w: 350 }) }
+      ]
+    };
     return {
       T,
+      cv: this.cvVals(T, cur),
+      canvasInvite,
+      pos,
+      hasToastAction: !!(st.toastAction && st.toastAction.for === st.toast),
+      toastActionLabel: st.toastAction ? st.toastAction.label : '',
+      runToastAction: () => { const a = st.toastAction; if (a && a.run) a.run(); },
       pe: this.peVals(T),
       photoFormats: api.photo.formats,
       pageBg,
@@ -1756,7 +2222,7 @@ class Component extends DCLogic {
       ready: st.loaded, notReady: !st.loaded,
       loadMessage: st.loadError || 'Carregando convite…',
       guestHref: this.inviteId ? '#/c/' + this.inviteId : '#/Main',
-      previewInvite: this.serialize(true),
+      previewInvite: ser,
       kicker: st.kicker,
       onKicker: (e) => this.setState({ kicker: e.target.value }),
       eventLocal: api.fmt.toLocalInput(st.eventDate),
@@ -1836,7 +2302,7 @@ class Component extends DCLogic {
       pagesTabBg: isPages ? '#FFFFFF' : 'transparent', openTabBg: isPages ? 'transparent' : '#FFFFFF',
       viewPages: () => this.setState({ view: 'pages' }),
       viewOpening: () => { this.previewStop(); this.setState({ view: 'opening', previewing: '' }); },
-      previewCaption: isPages ? 'Página ' + (idx + 1) + ' de ' + st.pages.length + ' · ' + cur.name + ' · clique em um bloco para editar' : 'Convite fechado · toque no celular para ver a abertura',
+      previewCaption: isPages ? 'Página ' + (idx + 1) + ' de ' + st.pages.length + ' · ' + cur.name + (cur.free ? ' · arraste os blocos para posicionar' : ' · arraste um bloco para mudar a ordem') : 'Convite fechado · toque no celular para ver a abertura',
       noLink: false,
       isBlockPanel, isThemePanel, isMusicPanel,
       blockSelected: isBlockPanel ? 'true' : 'false', themeSelected: isThemePanel ? 'true' : 'false', musicSelected: isMusicPanel ? 'true' : 'false',
@@ -1887,7 +2353,7 @@ class Component extends DCLogic {
       },
       hasToast: !!st.toast,
       toast: st.toast,
-      closeToast: () => this.setState({ toast: '' }),
+      closeToast: () => this.setState({ toast: '', toastAction: null }),
       hasSel: !!s,
       noSel: !s,
       sel,
@@ -1897,6 +2363,8 @@ class Component extends DCLogic {
       onLabel: (e) => this.patchSel({ label: e.target.value }),
       onAnim: (e) => this.patchSel({ anim: e.target.value }),
       moveUp: () => this.move(-1),
+      moveUpLabel: cur.free ? 'Enviar para trás (outros blocos ficam por cima)' : 'Mover bloco para cima',
+      moveDownLabel: cur.free ? 'Trazer para frente (fica por cima dos outros blocos)' : 'Mover bloco para baixo',
       moveDown: () => this.move(1),
       removeBlock: () => {
         const i = cur.blocks.findIndex((x) => x.id === st.sel);

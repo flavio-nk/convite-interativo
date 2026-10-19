@@ -88,15 +88,15 @@ def t_edit_persist(pg):
     pg.click('[aria-label="Paleta Oceano"]')
     pg.click('button[role=tab]:has-text("Bloco")')
     pg.click('button.pg:has-text("Detalhes")'); pg.wait_for_timeout(150)
-    pg.click('[aria-label="Bloco Mapa"]'); pg.wait_for_timeout(150)
+    pg.click('[aria-label^="Bloco Mapa"]'); pg.wait_for_timeout(150)
     pg.fill('#map-name', 'Sítio das Flores'); pg.fill('#map-addr', 'Rua das Acácias, 100, Campinas')
     wait_saved(pg)
     ok('Editor: salva automaticamente', True)
     pg.reload(); pg.wait_for_timeout(1800)
     ok('Recarregar: título salvo', pg.input_value('#inv-title') == 'Festa de Teste', pg.input_value('#inv-title'))
-    ok('Recarregar: texto do bloco salvo', count(pg, '.blk >> text=Joana & Bruno') == 1)
-    ok('Recarregar: foto enviada continua', count(pg, '.blk img') >= 1)
-    src = pg.get_attribute('.blk img >> nth=0', 'src') if count(pg, '.blk img') else ''
+    ok('Recarregar: texto do bloco salvo', count(pg, '[data-canvas] [data-bid] >> text=Joana & Bruno') == 1)
+    ok('Recarregar: foto enviada continua', count(pg, '[data-canvas] [data-bid] img') >= 1)
+    src = pg.get_attribute('[data-canvas] [data-bid] img >> nth=0', 'src') if count(pg, '[data-canvas] [data-bid] img') else ''
     ok('Recarregar: foto vem do armazenamento (não é temporária)', src and not src.startswith('blob:'), src)
     ok('Recarregar: música salva', 'música: Caixinha de música' in text(pg))
     pg.click('button[role=tab]:has-text("Tema")'); pg.wait_for_timeout(150)
@@ -105,7 +105,7 @@ def t_edit_persist(pg):
     ok('Recarregar: data do evento salva', pg.input_value('#ev-date') == '2027-05-20T17:30', pg.input_value('#ev-date'))
     pg.click('button[role=tab]:has-text("Bloco")')
     pg.click('button.pg:has-text("Detalhes")'); pg.wait_for_timeout(150)
-    pg.click('[aria-label="Bloco Mapa"]'); pg.wait_for_timeout(150)
+    pg.click('[aria-label^="Bloco Mapa"]'); pg.wait_for_timeout(150)
     ok('Recarregar: endereço do mapa salvo', pg.input_value('#map-addr') == 'Rua das Acácias, 100, Campinas')
 
 
@@ -302,7 +302,7 @@ def set_range(pg, sel, v):
 
 
 def phone_img_style(pg):
-    return pg.locator('.blk img').first.get_attribute('style') or ''
+    return pg.locator('[data-canvas] [data-bid] img').first.get_attribute('style') or ''
 
 
 def t_photos(pg, browser):
@@ -339,7 +339,7 @@ def t_photos(pg, browser):
     pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
     ok('Foto: Esc fecha o editor', count(pg, '[data-testid="pe-frame"]') == 0)
     pg.select_option('#foto-format', '1:1'); pg.wait_for_timeout(200)
-    ok('Foto: formato quadrado', 'aspect-ratio: 1' in (pg.locator('.blk >> nth=0').locator('span').first.get_attribute('style') or ''))
+    ok('Foto: formato quadrado', 'aspect-ratio: 1' in (pg.locator('[data-canvas] [data-bid] >> nth=0').locator('div').first.get_attribute('style') or ''))
     # fundo da página
     pg.set_input_files('#bg-file', FIX + 'paisagem.jpg'); pg.wait_for_timeout(1200)
     ok('Fundo: aparece na prévia', count(pg, 'main [data-testid="page-bg"] img') == 1)
@@ -369,6 +369,85 @@ def t_photos(pg, browser):
     ctx.close()
 
 
+def ovl(pg):
+    return pg.evaluate("Array.from(document.querySelectorAll('[data-ovl]')).map(e => e.getAttribute('data-ovl'))")
+
+
+def drag(pg, sel, dx, dy, steps=12, before_up=None):
+    b = pg.locator(sel).bounding_box()
+    x, y = b['x'] + min(40, b['width'] / 2), b['y'] + min(12, b['height'] / 2)
+    pg.mouse.move(x, y); pg.mouse.down()
+    pg.mouse.move(x + dx, y + dy, steps=steps)
+    r = before_up() if before_up else None
+    pg.mouse.up(); pg.wait_for_timeout(400)
+    return r
+
+
+def t_dnd(pg, browser):
+    go(pg, 'Temas', 1300)
+    pg.click('[aria-label="Tema Jardim"]'); pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(2000)
+    wait_saved(pg)
+    did = pg.url.split('#/Editor/')[1]
+    order0 = ovl(pg)
+    ok('Arrastar: prévia do editor mostra todos os blocos', order0 == ['c1', 'c2', 'c3', 'c4', 'c5'], order0)
+    # modo automático: arrastar o título para o fim
+    last = pg.locator('[data-ovl="c5"]').bounding_box(); first = pg.locator('[data-ovl="c2"]').bounding_box()
+    seen = drag(pg, '[data-ovl="c2"]', 0, last['y'] + last['height'] - first['y'] + 4, before_up=lambda: count(pg, '[data-testid="insert-line"]'))
+    ok('Automático: mostra a linha de inserção', seen == 1)
+    ok('Automático: arrastar muda a ordem', ovl(pg) == ['c1', 'c3', 'c4', 'c5', 'c2'], ovl(pg))
+    pg.locator('[data-ovl="c2"]').focus(); pg.keyboard.press('ArrowUp'); pg.wait_for_timeout(300)
+    ok('Automático: seta para cima sobe o bloco', ovl(pg) == ['c1', 'c3', 'c4', 'c2', 'c5'], ovl(pg))
+    # posição livre
+    pg.click('button[role=radio]:has-text("Posição livre")'); pg.wait_for_timeout(600)
+    ok('Posição livre: mantém o lugar dos blocos', pg.input_value('#pos-x') != '' and 'Enquadramento ok' in pg.inner_text('[data-testid="check"]'))
+    pg.locator('[data-ovl="c5"]').click(); pg.wait_for_timeout(200)
+    y0 = int(pg.input_value('#pos-y'))
+    guides = drag(pg, '[data-ovl="c5"]', 0, 60, before_up=lambda: count(pg, '[data-testid="guide"]'))
+    y1 = int(pg.input_value('#pos-y'))
+    ok('Posição livre: arrastar move o bloco', y1 > y0 + 40, (y0, y1))
+    ok('Posição livre: guia de centro aparece ao arrastar', guides >= 1, guides)
+    ok('Posição livre: continua centralizado (encaixe)', pg.input_value('#pos-x') == str(round(195 - int(pg.input_value('#pos-w')) / 2)), pg.input_value('#pos-x'))
+    pg.locator('[data-ovl="c5"]').focus(); pg.keyboard.press('ArrowRight'); pg.keyboard.press('Shift+ArrowDown'); pg.wait_for_timeout(300)
+    ok('Posição livre: setas ajustam 1 px e Shift 10 px', int(pg.input_value('#pos-y')) == y1 + 10)
+    # sobreposição
+    c4 = pg.locator('[data-ovl="c4"]').bounding_box(); c1 = pg.locator('[data-ovl="c1"]').bounding_box()
+    drag(pg, '[data-ovl="c4"]', 0, c1['y'] + 30 - c4['y'])
+    chk = pg.inner_text('[data-testid="check"]')
+    ok('Verificação: avisa bloco sobreposto', 'sobreposto' in chk, chk)
+    pg.click('[data-ovl="c5"]'); pg.wait_for_timeout(150)
+    pg.click('[data-testid="check"] button >> nth=0'); pg.wait_for_timeout(200)
+    ok('Verificação: tocar no aviso seleciona o bloco', pg.get_attribute('[data-ovl="c5"]', 'aria-pressed') == 'false')
+    pg.locator('[data-ovl="c4"]').focus(); pg.keyboard.press('Enter'); pg.wait_for_timeout(200)
+    pg.fill('#pos-y', '560'); pg.press('#pos-y', 'Tab'); pg.wait_for_timeout(300)
+    # largura pelas alças e alinhamento
+    pg.click('[aria-label="Ocupar a largura entre as margens"]'); pg.wait_for_timeout(200)
+    ok('Alinhar: largura entre as margens', pg.input_value('#pos-x') == '20' and pg.input_value('#pos-w') == '350')
+    h = pg.locator('[data-ovl="c4"] [data-handle="r"]').bounding_box()
+    pg.mouse.move(h['x'] + 5, h['y'] + 10); pg.mouse.down(); pg.mouse.move(h['x'] - 80, h['y'] + 10, steps=8); pg.mouse.up(); pg.wait_for_timeout(300)
+    ok('Alça: estreita o bloco', int(pg.input_value('#pos-w')) < 300, pg.input_value('#pos-w'))
+    pg.click('[aria-label="Centralizar na largura da tela"]'); pg.wait_for_timeout(200)
+    wv = int(pg.input_value('#pos-w'))
+    ok('Alinhar: centralizar', pg.input_value('#pos-x') == str(round(195 - wv / 2)))
+    xs = {b: pg.locator('[data-ovl="%s"]' % b).bounding_box() for b in ['c4']}
+    wait_saved(pg)
+    pg.reload(); pg.wait_for_timeout(2000)
+    pg.locator('[data-ovl="c4"]').click(); pg.wait_for_timeout(200)
+    ok('Recarregar: posições salvas', pg.input_value('#pos-y') == '560' and int(pg.input_value('#pos-w')) == wv, (pg.input_value('#pos-y'), pg.input_value('#pos-w')))
+    # convidado vê as mesmas posições
+    pg.click('header button:has-text("Publicar")'); wait_saved(pg)
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + did); g.wait_for_timeout(1500)
+    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(2800)
+    st = g.locator('[data-bid="c4"]').get_attribute('style') or ''
+    ok('Convidado: bloco na posição livre', 'top: 560px' in st and 'width: %dpx' % wv in st, st)
+    ctx.close()
+    # voltar ao automático com desfazer
+    pg.click('button[role=radio]:has-text("Automático")'); pg.wait_for_timeout(400)
+    ok('Automático: volta empilhando de cima para baixo', count(pg, '#pos-x') == 0 and ovl(pg)[0] == 'c1', ovl(pg))
+    pg.click('button:has-text("Desfazer")'); pg.wait_for_timeout(400)
+    ok('Desfazer volta à posição livre', count(pg, '#pos-x') == 1)
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -396,7 +475,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

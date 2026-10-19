@@ -22,7 +22,7 @@ body{margin:0}
 @media (prefers-reduced-motion: reduce){.a-surgir,.a-deslizar,.a-zoom,.pg-in{animation:none}}
 </style>
 </helmet>
-<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: {{T.bg}}; color: {{T.fg}}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+<div style="{{L.root}}">
 
   <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
     <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; opacity: 0.8">Abrindo convite…</div>
@@ -38,17 +38,20 @@ body{margin:0}
 
 
   <sc-if value="{{isPages}}" hint-placeholder-val="{{ false }}">
-    <div style="position: absolute; inset: 0; display: flex; flex-direction: column">
+    <div inert="{{L.inert}}" style="{{L.pages}}">
       <sc-if value="{{pageBg.has}}" hint-placeholder-val="{{ false }}">
         <div key="{{pageBg.key}}" class="pg-in" aria-hidden="true" data-testid="page-bg" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none">
           <img src="{{pageBg.url}}" alt="" style="{{pageBg.imgStyle}}">
           <div style="position: absolute; inset: 0; background: {{T.bg}}; opacity: {{pageBg.dimOpacity}}"></div>
         </div>
       </sc-if>
-      <main key="{{pageKey}}" class="pg-in" style="position: relative; flex: 1 1 auto; overflow-y: auto; padding: 22px 20px 28px; display: flex; flex-direction: column; font-family: {{T.body}}">
-        <div style="flex: 1 0 auto; display: flex; flex-direction: column; gap: 14px; padding: {{T.framePad}}; border: {{T.frame}}; border-left: {{T.band}}; text-align: {{T.align}}">
+      <main key="{{pageKey}}" class="{{L.mainClass}}" style="{{L.main}}">
+        <div data-page-inner="1" style="{{L.inner}}">
+          <sc-if value="{{L.hasDecor}}" hint-placeholder-val="{{ false }}">
+            <div aria-hidden="true" style="position: absolute; left: 20px; right: 20px; top: 22px; bottom: 28px; border: {{T.frame}}; border-left: {{T.band}}; pointer-events: none"></div>
+          </sc-if>
           <sc-for list="{{blocks}}" as="b" hint-placeholder-count="5">
-            <div key="{{b.key}}" class="{{b.animClass}}" style="animation-delay: {{b.delay}}">
+            <div key="{{b.key}}" data-bid="{{b.id}}" class="{{b.animClass}}" style="{{b.wrap}}">
 
               <sc-if value="{{b.showFoto}}" hint-placeholder-val="{{ false }}">
                 <div style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; overflow: hidden; aspect-ratio: {{b.ratio}}; width: {{T.photoW}}; margin: {{T.photoM}}; border-radius: {{T.photoR}}; transform: {{T.photoRot}}; border: {{T.photoBorder}}; background: {{T.ph}}; font-size: 13px">
@@ -233,7 +236,7 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"invite":{"editor":null},"preview":{"editor":null},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"invite":{"editor":null},"preview":{"editor":null},"edit":{"editor":null},"editPage":{"editor":null},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -247,7 +250,7 @@ class Component extends DCLogic {
 
   componentDidMount() {
     this.timer = setInterval(() => { if (this.state.phase === 'pages' || this.state.phase === 'opening') this.setState({ now: Date.now() }); }, 1000);
-    if (this.props.invite) { this.restoreRsvp(); return; }
+    if (this.props.invite) { if (!this.props.edit) this.restoreRsvp(); return; }
     const id = this.props.route && this.props.route.params && this.props.route.params.id;
     if (!id) { this.setState({ phase: 'error', error: 'Link de convite incompleto.' }); return; }
     api.getInvite(id)
@@ -393,15 +396,44 @@ class Component extends DCLogic {
     this.setState((s) => ({ forms: Object.assign({}, s.forms, { [bid]: Object.assign({}, this.form(bid), s.forms[bid] || {}, patch) }) }));
   }
 
+  // Estilos da estrutura da página. No editor (edit) a página não rola nem tem menu:
+  // ela é desenhada inteira, na mesma largura do convidado (390px), para medir os blocos.
+  layout(T, edit, free, cur, multi) {
+    const font = "font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: " + T.fg + ';';
+    const screenH = multi ? 784 : 844;
+    const freeH = Math.max(screenH, Math.round(cur.freeH || 0));
+    const hasDecor = free && (T.frame !== '0' || T.band !== '0');
+    return {
+      root: edit
+        ? 'position: relative; width: 390px; background: transparent; ' + font
+        : 'position: relative; width: 390px; height: 844px; overflow: hidden; background: ' + T.bg + '; ' + font,
+      pages: edit
+        ? 'position: relative; display: flex; flex-direction: column; min-height: ' + screenH + 'px'
+        : 'position: absolute; inset: 0; display: flex; flex-direction: column',
+      inert: edit,
+      mainClass: edit ? '' : 'pg-in',
+      main: 'position: relative; flex: ' + (edit ? '1 0 auto' : '1 1 auto') + '; ' + (edit ? '' : 'overflow-y: auto; ') +
+        (free ? 'padding: 0; display: block; ' : 'padding: 22px 20px 28px; display: flex; flex-direction: column; ') + 'font-family: ' + T.body,
+      inner: free
+        ? 'position: relative; height: ' + freeH + 'px; text-align: ' + T.align
+        : 'flex: 1 0 auto; display: flex; flex-direction: column; gap: 14px; padding: ' + T.framePad + '; border: ' + T.frame + '; border-left: ' + T.band + '; text-align: ' + T.align,
+      hasDecor
+    };
+  }
+
   renderVals() {
     const st = this.state;
     const inv = st.inv;
     const T = api.themeTokens(inv ? inv.theme : null);
-    const base = { T, isLoading: st.phase === 'loading', isError: st.phase === 'error', error: st.error, isClosed: false, isPages: false, noMusic: { kind: 'nenhuma' } };
+    const edit = !!this.props.edit;
+    const allPages = inv ? (inv.pages || []) : [];
+    const pages = edit ? allPages : allPages.filter((p) => p.blocks && (p.blocks.length || (p.bg && p.bg.url)));
+    const cur = (edit ? pages.find((p) => p.id === this.props.editPage) : pages.find((p) => p.id === st.page)) || pages[0] || { id: 'vazio', blocks: [] };
+    const free = !!cur.free;
+    const hasNav = !edit && pages.length > 1;
+    const L = this.layout(T, edit, free, cur, pages.length > 1);
+    const base = { T, L, isLoading: st.phase === 'loading', isError: st.phase === 'error', error: st.error, isClosed: false, isPages: false, noMusic: { kind: 'nenhuma' } };
     if (!inv) return base;
-
-    const pages = (inv.pages || []).filter((p) => p.blocks && (p.blocks.length || (p.bg && p.bg.url)));
-    const cur = pages.find((p) => p.id === st.page) || pages[0] || { id: 'vazio', blocks: [] };
     const goPage = (id) => this.setState({ page: id });
     const preview = !!this.props.preview;
     const lastIndex = {};
@@ -410,8 +442,9 @@ class Component extends DCLogic {
       const url = this.mediaUrl(x);
       const o = {
         key: cur.id + '-' + x.id,
-        animClass: x.anim && x.anim !== 'nenhuma' ? 'a-' + x.anim : '',
-        delay: (i * 0.08).toFixed(2) + 's',
+        id: x.id,
+        animClass: !edit && x.anim && x.anim !== 'nenhuma' ? 'a-' + x.anim : '',
+        wrap: (free && x.pos ? 'position: absolute; left: ' + Math.round(x.pos.x) + 'px; top: ' + Math.round(x.pos.y) + 'px; width: ' + Math.max(40, Math.round(x.pos.w)) + 'px; ' : '') + 'animation-delay: ' + (i * 0.08).toFixed(2) + 's',
         text: x.text || '', label: x.label || '', url: x.url || '', address: x.address || '',
         mediaUrl: url, hasMedia: !!url, noMedia: !url,
         ratio: x.type === 'foto' ? String(api.photo.ratio(x.edit, T.layout)) : '',
@@ -513,8 +546,8 @@ class Component extends DCLogic {
     });
     const cfg = this.musicCfg();
     return Object.assign(base, {
-      isClosed: st.phase === 'closed' || st.phase === 'opening',
-      isPages: st.phase === 'opening' || st.phase === 'pages',
+      isClosed: !edit && (st.phase === 'closed' || st.phase === 'opening'),
+      isPages: edit || st.phase === 'opening' || st.phase === 'pages',
       kicker: inv.kicker || '',
       coverTitle: inv.coverTitle || inv.title,
       dateDots: api.fmt.dots(inv.eventDate),
@@ -527,12 +560,12 @@ class Component extends DCLogic {
           subtitle: o.subtitle || api.fmt.dots(inv.eventDate)
         };
       })(),
-      blocks, nav, hasNav: pages.length > 1,
+      blocks, nav, hasNav,
       pageBg: (() => {
         const bg = cur.bg && cur.bg.url ? cur.bg : null;
         const dim = bg && typeof bg.dim === 'number' ? bg.dim : 35;
         return {
-          has: !!bg, key: 'bg-' + cur.id, url: bg ? bg.url : '',
+          has: !!bg && !edit, key: 'bg-' + cur.id, url: bg ? bg.url : '',
           imgStyle: bg ? api.photo.style(bg.edit, api.photo.pageRatio) : '',
           dimOpacity: String(dim / 100)
         };
@@ -540,7 +573,7 @@ class Component extends DCLogic {
       pageKey: cur.id,
       onOpen: () => { const ok = this.musicStart(); this.setState({ musicPlaying: ok, phase: 'opening' }); },
       onOpened: () => this.setState({ phase: 'pages' }),
-      hasMusic: st.phase === 'pages' && cfg.kind !== 'nenhuma',
+      hasMusic: !edit && st.phase === 'pages' && cfg.kind !== 'nenhuma',
       musicPlaying: st.musicPlaying, musicPaused: !st.musicPlaying,
       musicAria: st.musicPlaying ? 'Pausar música' : 'Tocar música',
       toggleMusic: () => {
