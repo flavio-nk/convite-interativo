@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Entrar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#F5F4F8}
+.fld{width:100%;box-sizing:border-box;min-height:48px;padding:12px 14px;border:1px solid #D6D3E0;border-radius:10px;background:#FFFFFF;color:#17151F;font:inherit;font-size:16px}
+.fld:focus{outline:2px solid #5B3FD6;outline-offset:1px;border-color:#5B3FD6}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F4F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box">
+  <form onSubmit="{{submit}}" style="width: 100%; max-width: 380px; background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 18px; padding: 32px 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="width: 36px; height: 36px; border-radius: 10px; background: #5B3FD6; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
+      </div>
+      <span style="font-weight: 700; font-size: 18px">Convite Interativo</span>
+    </div>
+    <div>
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700">Área do organizador</h1>
+      <p style="margin: 6px 0 0; color: #5E5A6B; font-size: 14px">Entre com a senha para criar e editar seus convites. Convidados não precisam de senha: eles abrem o convite pelo link.</p>
+    </div>
+    <div>
+      <label for="pw" style="display: block; font-size: 13px; font-weight: 600; color: #3D3A4A; margin-bottom: 6px">Senha</label>
+      <input class="fld" id="pw" type="password" autocomplete="current-password" value="{{password}}" onChange="{{onPassword}}">
+    </div>
+    <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
+      <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{error}}</p>
+    </sc-if>
+    <sc-if value="{{setupHint}}" hint-placeholder-val="{{ false }}">
+      <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FBEFD9; color: #6B3A00; font-size: 13px">A senha ainda não foi definida. No Vercel, abra o projeto › Settings › Environment Variables, crie a variável <strong>ADMIN_PASSWORD</strong> com a senha desejada e faça um novo deploy.</p>
+    </sc-if>
+    <button type="submit" disabled="{{busy}}" style="min-height: 48px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 16px; cursor: pointer">{{buttonLabel}}</button>
+  </form>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"me":{"editor":null},"onLogin":{"editor":null}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { password: '', error: '', busy: false };
+  }
+  renderVals() {
+    const st = this.state;
+    const me = this.props.me || {};
+    return {
+      password: st.password,
+      onPassword: (e) => this.setState({ password: e.target.value, error: '' }),
+      hasError: !!st.error,
+      error: st.error,
+      setupHint: me.passwordConfigured === false,
+      busy: st.busy,
+      buttonLabel: st.busy ? 'Entrando…' : 'Entrar',
+      submit: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (!st.password) { this.setState({ error: 'Digite a senha.' }); return; }
+        this.setState({ busy: true, error: '' });
+        api.login(st.password)
+          .then(() => { if (this.props.onLogin) this.props.onLogin(); })
+          .catch((err) => this.setState({ busy: false, error: err.message }));
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -170,7 +170,7 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"anim":{"editor":"enum","options":["envelope","cortina","portas","lacre","presente","livro","iris","neblina","nenhuma"],"default":"envelope"},"layout":{"editor":null},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"paper":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"showLink":{"editor":null},"music":{"editor":null},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"anim":{"editor":"enum","options":["envelope","cortina","portas","lacre","presente","livro","iris","neblina","nenhuma"],"default":"envelope"},"layout":{"editor":null},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"paper":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"showLink":{"editor":null},"music":{"editor":null},"onOpen":{"editor":null},"onOpened":{"editor":null},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -339,10 +339,14 @@ class Component extends DCLogic {
       contentScale: anim === 'neblina' ? T('scale(1.06)', 'scale(1)') : 'none',
       open: () => {
         if (this.state.phase !== 'closed') return;
+        if (typeof this.props.onOpen === 'function') this.props.onOpen();
         const playing = this.musicStart();
         this.setState({ phase: 'opening', musicPlaying: playing, musicError: false, hasMusic: playing });
         clearTimeout(this.t);
-        this.t = setTimeout(() => this.setState({ phase: 'open' }), durations[anim] || 0);
+        this.t = setTimeout(() => {
+          this.setState({ phase: 'open' });
+          if (typeof this.props.onOpened === 'function') this.props.onOpened();
+        }, durations[anim] || 0);
       },
       replay: () => {
         clearTimeout(this.t);

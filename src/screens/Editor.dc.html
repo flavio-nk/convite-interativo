@@ -22,6 +22,14 @@ button,input,select,textarea{font-family:inherit}
 .sec{margin:0;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#5E5A6B;font-weight:700}
 </style>
 </helmet>
+<div>
+<sc-if value="{{notReady}}" hint-placeholder-val="{{ false }}">
+  <div style="min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #3D3A4A; background: #ECEBF1; padding: 24px; text-align: center">
+    <p style="margin: 0; font-size: 16px">{{loadMessage}}</p>
+    <a href="#/Main" style="font-weight: 700; color: #4A32C4">Voltar para Meus convites</a>
+  </div>
+</sc-if>
+<sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
 <div style="min-height: 100vh; background: #ECEBF1; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5; display: flex; flex-direction: column">
 
   <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA">
@@ -47,6 +55,7 @@ button,input,select,textarea{font-family:inherit}
         <strong>Convite publicado.</strong>
         <span>Link para os convidados: <span style="font-family: ui-monospace, monospace; color: #14472D; word-break: break-all">{{guestLink}}</span></span>
         <button onClick="{{copyLink}}" style="min-height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9BCBB1; background: #FFFFFF; color: #1E6B43; font-weight: 600; font-size: 14px; cursor: pointer">Copiar link</button>
+        <a href="{{guestHref}}" target="_blank" rel="noopener" style="min-height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9BCBB1; background: #FFFFFF; color: #1E6B43; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; text-decoration: none">Abrir convite</a>
       </div>
     </sc-if>
   </header>
@@ -135,10 +144,10 @@ button,input,select,textarea{font-family:inherit}
                   </sc-if>
                   <sc-if value="{{b.isContagem}}" hint-placeholder-val="{{ false }}">
                     <span style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; text-align: center">
-                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">179</span><span style="font-size: 10px; opacity: 0.8">dias</span></span>
-                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">07</span><span style="font-size: 10px; opacity: 0.8">horas</span></span>
-                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">14</span><span style="font-size: 10px; opacity: 0.8">min</span></span>
-                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">32</span><span style="font-size: 10px; opacity: 0.8">seg</span></span>
+                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">{{b.cd.d}}</span><span style="font-size: 10px; opacity: 0.8">dias</span></span>
+                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">{{b.cd.h}}</span><span style="font-size: 10px; opacity: 0.8">horas</span></span>
+                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">{{b.cd.m}}</span><span style="font-size: 10px; opacity: 0.8">min</span></span>
+                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">{{b.cd.s}}</span><span style="font-size: 10px; opacity: 0.8">seg</span></span>
                     </span>
                   </sc-if>
                   <sc-if value="{{b.isMapa}}" hint-placeholder-val="{{ false }}">
@@ -146,7 +155,7 @@ button,input,select,textarea{font-family:inherit}
                       <span style="height: 120px; background: {{T.ph}}; display: flex; align-items: center; justify-content: center; color: {{T.accent}}">
                         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
                       </span>
-                      <span style="padding: 8px 10px; font-size: 13px; text-align: left">{{b.text}}</span>
+                      <span style="padding: 8px 10px; font-size: 13px; text-align: left; display: flex; flex-direction: column"><strong>{{b.text}}</strong><span style="opacity: 0.8">{{b.address}}</span></span>
                     </span>
                   </sc-if>
                   <sc-if value="{{b.isBotao}}" hint-placeholder-val="{{ false }}">
@@ -186,7 +195,7 @@ button,input,select,textarea{font-family:inherit}
     </main>
 
     <aside aria-label="Propriedades" style="flex: 1 1 320px; background: #FFFFFF; border-left: 1px solid #E3E1EA; padding: 16px 20px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
-      <div role="tablist" aria-label="Painel" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #F1EFF6">
+      <div role="tablist" aria-label="Painel" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #F1EFF6">
         <button role="tab" onClick="{{panelBlock}}" aria-selected="{{blockSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{blockTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Bloco</button>
         <button role="tab" onClick="{{panelTheme}}" aria-selected="{{themeSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{themeTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
           Tema
@@ -196,7 +205,27 @@ button,input,select,textarea{font-family:inherit}
           Música
           <sc-if value="{{mus.active}}" hint-placeholder-val="{{ true }}"><span aria-label="ativada" style="width: 8px; height: 8px; border-radius: 50%; background: #1E7A4C"></span></sc-if>
         </button>
+        <button role="tab" onClick="{{panelEvent}}" aria-selected="{{eventSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{eventTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Evento</button>
       </div>
+
+      <sc-if value="{{isEventPanel}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div>
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">Dados do evento</h2>
+            <p style="margin: 4px 0 0; font-size: 13px; color: #5E5A6B">Aparecem na abertura do convite, na contagem regressiva e no painel.</p>
+          </div>
+          <div>
+            <label class="lbl" for="ev-kicker">Chamada (ex.: Casamento, Aniversário)</label>
+            <input class="fld" id="ev-kicker" value="{{kicker}}" onChange="{{onKicker}}">
+          </div>
+          <div>
+            <label class="lbl" for="ev-date">Data e horário</label>
+            <input class="fld" id="ev-date" type="datetime-local" value="{{eventLocal}}" onChange="{{onEventDate}}">
+            <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{eventHint}}</span>
+          </div>
+          <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #F5F4F8; font-size: 13px; color: #3D3A4A">O nome principal do convite é o bloco Título da página Capa. Edite-o na aba Bloco.</p>
+        </div>
+      </sc-if>
 
       <sc-if value="{{isMusicPanel}}" hint-placeholder-val="{{ false }}">
         <div style="display: flex; flex-direction: column; gap: 18px">
@@ -323,8 +352,8 @@ button,input,select,textarea{font-family:inherit}
                   </div>
                   <sc-if value="{{sel.isVideo}}" hint-placeholder-val="{{ false }}">
                     <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px">
-                      <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Reproduzir automaticamente, sem som</label>
-                      <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Repetir ao terminar</label>
+                      <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked="{{sel.autoplay}}" onChange="{{f.autoplay}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Reproduzir automaticamente, sem som</label>
+                      <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked="{{sel.loopVid}}" onChange="{{f.loopVid}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Repetir ao terminar</label>
                     </div>
                   </sc-if>
                 </div>
@@ -348,9 +377,9 @@ button,input,select,textarea{font-family:inherit}
                   </div>
                   <div>
                     <label class="lbl" for="map-addr">Endereço</label>
-                    <input class="fld" id="map-addr" placeholder="Rua, número, bairro, cidade">
+                    <input class="fld" id="map-addr" placeholder="Rua, número, bairro, cidade" value="{{sel.address}}" onChange="{{f.address}}">
                   </div>
-                  <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #5B3FD6"> Mostrar botões “Google Maps” e “Waze”</label>
+                  <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked="{{sel.showRoutes}}" onChange="{{f.showRoutes}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Mostrar botões “Google Maps” e “Waze”</label>
                 </div>
               </sc-if>
 
@@ -358,11 +387,12 @@ button,input,select,textarea{font-family:inherit}
                 <div style="display: flex; flex-direction: column; gap: 12px">
                   <div>
                     <label class="lbl" for="cd-date">Contar até</label>
-                    <input class="fld" id="cd-date" type="datetime-local" value="2027-04-17T16:00">
+                    <input class="fld" id="cd-date" type="datetime-local" value="{{sel.targetLocal}}" onChange="{{f.target}}">
+                    <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Em branco, usa a data do evento (aba Evento).</span>
                   </div>
                   <div>
                     <label class="lbl" for="cd-end">Quando o evento começar, mostrar</label>
-                    <input class="fld" id="cd-end" value="O grande dia chegou!">
+                    <input class="fld" id="cd-end" value="{{sel.endText}}" onChange="{{f.endText}}">
                   </div>
                 </div>
               </sc-if>
@@ -375,16 +405,34 @@ button,input,select,textarea{font-family:inherit}
                   </div>
                   <div>
                     <label class="lbl" for="btn-action">Ao tocar</label>
-                    <select class="fld" id="btn-action">
-                      <option>Ir para outra página do convite</option>
-                      <option>Abrir link externo</option>
-                      <option>Abrir WhatsApp</option>
+                    <select class="fld" id="btn-action" value="{{sel.action}}" onChange="{{f.action}}">
+                      <option value="pagina">Ir para outra página do convite</option>
+                      <option value="link">Abrir link externo</option>
+                      <option value="whatsapp">Abrir conversa no WhatsApp</option>
                     </select>
                   </div>
-                  <div>
-                    <label class="lbl" for="btn-url">Destino</label>
-                    <input class="fld" id="btn-url" placeholder="Página ou endereço https://">
-                  </div>
+                  <sc-if value="{{sel.isActionPage}}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <label class="lbl" for="btn-page">Página</label>
+                      <select class="fld" id="btn-page" value="{{sel.dest}}" onChange="{{f.dest}}">
+                        <sc-for list="{{pageOptions}}" as="po" hint-placeholder-count="4">
+                          <option value="{{po.id}}">{{po.name}}</option>
+                        </sc-for>
+                      </select>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{sel.isActionLink}}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <label class="lbl" for="btn-url">Endereço</label>
+                      <input class="fld" id="btn-url" type="url" placeholder="https://" value="{{sel.dest}}" onChange="{{f.dest}}">
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{sel.isActionWa}}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <label class="lbl" for="btn-wa">Número com DDD</label>
+                      <input class="fld" id="btn-wa" type="tel" placeholder="(16) 99999-9999" value="{{sel.dest}}" onChange="{{f.dest}}">
+                    </div>
+                  </sc-if>
                 </div>
               </sc-if>
 
@@ -393,13 +441,21 @@ button,input,select,textarea{font-family:inherit}
                   <span class="lbl" style="margin: 0">Perguntas do formulário</span>
                   <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px">
                     <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked disabled style="width: 18px; height: 18px; accent-color: #5B3FD6"> Nome e resposta (obrigatórias)</label>
-                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #5B3FD6"> Número de acompanhantes</label>
-                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #5B3FD6"> Restrição alimentar</label>
-                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #5B3FD6"> Mensagem para os anfitriões</label>
+                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked="{{sel.askGuests}}" onChange="{{f.askGuests}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Número de acompanhantes</label>
+                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked="{{sel.askDiet}}" onChange="{{f.askDiet}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Restrição alimentar</label>
+                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked="{{sel.askMsg}}" onChange="{{f.askMsg}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Mensagem para os anfitriões</label>
                   </div>
                   <div>
                     <label class="lbl" for="rsvp-deadline">Prazo para responder</label>
-                    <input class="fld" id="rsvp-deadline" type="date" value="2027-03-17">
+                    <input class="fld" id="rsvp-deadline" type="date" value="{{sel.deadlineDate}}" onChange="{{f.deadline}}">
+                  </div>
+                  <sc-if value="{{sel.askGuests}}" hint-placeholder-val="{{ true }}">
+                    <div>
+                      <label class="lbl" for="rsvp-max">Máximo de acompanhantes por convidado</label>
+                      <input class="fld" id="rsvp-max" type="number" min="0" max="10" value="{{sel.maxGuests}}" onChange="{{f.maxGuests}}">
+                    </div>
+                  </sc-if>
+                  <div style="display: none">
                   </div>
                 </div>
               </sc-if>
@@ -567,12 +623,7 @@ button,input,select,textarea{font-family:inherit}
           <section style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #EEECF3; padding-top: 16px">
             <button onClick="{{saveAsTheme}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Salvar como novo tema</button>
             <button onClick="{{resetTheme}}" disabled="{{T.unmodified}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Restaurar tema {{T.baseName}}</button>
-            <sc-if value="{{inFlow}}" hint-placeholder-val="{{ false }}">
-              <button onClick="{{changeTheme}}" style="align-self: center; min-height: 40px; padding: 0 8px; border: 0; background: transparent; color: #4A32C4; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: underline">Trocar tema base</button>
-            </sc-if>
-            <sc-if value="{{notInFlow}}" hint-placeholder-val="{{ true }}">
-              <a href="Temas.dc.html" style="align-self: center; min-height: 40px; display: inline-flex; align-items: center; font-weight: 600; font-size: 14px">Trocar tema base</a>
-            </sc-if>
+            <button onClick="{{changeTheme}}" style="align-self: center; min-height: 40px; padding: 0 8px; border: 0; background: transparent; color: #4A32C4; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: underline">Trocar tema base</button>
           </section>
         </div>
       </sc-if>
@@ -582,12 +633,12 @@ button,input,select,textarea{font-family:inherit}
   <sc-if value="{{fullPreview}}" hint-placeholder-val="{{ false }}">
     <div role="dialog" aria-modal="true" aria-label="Pré-visualização do convite" style="position: fixed; inset: 0; z-index: 50; background: rgba(15, 14, 20, 0.94); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 12px; box-sizing: border-box">
       <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; color: #FFFFFF; font-size: 14px">
-        <span>Assim o convidado vê o convite · toque para abrir</span>
+        <span>Assim o convidado vê o convite · toque para abrir e navegue pelas páginas</span>
         <button onClick="{{closePreview}}" style="min-height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: #FFFFFF; color: #17151F; font-weight: 700; font-size: 14px; cursor: pointer">Fechar prévia</button>
       </div>
       <div style="width: {{pv.w}}; height: {{pv.h}}; border-radius: {{pv.r}}; overflow: hidden; flex: none; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5)">
         <div style="width: 390px; height: 844px; transform: scale({{pv.s}}); transform-origin: top left">
-          <dc-import name="Abertura" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{coverKicker}}" titulo="{{coverTitle}}" data="{{coverDate}}" btn-radius="{{T.radius}}" show-link="{{noLink}}" music="{{musicCfg}}" hint-size="390px,844px"></dc-import>
+          <dc-import name="Convite" invite="{{previewInvite}}" preview="{{ true }}" hint-size="390px,844px"></dc-import>
         </div>
       </div>
     </div>
@@ -600,14 +651,23 @@ button,input,select,textarea{font-family:inherit}
     </div>
   </sc-if>
 </div>
+</sc-if>
+</div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"initialTheme":{"editor":null},"onBack":{"editor":null},"onChangeTheme":{"editor":null},"$preview":{"width":1440,"height":1100}}'>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"initialTheme":{"editor":null},"$preview":{"width":1440,"height":1100}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     const b = (id, type, extra) => Object.assign({ id: id, type: type, text: '', label: '', src: 'upload', anim: 'nenhuma' }, extra);
     const it = props.initialTheme;
+    this.mk = b;
+    this.inviteId = (props.route && props.route.params && props.route.params.id) || null;
     this.state = {
+      loaded: !this.inviteId,
+      loadError: '',
+      saveState: 'idle',
+      eventDate: null,
+      themeBase: null,
       title: it ? 'Novo convite · ' + (it.name || it.baseName) : 'Casamento Ana & Pedro',
       kicker: it ? (it.kicker || 'Convite') : 'Casamento',
       date: it ? (it.date || 'Data do evento') : '17 · 04 · 2027',
@@ -653,6 +713,7 @@ class Component extends DCLogic {
   }
 
   baseTheme() {
+    if (this.state && this.state.themeBase) return Object.assign({}, this.state.themeBase);
     const it = this.props.initialTheme;
     if (it) {
       return {
@@ -808,9 +869,98 @@ class Component extends DCLogic {
     this.setState({ music: Object.assign({}, this.state.music, patch), previewing: '', previewError: false });
   }
 
+  componentDidMount() {
+    if (!this.inviteId) return;
+    api.getInvite(this.inviteId)
+      .then((inv) => this.applyInvite(inv))
+      .catch((e) => this.setState({ loadError: e.status === 404 ? 'Convite não encontrado.' : e.message }));
+    this.onBeforeUnload = () => this.flushSave();
+    window.addEventListener('beforeunload', this.onBeforeUnload);
+  }
+
+  applyInvite(inv) {
+    const b = this.mk;
+    const theme = Object.assign({}, this.baseTheme(), inv.theme || {});
+    const base = Object.assign({}, theme, inv.themeBase || inv.theme || {});
+    const pages = inv.pages && inv.pages.length ? inv.pages : this.newPages(b, { sample: inv.coverTitle || 'Título do evento' });
+    const music = Object.assign({ kind: 'biblioteca', preset: 'valsa', fileUrl: '', fileName: '', link: '', volume: 70, loop: true }, inv.music || {});
+    const maxId = pages.reduce((mx, p) => p.blocks.reduce((m2, x) => Math.max(m2, parseInt(String(x.id).replace(/\D/g, ''), 10) || 0), mx), 100);
+    this.createdAt = inv.createdAt;
+    this.setState({
+      loaded: true, title: inv.title || 'Novo convite', kicker: inv.kicker || 'Convite', eventDate: inv.eventDate || null,
+      published: inv.status === 'publicado', theme, themeBase: base, music, pages,
+      page: pages[0].id, sel: pages[0].blocks.length ? pages[0].blocks[0].id : null, next: maxId + 1,
+      saveState: inv.pages && inv.pages.length ? 'saved' : 'idle'
+    });
+    if (!inv.pages || !inv.pages.length) this.scheduleSave(50);
+  }
+
+  serialize(keepLocal) {
+    const st = this.state;
+    const strip = (u) => (!keepLocal && u && /^blob:/.test(u) ? '' : u);
+    const pages = st.pages.map((p) => Object.assign({}, p, {
+      blocks: p.blocks.map((x) => {
+        const o = Object.assign({}, x, { fileUrl: strip(x.fileUrl || '') });
+        if (!o.fileUrl && !keepLocal && x.fileUrl && /^blob:/.test(x.fileUrl)) o.fileName = '';
+        delete o.uploading; delete o.uploadPct;
+        return o;
+      })
+    }));
+    const music = Object.assign({}, st.music, { fileUrl: strip(st.music.fileUrl || '') });
+    delete music.uploading;
+    const capa = pages[0];
+    const cover = capa && capa.blocks.find((x) => x.type === 'titulo');
+    return {
+      id: this.inviteId, title: st.title, kicker: st.kicker, eventDate: st.eventDate, coverTitle: cover ? cover.text : st.title,
+      status: st.published ? 'publicado' : 'rascunho', theme: st.theme, themeBase: st.themeBase || this.baseTheme(), music, pages,
+      createdAt: this.createdAt
+    };
+  }
+
+  scheduleSave(delay) {
+    if (!this.inviteId) return;
+    clearTimeout(this.saveTimer);
+    this.dirty = true;
+    if (this.state.saveState !== 'saving') this.setState({ saveState: 'pending' });
+    this.saveTimer = setTimeout(() => this.doSave(), delay == null ? 700 : delay);
+  }
+
+  doSave(keepalive) {
+    if (!this.inviteId || !this.dirty) return Promise.resolve();
+    clearTimeout(this.saveTimer);
+    this.dirty = false;
+    const seq = (this.saveSeq = (this.saveSeq || 0) + 1);
+    if (!keepalive) this.setState({ saveState: 'saving' });
+    return api.saveInvite(this.inviteId, this.serialize(), { keepalive: !!keepalive })
+      .then(() => { if (!this.unmounted && seq === this.saveSeq && !this.dirty) this.setState({ saveState: 'saved' }); })
+      .catch(() => {
+        if (this.unmounted) return;
+        this.dirty = true;
+        this.setState({ saveState: 'error' });
+        clearTimeout(this.saveTimer);
+        this.saveTimer = setTimeout(() => this.doSave(), 4000);
+      });
+  }
+
+  flushSave() {
+    if (this.dirty) this.doSave(true);
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (!this.state.loaded || !prevState.loaded || !this.inviteId) return;
+    const keys = ['title', 'kicker', 'eventDate', 'theme', 'music', 'pages', 'published'];
+    if (keys.some((k) => prevState[k] !== this.state[k])) this.scheduleSave();
+  }
+
+  patchBlock(id, patch) {
+    this.setState((s) => ({ pages: s.pages.map((p) => Object.assign({}, p, { blocks: p.blocks.map((x) => (x.id === id ? Object.assign({}, x, patch) : x)) })) }));
+  }
+
   componentWillUnmount() {
+    this.unmounted = true;
     this.previewStop();
-    if (this.state.music.fileUrl) { try { URL.revokeObjectURL(this.state.music.fileUrl); } catch (e) {} }
+    if (this.onBeforeUnload) window.removeEventListener('beforeunload', this.onBeforeUnload);
+    this.flushSave();
   }
 
   meta() {
@@ -836,6 +986,17 @@ class Component extends DCLogic {
     this.setState({ pages: this.state.pages.map((p) => (p.id === pid ? Object.assign({}, p, { blocks: fn(p.blocks) }) : p)) });
   }
 
+  countdown(iso) {
+    const t = iso ? new Date(iso).getTime() : NaN;
+    if (isNaN(t)) return { d: '--', h: '--', m: '--', s: '--' };
+    let diff = Math.max(0, Math.floor((t - Date.now()) / 1000));
+    const d = Math.floor(diff / 86400); diff -= d * 86400;
+    const h = Math.floor(diff / 3600); diff -= h * 3600;
+    const mi = Math.floor(diff / 60);
+    const pad = (n) => (n < 10 ? '0' + n : String(n));
+    return { d: String(d), h: pad(h), m: pad(mi), s: pad(diff - mi * 60) };
+  }
+
   mediaUrl(b) {
     if (b.type !== 'foto' && b.type !== 'video') return '';
     if (b.src === 'upload') return b.fileUrl || '';
@@ -847,6 +1008,7 @@ class Component extends DCLogic {
   }
 
   guestLink() {
+    if (this.inviteId) return api.guestLink(this.inviteId);
     try {
       const o = window.location.origin;
       if (o && o !== 'null' && /^https?:/.test(o)) return o + window.location.pathname + '#/Abertura';
@@ -935,6 +1097,8 @@ class Component extends DCLogic {
         isMapa: x.type === 'mapa', isBotao: x.type === 'botao', isRsvp: x.type === 'rsvp',
         hasAnim: x.anim && x.anim !== 'nenhuma',
         mediaUrl: this.mediaUrl(x),
+        cd: this.countdown(x.target || st.eventDate),
+        address: x.address || '',
         hasMedia: x.type === 'foto' && !!this.mediaUrl(x),
         noMedia: !(x.type === 'foto' && this.mediaUrl(x)),
         isVideoPlayable: x.type === 'video' && !!this.mediaUrl(x),
@@ -995,7 +1159,7 @@ class Component extends DCLogic {
         url: s.url || '',
         accept: s.type === 'video' ? 'video/*' : 'image/*',
         dropTitle: s.fileName ? 'Trocar arquivo' : 'Toque para escolher um arquivo',
-        dropHint: s.fileName ? 'Atual: ' + s.fileName : (s.type === 'video' ? 'MP4, MOV ou WebM' : 'JPG, PNG, WebP ou GIF animado'),
+        dropHint: s.uploading ? 'Enviando ' + s.fileName + (s.uploadPct ? ' · ' + s.uploadPct + '%' : '…') : (s.fileName ? 'Salvo: ' + s.fileName : (s.type === 'video' ? 'MP4, MOV ou WebM, até 100 MB' : 'JPG, PNG, WebP ou GIF animado')),
         linkWarn: s.src === 'link' && !!s.url && !this.mediaUrl(s),
         linkWarnText: /youtube\.com|youtu\.be|vimeo\.com|drive\.google\.com|instagram\.com/i.test(s.url || '')
           ? 'Links de páginas (YouTube, Vimeo, Drive, Instagram) não podem ser exibidos dentro do convite. Envie o arquivo ou use um link direto para ele.'
@@ -1003,7 +1167,14 @@ class Component extends DCLogic {
         isTextual: s.type === 'titulo' || s.type === 'texto' || s.type === 'orientacoes',
         isOrient: s.type === 'orientacoes',
         textLabel: s.type === 'orientacoes' ? 'Orientações' : (s.type === 'titulo' ? 'Título' : 'Texto'),
-        isMapa: s.type === 'mapa', isContagem: s.type === 'contagem', isBotao: s.type === 'botao', isRsvp: s.type === 'rsvp'
+        isMapa: s.type === 'mapa', isContagem: s.type === 'contagem', isBotao: s.type === 'botao', isRsvp: s.type === 'rsvp',
+        autoplay: !!s.autoplay, loopVid: !!s.loopVid,
+        address: s.address || '', showRoutes: s.showRoutes !== false,
+        targetLocal: api.fmt.toLocalInput(s.target || ''), endText: s.endText == null ? 'O grande dia chegou!' : s.endText,
+        action: s.action || 'pagina', dest: s.dest || '',
+        isActionPage: (s.action || 'pagina') === 'pagina', isActionLink: s.action === 'link', isActionWa: s.action === 'whatsapp',
+        askGuests: s.askGuests !== false, askDiet: s.askDiet !== false, askMsg: s.askMsg !== false,
+        maxGuests: String(s.maxGuests == null ? 2 : s.maxGuests), deadlineDate: api.fmt.toDateInput(s.deadline || '')
       });
     }
 
@@ -1057,7 +1228,7 @@ class Component extends DCLogic {
     const mus = {
       active: cfg.kind !== 'nenhuma',
       isBiblioteca: m.kind === 'biblioteca', isArquivo: m.kind === 'arquivo', isLink: m.kind === 'link',
-      fileLine: m.fileName ? 'Selecionado: ' + m.fileName : 'MP3, M4A, OGG ou WAV.',
+      fileLine: m.uploading ? 'Enviando ' + m.fileName + '…' : (m.fileName ? 'Salvo: ' + m.fileName : 'MP3, M4A, OGG ou WAV, até 100 MB.'),
       link: m.link,
       streamWarning: /youtube\.com|youtu\.be|spotify\.com|deezer\.com/i.test(m.link),
       hasCustomPreview: m.kind === 'arquivo' || m.kind === 'link',
@@ -1095,9 +1266,17 @@ class Component extends DCLogic {
       onMediaFile: (e) => {
         const f = e.target.files && e.target.files[0];
         if (!f) return;
-        const cur = cur0.blocks.find((x) => x.id === st.sel);
-        if (cur && cur.fileUrl) { try { URL.revokeObjectURL(cur.fileUrl); } catch (err) {} }
-        this.patchSel({ src: 'upload', fileUrl: URL.createObjectURL(f), fileName: f.name, label: cur && cur.label && !/^(Nova foto|Novo vídeo|Foto \d)$/.test(cur.label) ? cur.label : f.name.replace(/\.[^.]+$/, '') });
+        const bid = st.sel;
+        const cur = cur0.blocks.find((x) => x.id === bid);
+        const local = URL.createObjectURL(f);
+        const label = cur && cur.label && !/^(Nova foto|Novo vídeo|Foto \d|Foto principal)$/.test(cur.label) ? cur.label : f.name.replace(/\.[^.]+$/, '');
+        this.patchBlock(bid, { src: 'upload', fileUrl: local, fileName: f.name, label, uploading: true, uploadPct: 0 });
+        api.upload(f, (pct) => this.patchBlock(bid, { uploadPct: pct }))
+          .then((r) => this.patchBlock(bid, { fileUrl: r.url, uploading: false }))
+          .catch((err) => {
+            this.patchBlock(bid, { fileUrl: '', fileName: '', uploading: false });
+            this.setState({ toast: 'Não foi possível enviar o arquivo: ' + err.message });
+          });
       },
       onMediaUrl: (e) => this.patchSel({ url: e.target.value }),
       onBackClick: () => {
@@ -1106,18 +1285,53 @@ class Component extends DCLogic {
       },
       changeTheme: () => {
         this.previewStop();
-        if (inFlow) this.props.onChangeTheme();
+        if (!this.inviteId) { api.navigate('Temas'); return; }
+        Promise.resolve(this.dirty ? this.doSave() : null).then(() => api.navigate('Temas?invite=' + this.inviteId));
       },
       coverKicker: st.kicker,
       coverTitle: coverBlock ? coverBlock.text : st.title,
-      coverDate: st.date,
+      coverDate: st.eventDate ? api.fmt.dots(st.eventDate) : (st.date || ''),
+      ready: st.loaded, notReady: !st.loaded,
+      loadMessage: st.loadError || 'Carregando convite…',
+      guestHref: this.inviteId ? '#/c/' + this.inviteId : '#/Main',
+      previewInvite: this.serialize(true),
+      kicker: st.kicker,
+      onKicker: (e) => this.setState({ kicker: e.target.value }),
+      eventLocal: api.fmt.toLocalInput(st.eventDate),
+      onEventDate: (e) => this.setState({ eventDate: api.fmt.fromLocalInput(e.target.value) }),
+      eventHint: st.eventDate ? 'Na abertura: ' + api.fmt.dots(st.eventDate) + ' · ' + api.fmt.long(st.eventDate) : 'Defina a data para ativar a contagem regressiva.',
+      isEventPanel: st.panel === 'evento',
+      eventSelected: st.panel === 'evento' ? 'true' : 'false',
+      eventTabBg: st.panel === 'evento' ? '#FFFFFF' : 'transparent',
+      panelEvent: () => this.setState({ panel: 'evento' }),
+      pageOptions: st.pages.map((p) => ({ id: p.id, name: p.name })),
+      f: {
+        autoplay: () => this.patchSel({ autoplay: !(s && s.autoplay) }),
+        loopVid: () => this.patchSel({ loopVid: !(s && s.loopVid) }),
+        address: (e) => this.patchSel({ address: e.target.value }),
+        showRoutes: () => this.patchSel({ showRoutes: !(s && s.showRoutes !== false) }),
+        target: (e) => this.patchSel({ target: api.fmt.fromLocalInput(e.target.value) }),
+        endText: (e) => this.patchSel({ endText: e.target.value }),
+        action: (e) => this.patchSel({ action: e.target.value, dest: e.target.value === 'pagina' ? (st.pages[1] ? st.pages[1].id : st.pages[0].id) : '' }),
+        dest: (e) => this.patchSel({ dest: e.target.value }),
+        askGuests: () => this.patchSel({ askGuests: !(s && s.askGuests !== false) }),
+        askDiet: () => this.patchSel({ askDiet: !(s && s.askDiet !== false) }),
+        askMsg: () => this.patchSel({ askMsg: !(s && s.askMsg !== false) }),
+        deadline: (e) => this.patchSel({ deadline: api.fmt.fromDateInput(e.target.value) }),
+        maxGuests: (e) => this.patchSel({ maxGuests: Math.max(0, Math.min(10, parseInt(e.target.value, 10) || 0)) })
+      },
       musicCfg: cfg,
       mus, presets, musicKinds,
       onFile: (e) => {
         const f = e.target.files && e.target.files[0];
         if (!f) return;
-        if (m.fileUrl) { try { URL.revokeObjectURL(m.fileUrl); } catch (err) {} }
-        this.setMusic({ kind: 'arquivo', fileUrl: URL.createObjectURL(f), fileName: f.name });
+        const local = URL.createObjectURL(f);
+        this.setMusic({ kind: 'arquivo', fileUrl: local, fileName: f.name, uploading: true });
+        api.upload(f).then((r) => {
+          this.setState((s) => ({ music: Object.assign({}, s.music, { fileUrl: r.url, uploading: false }) }));
+        }).catch((err) => {
+          this.setState((s) => ({ music: Object.assign({}, s.music, { fileUrl: '', fileName: '', uploading: false }), toast: 'Não foi possível enviar a música: ' + err.message }));
+        });
       },
       onLink: (e) => this.setMusic({ link: e.target.value }),
       onVolume: (e) => this.setMusic({ volume: Number(e.target.value) }),
@@ -1128,7 +1342,7 @@ class Component extends DCLogic {
       paletteHint: curPal ? 'Paleta atual: ' + curPal.label + ' (' + curPal.group + ')' : 'Cores personalizadas · escolha uma paleta ou ajuste abaixo',
       title: st.title,
       onTitle: (e) => this.setState({ title: e.target.value }),
-      statusLine: (st.published ? 'Publicado' : 'Rascunho') + ' · tema ' + T.baseName + (T.modified ? ' (personalizado)' : '') + ' · música: ' + musicLabel,
+      statusLine: (st.published ? 'Publicado' : 'Rascunho') + ' · ' + ({ idle: 'tema ' + T.baseName, pending: 'alterações não salvas…', saving: 'salvando…', saved: 'todas as alterações salvas', error: 'erro ao salvar, tentando de novo…' }[st.saveState] || '') + ' · música: ' + musicLabel,
       published: st.published,
       publishLabel: st.published ? 'Despublicar' : 'Publicar',
       publishBg: st.published ? '#ECEAF3' : '#5B3FD6',
@@ -1174,7 +1388,12 @@ class Component extends DCLogic {
       onRadius: (e) => this.patchTheme({ radiusKey: e.target.value }),
       onOpenAnim: (e) => { this.patchTheme({ anim: e.target.value }); this.setState({ view: 'opening' }); },
       resetTheme: () => this.setState({ theme: this.baseTheme(), toast: 'Tema ' + T.baseName + ' restaurado neste convite.' }),
-      saveAsTheme: () => this.setState({ toast: 'Tema salvo em Meus temas como “' + T.baseName + ' personalizado”.' }),
+      saveAsTheme: () => {
+        const th = st.theme;
+        api.saveTheme({ name: T.baseName + ' personalizado', cat: st.kicker || 'Casamento', bg: th.bg, fg: th.fg, accent: th.accent, btnFg: th.btnFg, paper: th.paper, ph: th.ph, fontKey: th.fontKey, italic: th.italic, layout: th.layout, radiusKey: th.radiusKey, anim: th.anim })
+          .then((t) => this.setState({ toast: 'Tema salvo em Meus temas como “' + t.name + '”.' }))
+          .catch((e) => this.setState({ toast: 'Não foi possível salvar o tema: ' + e.message }));
+      },
       hasToast: !!st.toast,
       toast: st.toast,
       closeToast: () => this.setState({ toast: '' }),

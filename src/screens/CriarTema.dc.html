@@ -28,7 +28,7 @@ button,input,select{font-family:inherit}
 
   <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA; position: sticky; top: 0; z-index: 5">
     <div style="max-width: 1320px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
-      <a href="Temas.dc.html" onClick="{{exitClick}}" aria-label="Voltar para temas" style="width: 44px; height: 44px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #17151F">
+      <a href="Temas.dc.html" aria-label="Voltar para temas" style="width: 44px; height: 44px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #17151F">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
       </a>
       <div style="flex: 1 1 240px; display: flex; flex-direction: column; line-height: 1.3">
@@ -36,15 +36,28 @@ button,input,select{font-family:inherit}
         <span style="font-size: 18px; font-weight: 700">{{name}}</span>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 8px">
-        <a href="Temas.dc.html" onClick="{{exitClick}}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; color: #17151F; font-weight: 600; text-decoration: none">Cancelar</a>
-        <button onClick="{{save}}" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">Salvar tema</button>
+        <a href="Temas.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; color: #17151F; font-weight: 600; text-decoration: none">Cancelar</a>
+        <sc-if value="{{editing}}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{askDelete}}" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; font-weight: 600; font-size: 15px; cursor: pointer">Excluir tema</button>
+        </sc-if>
+        <button onClick="{{save}}" disabled="{{busy}}" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">{{saveLabel}}</button>
       </div>
     </div>
+    <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="background: #FDECEA; color: #8C1D13; padding: 10px 24px; font-size: 14px; text-align: center">{{error}}</div>
+    </sc-if>
+    <sc-if value="{{confirmingDelete}}" hint-placeholder-val="{{ false }}">
+      <div role="alert" style="background: #FDECEA; color: #8C1D13; padding: 10px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; font-size: 14px">
+        <strong>Excluir o tema “{{name}}”?</strong> Convites que já usam este tema não mudam.
+        <button onClick="{{confirmDelete}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 0; background: #B42318; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">Excluir</button>
+        <button onClick="{{cancelDelete}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #8C1D13; font-weight: 700; font-size: 14px; cursor: pointer">Cancelar</button>
+      </div>
+    </sc-if>
     <sc-if value="{{saved}}" hint-placeholder-val="{{ false }}">
       <div role="status" style="background: #E3F3EA; color: #1E6B43; padding: 10px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; font-size: 14px">
         <strong>Tema “{{name}}” salvo em Meus temas.</strong>
-        <button onClick="{{useInInvite}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #9BCBB1; background: #FFFFFF; color: #14472D; font-weight: 700; font-size: 14px; cursor: pointer">Usar em um novo convite</button>
-        <a href="Temas.dc.html" onClick="{{exitClick}}" style="color: #14472D; font-weight: 700">Ver Meus temas</a>
+        <button onClick="{{useInInvite}}" disabled="{{busy}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #9BCBB1; background: #FFFFFF; color: #14472D; font-weight: 700; font-size: 14px; cursor: pointer">Usar em um novo convite</button>
+        <a href="Temas.dc.html" style="color: #14472D; font-weight: 700">Ver Meus temas</a>
       </div>
     </sc-if>
   </header>
@@ -230,25 +243,32 @@ button,input,select{font-family:inherit}
   </div>
 </div>
 </sc-if>
-<sc-if value="{{isEditorStep}}" hint-placeholder-val="{{ false }}">
-  <dc-import name="Editor" initial-theme="{{payload}}" on-back="{{editorBack}}" on-change-theme="{{editorChangeTheme}}" hint-size="100%,1100px"></dc-import>
-</sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"initialTheme":{"editor":null},"onExit":{"editor":null},"onBack":{"editor":null},"$preview":{"width":1440,"height":1500}}'>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"$preview":{"width":1440,"height":1500}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    const it = props.initialTheme;
-    const fromIt = it ? {
-      name: it.name, cat: it.cat || 'Casamento', bg: it.bg, fg: it.fg, accent: it.accent, btnFg: it.btnFg, paper: it.paper, ph: it.ph,
-      fontKey: it.fontKey || 'cormorant', italic: !!it.italic, layout: it.layout, anim: it.anim, radiusKey: it.radiusKey || 'pilula', titleScale: it.titleScale || 1
-    } : {};
+    const id = props.route && props.route.params && props.route.params.id;
     this.state = Object.assign(
-      { name: 'Meu tema', cat: 'Casamento', base: 'jardim', tab: 'capa', saved: false, bodyKey: 'jakarta', titleScale: 1, italic: false, radiusKey: 'pilula', step: 'form', editing: !!it },
-      this.presets().jardim,
-      fromIt
+      { name: 'Meu tema', cat: 'Casamento', base: 'jardim', tab: 'capa', saved: false, bodyKey: 'jakarta', titleScale: 1, italic: false, radiusKey: 'pilula', step: 'form', themeId: id || null, editing: !!id, busy: false, error: '', confirmingDelete: false },
+      this.presets().jardim
     );
+  }
+  componentDidMount() {
+    if (!this.state.themeId) return;
+    api.getTheme(this.state.themeId).then((t) => this.setState({
+      name: t.name, cat: t.cat || 'Casamento', bg: t.bg, fg: t.fg, accent: t.accent, btnFg: t.btnFg, paper: t.paper, ph: t.ph,
+      fontKey: t.fontKey || 'cormorant', bodyKey: t.bodyKey || 'jakarta', italic: !!t.italic, layout: t.layout || 'centro',
+      anim: t.anim || 'envelope', radiusKey: t.radiusKey || 'pilula', titleScale: t.titleScale || 1
+    })).catch((e) => this.setState({ error: e.message }));
+  }
+  themeData() {
+    const st = this.state;
+    return {
+      id: st.themeId || undefined, name: st.name, cat: st.cat, bg: st.bg, fg: st.fg, accent: st.accent, btnFg: st.btnFg, paper: st.paper, ph: st.ph,
+      fontKey: st.fontKey, bodyKey: st.bodyKey, italic: st.italic, layout: st.layout, radiusKey: st.radiusKey, anim: st.anim, titleScale: st.titleScale
+    };
   }
   palettes() {
     const p = (group, label, bg, fg, accent, btnFg, paper, ph) => ({ group, label, bg, fg, accent, btnFg, paper, ph });
@@ -389,12 +409,25 @@ class Component extends DCLogic {
       bg: st.bg, fg: st.fg, accent: st.accent, btnFg: st.btnFg, paper: st.paper, ph: st.ph,
       colors, paletteGroups, randomPalette, layouts, anims, shapes,
       modeLabel: st.editing ? 'Editar tema' : 'Criar tema',
-      isFormStep: st.step === 'form',
-      isEditorStep: st.step === 'editor',
+      isFormStep: true,
       payload,
-      useInInvite: () => this.setState({ step: 'editor' }),
-      exitClick: () => { if (typeof this.props.onExit === 'function') this.props.onExit(); },
-      editorBack: () => { this.setState({ step: 'form' }); if (typeof this.props.onBack === 'function') this.props.onBack(); },
+      useInInvite: () => {
+        this.setState({ busy: true, error: '' });
+        api.createInvite({ title: 'Novo convite · ' + st.name, kicker: st.cat, coverTitle: 'Título do evento', status: 'rascunho', theme: payload, themeBase: payload })
+          .then((inv) => api.navigate('Editor/' + inv.id))
+          .catch((e) => this.setState({ busy: false, error: e.message }));
+      },
+      editing: st.editing,
+      busy: st.busy,
+      hasError: !!st.error, error: st.error,
+      saveLabel: st.busy ? 'Salvando…' : 'Salvar tema',
+      confirmingDelete: st.confirmingDelete,
+      askDelete: () => this.setState({ confirmingDelete: true }),
+      cancelDelete: () => this.setState({ confirmingDelete: false }),
+      confirmDelete: () => {
+        this.setState({ busy: true });
+        api.deleteTheme(st.themeId).then(() => api.navigate('Temas')).catch((e) => this.setState({ busy: false, error: e.message }));
+      },
       editorChangeTheme: () => this.setState({ step: 'form' }),
       noMusic: { kind: 'nenhuma' },
       lowContrast: !!msg, contrastMsg: msg,
@@ -417,7 +450,13 @@ class Component extends DCLogic {
       showAbertura: () => this.setState({ tab: 'abertura' }),
       previewHint: isCapa ? 'Prévia da primeira página com o layout escolhido.' : 'Toque no convite para ver a abertura. Use “Rever abertura” para repetir.',
       noLink: false,
-      save: () => this.setState({ saved: true })
+      save: () => {
+        if (!st.name.trim()) { this.setState({ error: 'Dê um nome ao tema.' }); return; }
+        this.setState({ busy: true, error: '' });
+        api.saveTheme(this.themeData())
+          .then((t) => this.setState({ busy: false, saved: true, themeId: t.id, editing: true }))
+          .catch((e) => this.setState({ busy: false, error: e.message }));
+      }
     };
   }
 }

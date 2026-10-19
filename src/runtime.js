@@ -1,6 +1,7 @@
 // Motor que interpreta as telas no formato .dc.html (template + classe de lógica)
 // e as renderiza com Preact, fora do canvas de design.
 import React from 'preact/compat';
+import { api } from './api.js';
 
 const h = React.createElement;
 const Fragment = React.Fragment;
@@ -210,7 +211,7 @@ function renderNode(node, scope, def) {
     const href = props.href;
     const m = href.match(/([A-Za-z0-9_-]+)\.dc\.html$/);
     if (m) {
-      const target = m[1];
+      const target = m[1] === 'Main' ? 'Main' : m[1];
       const orig = props.onClick;
       props.href = '#/' + target;
       props.onClick = (e) => {
@@ -246,7 +247,7 @@ export function getComponent(name) {
   let C;
   try {
     // eslint-disable-next-line no-new-func
-    C = new Function('DCLogic', def.code + '\n;return Component;')(DCLogic);
+    C = new Function('DCLogic', 'api', def.code + '\n;return Component;')(DCLogic, api);
   } catch (e) {
     console.error('Erro ao carregar a tela ' + name, e);
     C = class extends DCLogic { renderVals() { return {}; } };

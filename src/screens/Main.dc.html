@@ -32,7 +32,7 @@ button{font-family:inherit}
         <a href="Temas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Temas</a>
         <a href="Respostas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Respostas</a>
       </nav>
-      <div aria-label="Sua conta" style="width: 36px; height: 36px; border-radius: 50%; background: #17151F; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px">F</div>
+      <button onClick="{{logout}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Sair</button>
     </div>
   </header>
 
@@ -58,7 +58,7 @@ button{font-family:inherit}
       <sc-for list="{{invites}}" as="inv" hint-placeholder-count="5">
         <article style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column">
           <div style="height: 150px; background: {{inv.bg}}; color: {{inv.fg}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; position: relative">
-            <span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; font-weight: 500; line-height: 1">{{inv.monogram}}</span>
+            <span style="font-family: {{inv.font}}; font-size: 34px; font-weight: 500; line-height: 1.05; padding: 0 16px; text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; box-sizing: border-box">{{inv.monogram}}</span>
             <span style="font-size: 11px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 600">Tema {{inv.theme}}</span>
             <span style="position: absolute; top: 12px; left: 12px; padding: 3px 10px; border-radius: 999px; background: {{inv.badgeBg}}; color: {{inv.badgeFg}}; font-size: 12px; font-weight: 700">{{inv.status}}</span>
           </div>
@@ -74,11 +74,11 @@ button{font-family:inherit}
             </div>
           </div>
           <div style="display: flex; flex-wrap: wrap; gap: 4px; padding: 10px 12px 14px; border-top: 1px solid #EEECF3; margin-top: 10px">
-            <a class="act" href="Abertura.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
+            <a class="act" href="{{inv.viewHref}}" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>Ver</a>
-            <a class="act" href="Editor.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
+            <a class="act" href="{{inv.editHref}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>Editar</a>
-            <a class="act" href="Respostas.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
+            <a class="act" href="{{inv.rsvpHref}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"></path><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"></path></svg>Respostas</a>
             <button class="act" onClick="{{inv.askDelete}}" aria-label="Excluir {{inv.title}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; margin-left: auto; border-radius: 8px; border: 0; background: transparent; color: #B42318; font-size: 14px; font-weight: 600; cursor: pointer">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>Excluir</button>
@@ -87,9 +87,15 @@ button{font-family:inherit}
       </sc-for>
     </div>
 
+    <sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+      <p style="margin: 32px 0; color: #5E5A6B">Carregando convites…</p>
+    </sc-if>
+    <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
+      <p role="alert" style="margin: 24px 0 0; padding: 12px 14px; border-radius: 10px; background: #FDECEA; color: #8C1D13">{{error}} <button onClick="{{reload}}" style="border: 0; background: transparent; color: #8C1D13; font-weight: 700; text-decoration: underline; cursor: pointer; font-size: 15px">Tentar de novo</button></p>
+    </sc-if>
     <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
       <div style="margin-top: 24px; padding: 48px 24px; border: 1px dashed #CFCBDB; border-radius: 16px; text-align: center; color: #5E5A6B">
-        <p style="margin: 0 0 16px; font-size: 16px">Nenhum convite nesta situação.</p>
+        <p style="margin: 0 0 16px; font-size: 16px">{{emptyText}}</p>
         <a href="Temas.dc.html" style="font-weight: 600">Criar um convite</a>
       </div>
     </sc-if>
@@ -98,7 +104,7 @@ button{font-family:inherit}
   <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #17151F; color: #FFFFFF; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 16px">
       {{toastText}}
-      <button onClick="{{undo}}" style="border: 0; background: transparent; color: #C9BEFF; font-weight: 700; font-size: 14px; cursor: pointer; min-height: 32px">Desfazer</button>
+      <button onClick="{{undo}}" disabled="{{busy}}" style="border: 0; background: transparent; color: #C9BEFF; font-weight: 700; font-size: 14px; cursor: pointer; min-height: 32px">Desfazer</button>
     </div>
   </sc-if>
 
@@ -112,76 +118,105 @@ button{font-family:inherit}
         <p style="margin: 0; color: #5E5A6B">O link deixará de funcionar para os convidados e as respostas de presença serão apagadas. Você pode exportar as respostas antes de excluir.</p>
         <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; margin-top: 8px">
           <button onClick="{{cancelDelete}}" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">Cancelar</button>
-          <button onClick="{{confirmDelete}}" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #B42318; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">Excluir convite</button>
+          <button onClick="{{confirmDelete}}" disabled="{{busy}}" style="min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #B42318; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">Excluir convite</button>
         </div>
       </div>
     </div>
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1000}}'>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"onLogout":{"editor":null},"$preview":{"width":1280,"height":1000}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { filter: 'Todos', deleted: [], pending: null, lastDeleted: null };
+    this.state = { filter: 'Todos', items: null, error: '', pending: null, lastDeleted: null, busy: false };
+  }
+  componentDidMount() { this.load(); }
+  componentWillUnmount() { clearTimeout(this.toastTimer); }
+  load() {
+    this.setState({ error: '' });
+    api.listInvites()
+      .then((items) => this.setState({ items }))
+      .catch((e) => this.setState({ items: [], error: e.message }));
+  }
+  status(i) {
+    if (i.status === 'publicado' && api.fmt.isPast(i.eventDate)) return 'Encerrado';
+    return i.status === 'publicado' ? 'Publicado' : 'Rascunho';
+  }
+  monogram(t) {
+    const s = String(t || '').trim();
+    if (s.indexOf('&') !== -1) {
+      const w = s.split(/\s+/).filter((x) => x && x !== '&' && x.toLowerCase() !== 'e');
+      if (w.length >= 2) return w[0][0].toUpperCase() + ' & ' + w[w.length - 1][0].toUpperCase();
+    }
+    return s.length > 18 ? s.slice(0, 17) + '…' : s;
   }
   renderVals() {
-    const all = [
-      { id: 'casamento', title: 'Casamento Ana & Pedro', date: 'Sáb, 17 abr 2027 · 16h', theme: 'Jardim', status: 'Publicado', rsvp: '86 vão · 6 não vão', bg: '#1F3329', fg: '#F3EEE4', monogram: 'A & P' },
-      { id: 'aniversario', title: '40 anos da Carla', date: 'Sex, 12 mar 2027 · 20h', theme: 'Festa', status: 'Publicado', rsvp: '41 vão · 3 não vão', bg: '#C2361F', fg: '#FFF4EE', monogram: '40' },
-      { id: 'parceiros', title: 'Encontro anual de parceiros', date: 'Qui, 25 fev 2027 · 9h', theme: 'Corporativo', status: 'Rascunho', rsvp: 'Ainda não publicado', bg: '#1F3A5F', fg: '#EAF0F7', monogram: 'EAP' },
-      { id: 'cha', title: 'Chá de bebê do Theo', date: 'Dom, 15 nov 2026 · 15h', theme: 'Delicado', status: 'Publicado', rsvp: '28 vão · 2 não vão', bg: '#EBDDD3', fg: '#4A3328', monogram: 'Theo' },
-      { id: 'formatura', title: 'Formatura Turma 2026', date: 'Sáb, 3 out 2026 · 21h', theme: 'Clássico', status: 'Encerrado', rsvp: '210 vão · 18 não vão', bg: '#222026', fg: '#E9E2CF', monogram: '2026' }
-    ];
-    const badge = {
-      'Publicado': ['#E3F3EA', '#1E6B43'],
-      'Rascunho': ['#FBEFD9', '#8A4B00'],
-      'Encerrado': ['#ECEBF0', '#4A4757']
-    };
+    const st = this.state;
+    const all = st.items || [];
+    const fonts = { cormorant: "'Cormorant Garamond', Georgia, serif", playfair: "'Playfair Display', Georgia, serif", bodoni: "'Bodoni Moda', Georgia, serif", dmserif: "'DM Serif Display', Georgia, serif", italiana: "'Italiana', serif", greatvibes: "'Great Vibes', cursive", caveat: "'Caveat', cursive", bricolage: "'Bricolage Grotesque', sans-serif", syne: "'Syne', sans-serif", josefin: "'Josefin Sans', sans-serif", jakarta: "'Plus Jakarta Sans', sans-serif" };
+    const badge = { 'Publicado': ['#E3F3EA', '#1E6B43'], 'Rascunho': ['#FBEFD9', '#8A4B00'], 'Encerrado': ['#ECEBF0', '#4A4757'] };
     const filterMap = { 'Todos': null, 'Publicados': 'Publicado', 'Rascunhos': 'Rascunho', 'Encerrados': 'Encerrado' };
-    const alive = all.filter((i) => this.state.deleted.indexOf(i.id) === -1);
-    const want = filterMap[this.state.filter];
-    const invites = alive
-      .filter((i) => !want || i.status === want)
-      .map((i) => ({
-        ...i,
-        badgeBg: badge[i.status][0],
-        badgeFg: badge[i.status][1],
-        askDelete: () => this.setState({ pending: i.id })
-      }));
+    const want = filterMap[st.filter];
+    const invites = all
+      .map((i) => Object.assign({}, i, { statusLabel: this.status(i) }))
+      .filter((i) => !want || i.statusLabel === want)
+      .map((i) => {
+        const r = i.rsvp || { total: 0, yes: 0, no: 0 };
+        const th = i.theme || {};
+        return {
+          id: i.id,
+          title: i.title,
+          status: i.statusLabel,
+          theme: i.themeName || 'Personalizado',
+          bg: th.bg || '#1F3329', fg: th.fg || '#F3EEE4',
+          font: fonts[th.font] || fonts.cormorant,
+          monogram: this.monogram(i.coverTitle || i.title),
+          date: api.fmt.card(i.eventDate),
+          rsvp: i.status !== 'publicado' && r.total === 0 ? 'Ainda não publicado' : (r.total === 0 ? 'Nenhuma resposta ainda' : r.yes + ' vão · ' + r.no + ' não vão'),
+          badgeBg: badge[i.statusLabel][0], badgeFg: badge[i.statusLabel][1],
+          viewHref: '#/c/' + i.id,
+          editHref: '#/Editor/' + i.id,
+          rsvpHref: '#/Respostas/' + i.id,
+          askDelete: () => this.setState({ pending: i.id })
+        };
+      });
     const pills = ['Todos', 'Publicados', 'Rascunhos', 'Encerrados'].map((label) => {
-      const on = label === this.state.filter;
-      return {
-        label,
-        pressed: on ? 'true' : 'false',
-        bg: on ? '#17151F' : '#FFFFFF',
-        fg: on ? '#FFFFFF' : '#17151F',
-        border: on ? '#17151F' : '#D6D3E0',
-        pick: () => this.setState({ filter: label })
-      };
+      const on = label === st.filter;
+      return { label, pressed: on ? 'true' : 'false', bg: on ? '#17151F' : '#FFFFFF', fg: on ? '#FFFFFF' : '#17151F', border: on ? '#17151F' : '#D6D3E0', pick: () => this.setState({ filter: label }) };
     });
-    const pendingItem = all.find((i) => i.id === this.state.pending);
-    const last = all.find((i) => i.id === this.state.lastDeleted);
-    const n = alive.length;
+    const pendingItem = all.find((i) => i.id === st.pending);
+    const n = all.length;
+    const loading = st.items === null;
     return {
-      invites,
-      pills,
-      isEmpty: invites.length === 0,
-      countLabel: n === 1 ? '1 convite' : n + ' convites',
+      invites, pills, loading,
+      hasError: !!st.error, error: st.error,
+      reload: () => this.load(),
+      isEmpty: !loading && !st.error && invites.length === 0,
+      emptyText: n === 0 ? 'Você ainda não tem convites. Comece escolhendo um tema.' : 'Nenhum convite nesta situação.',
+      countLabel: loading ? '' : (n === 1 ? '1 convite' : n + ' convites'),
       showModal: !!pendingItem,
       modalTitle: pendingItem ? pendingItem.title : '',
+      busy: st.busy,
       cancelDelete: () => this.setState({ pending: null }),
-      confirmDelete: () => this.setState({
-        deleted: this.state.deleted.concat([this.state.pending]),
-        lastDeleted: this.state.pending,
-        pending: null
-      }),
-      toast: !!last,
-      toastText: last ? '“' + last.title + '” foi excluído.' : '',
-      undo: () => this.setState({
-        deleted: this.state.deleted.filter((d) => d !== this.state.lastDeleted),
-        lastDeleted: null
-      })
+      confirmDelete: () => {
+        const id = st.pending;
+        this.setState({ busy: true });
+        api.deleteInvite(id).then((deleted) => {
+          clearTimeout(this.toastTimer);
+          this.toastTimer = setTimeout(() => this.setState({ lastDeleted: null }), 10000);
+          this.setState({ busy: false, pending: null, lastDeleted: deleted, items: (this.state.items || []).filter((x) => x.id !== id) });
+        }).catch((e) => this.setState({ busy: false, pending: null, error: e.message }));
+      },
+      toast: !!st.lastDeleted,
+      toastText: st.lastDeleted && st.lastDeleted.invite ? '“' + st.lastDeleted.invite.title + '” foi excluído.' : '',
+      undo: () => {
+        const d = st.lastDeleted;
+        this.setState({ busy: true });
+        api.restoreInvite(d).then(() => { this.setState({ busy: false, lastDeleted: null }); this.load(); })
+          .catch((e) => this.setState({ busy: false, error: e.message }));
+      },
+      logout: () => api.logout().then(() => { if (this.props.onLogout) this.props.onLogout(); })
     };
   }
 }

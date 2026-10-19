@@ -25,9 +25,9 @@ button,select{font-family:inherit}
 
   <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA">
     <div style="max-width: 1240px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
-      <a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: #17151F; font-weight: 600; text-decoration: none">
+      <a href="{{backHref}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: #17151F; font-weight: 600; text-decoration: none">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
-        Meus convites
+        {{backLabel}}
       </a>
       <ol aria-label="Etapas" style="display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; list-style: none; font-size: 14px">
         <li style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #17151F"><span style="width: 24px; height: 24px; border-radius: 50%; background: #5B3FD6; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 12px">1</span>Tema</li>
@@ -40,7 +40,7 @@ button,select{font-family:inherit}
   <main style="max-width: 1240px; margin: 0 auto; padding: 40px 24px 32px">
     <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
       <div>
-        <h1 style="margin: 0; font-size: 32px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700">Escolha um tema para o convite</h1>
+        <h1 style="margin: 0; font-size: 32px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700">{{heading}}</h1>
         <p style="margin: 8px 0 0; color: #5E5A6B; max-width: 680px">O tema é só o ponto de partida: cores, fontes, layout e abertura podem ser alterados depois, no editor do convite.</p>
       </div>
       <button onClick="{{newTheme}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">
@@ -152,13 +152,17 @@ button,select{font-family:inherit}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9 6 9-6M3 7v12h18V7M3 7l9-4 9 4"></path></svg>
           Ver abertura
         </button>
-        <button onClick="{{useTheme}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">
-          Usar este tema
+        <button onClick="{{useTheme}}" disabled="{{busy}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">
+          {{useLabel}}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
         </button>
       </div>
     </div>
   </div>
+
+  <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
+    <p role="alert" style="position: fixed; left: 50%; bottom: 92px; transform: translateX(-50%); margin: 0; max-width: calc(100% - 32px); box-sizing: border-box; padding: 12px 16px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{error}}</p>
+  </sc-if>
 
   <sc-if value="{{openingVisible}}" hint-placeholder-val="{{ false }}">
     <div style="position: fixed; inset: 0; background: rgba(23, 21, 31, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto">
@@ -182,19 +186,31 @@ button,select{font-family:inherit}
   </sc-if>
 </div>
 </sc-if>
-<sc-if value="{{isEditor}}" hint-placeholder-val="{{ false }}">
-  <dc-import name="Editor" initial-theme="{{payload}}" on-back="{{resetFlow}}" on-change-theme="{{resetFlow}}" hint-size="100%,1100px"></dc-import>
-</sc-if>
-<sc-if value="{{isCriar}}" hint-placeholder-val="{{ false }}">
-  <dc-import name="CriarTema" initial-theme="{{editPayload}}" on-exit="{{resetFlow}}" on-back="{{resetFlow}}" hint-size="100%,1500px"></dc-import>
-</sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2900}}'>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"$preview":{"width":1280,"height":2900}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { cat: 'Todos', picked: 'jardim', layout: 'todos', anim: 'todas', opening: false, step: 'galeria', editing: null };
+    this.state = { cat: 'Todos', picked: 'jardim', layout: 'todos', anim: 'todas', opening: false, step: 'galeria', custom: [], busy: false, error: '' };
+  }
+  componentDidMount() {
+    api.listThemes().then((custom) => this.setState({ custom })).catch(() => {});
+  }
+  fromCustom(c) {
+    const fam = { cormorant: "'Cormorant Garamond', Georgia, serif", playfair: "'Playfair Display', Georgia, serif", bodoni: "'Bodoni Moda', Georgia, serif", dmserif: "'DM Serif Display', Georgia, serif", italiana: "'Italiana', serif", greatvibes: "'Great Vibes', cursive", caveat: "'Caveat', cursive", bricolage: "'Bricolage Grotesque', sans-serif", syne: "'Syne', sans-serif", josefin: "'Josefin Sans', sans-serif", jakarta: "'Plus Jakarta Sans', sans-serif" };
+    const wt = { cormorant: '500', playfair: '600', bodoni: '500', dmserif: '400', italiana: '400', greatvibes: '400', caveat: '700', bricolage: '800', syne: '800', josefin: '700', jakarta: '800' };
+    const rad = { pilula: '999px', arredondado: '10px', reto: '0px' };
+    const d = c.createdAt ? new Date(c.createdAt) : null;
+    return {
+      id: 'custom:' + c.id, themeId: c.id, name: c.name, cat: 'Meus temas',
+      desc: d ? 'Criado por você em ' + d.toLocaleDateString('pt-BR') + '.' : 'Criado por você.',
+      bg: c.bg, fg: c.fg, accent: c.accent, paper: c.paper, ph: c.ph, btnFg: c.btnFg,
+      font: fam[c.fontKey] || fam.cormorant, weight: wt[c.fontKey] || '500', fstyle: c.italic ? 'italic' : 'normal',
+      layout: c.layout || 'centro', anim: c.anim || 'envelope', radius: rad[c.radiusKey] || '999px',
+      kicker: c.cat || 'Seu evento', sample: 'Título do evento', date: 'Data do evento', ts: c.titleScale || 1, custom: true,
+      fontKey: c.fontKey, radiusKey: c.radiusKey
+    };
   }
   toPayload(x) {
     const f = x.font;
@@ -204,7 +220,7 @@ class Component extends DCLogic {
       : f.indexOf('Josefin') !== -1 ? 'josefin' : 'jakarta';
     const radiusKey = x.radius === '999px' ? 'pilula' : (x.radius === '0px' || x.radius === '2px') ? 'reto' : 'arredondado';
     return {
-      name: x.name, baseName: x.name, cat: x.cat, bg: x.bg, fg: x.fg, accent: x.accent, btnFg: x.btnFg, paper: x.paper, ph: x.ph,
+      name: x.name, baseName: x.name, cat: x.custom ? x.kicker : x.cat, bg: x.bg, fg: x.fg, accent: x.accent, btnFg: x.btnFg, paper: x.paper, ph: x.ph,
       fontKey, italic: x.fstyle === 'italic', layout: x.layout, radiusKey, anim: x.anim,
       kicker: x.kicker, sample: x.sample, date: x.date, titleScale: x.ts
     };
@@ -243,15 +259,15 @@ class Component extends DCLogic {
       t('oliveira', 'Oliveira', 'Religioso', 'Verde oliva e creme, sereno e natural.', '#E9E8DA', '#2F3A22', '#5A6532', '#5F6A35', '#D6D4C0', '#F5F4EA', IT, '400', 'normal', 'moldura', 'livro', '999px', 'Primeira comunhão', 'Pedro Henrique', '23 · 05 · 2027', 0.9),
       t('arraia', 'Arraiá', 'Temático', 'Palha, chita e vermelho para festas juninas.', '#F2E3C6', '#4A2410', '#A8301C', '#B8351F', '#E3CDA3', '#FFF4DE', JO, '700', 'normal', 'polaroid', 'cortina', '6px', 'Festa junina', 'Arraiá da Firma', '19 · 06 · 2027'),
       t('retro', 'Retrô 70', 'Temático', 'Laranja queimado e marrom, estilo anos 70.', '#F3D9B1', '#3D1F0F', '#9C4317', '#3D1F0F', '#E8C48F', '#FFF1DC', DM, '400', 'normal', 'editorial', 'neblina', '999px', 'Festa anos 70', 'Disco Night', '13 · 11 · 2026'),
-      t('branco', 'Em branco', 'Qualquer evento', 'Comece do zero e monte cada página.', '#FFFFFF', '#17151F', '#17151F', '#F1F0F4', '#ECEBF0', '#FFFFFF', PJ, '700', 'normal', 'centro', 'neblina', '10px', 'Seu evento', 'Título do evento', 'Data do evento', 0.8),
-      t('serra', 'Verão na serra', 'Meus temas', 'Criado por você em 18/10/2026.', '#F7F3EA', '#2E3B2F', '#9A4E2A', '#2E3B2F', '#E4DCCB', '#FFFFFF', PF, '600', 'normal', 'foto-topo', 'portas', '999px', 'Casamento', 'Júlia & Caio', '28 · 08 · 2027', 1, true)
+      t('branco', 'Em branco', 'Qualquer evento', 'Comece do zero e monte cada página.', '#FFFFFF', '#17151F', '#17151F', '#F1F0F4', '#ECEBF0', '#FFFFFF', PJ, '700', 'normal', 'centro', 'neblina', '10px', 'Seu evento', 'Título do evento', 'Data do evento', 0.8)
     ];
   }
   renderVals() {
     const layoutLabels = { centro: 'Centralizado', 'foto-topo': 'Foto no topo', 'foto-fundo': 'Foto de fundo', moldura: 'Moldura', dividido: 'Dividido', editorial: 'Editorial', arco: 'Arco', polaroid: 'Polaroid' };
     const animLabels = { envelope: 'Carta', cortina: 'Cortina', portas: 'Portas', lacre: 'Lacre de cera', presente: 'Presente', livro: 'Livro', iris: 'Íris', neblina: 'Neblina', nenhuma: 'Sem abertura' };
     const st = this.state;
-    const all = this.themes().map((x) => Object.assign({}, x, { layoutLabel: layoutLabels[x.layout], animLabel: animLabels[x.anim] }));
+    const changeFor = (this.props.route && this.props.route.params && this.props.route.params.invite) || '';
+    const all = this.themes().concat((st.custom || []).map((c) => this.fromCustom(c))).map((x) => Object.assign({}, x, { layoutLabel: layoutLabels[x.layout], animLabel: animLabels[x.anim] }));
     const catNames = ['Todos', 'Casamento', 'Aniversário', 'Infantil', 'Corporativo', 'Formatura', 'Religioso', 'Temático', 'Meus temas'];
     const cats = catNames.map((label) => {
       const on = label === st.cat;
@@ -288,15 +304,28 @@ class Component extends DCLogic {
       hideOpening: () => this.setState({ opening: false }),
       noLink: false,
       noMusic: { kind: 'nenhuma' },
-      isGallery: st.step === 'galeria',
-      isEditor: st.step === 'editor',
-      isCriar: st.step === 'criar',
-      payload: this.toPayload(sel),
-      editPayload: st.editing,
-      useTheme: () => this.setState({ step: 'editor', opening: false }),
-      resetFlow: () => this.setState({ step: 'galeria', editing: null, opening: false }),
-      newTheme: () => this.setState({ step: 'criar', editing: null, opening: false }),
-      editTheme: () => this.setState({ step: 'criar', editing: this.toPayload(sel), opening: false })
+      isGallery: true,
+      hasError: !!st.error, error: st.error, busy: st.busy,
+      heading: changeFor ? 'Trocar o tema do convite' : 'Escolha um tema para o convite',
+      backHref: changeFor ? '#/Editor/' + changeFor : '#/Main',
+      backLabel: changeFor ? 'Voltar ao editor' : 'Meus convites',
+      useLabel: st.busy ? 'Aguarde…' : (changeFor ? 'Aplicar ao convite' : 'Usar este tema'),
+      useTheme: () => {
+        const theme = this.toPayload(sel);
+        this.setState({ busy: true, error: '', opening: false });
+        if (changeFor) {
+          api.getInvite(changeFor)
+            .then((inv) => api.saveInvite(changeFor, Object.assign({}, inv, { theme, themeBase: theme })))
+            .then(() => api.navigate('Editor/' + changeFor))
+            .catch((e) => this.setState({ busy: false, error: e.message }));
+          return;
+        }
+        api.createInvite({ title: 'Novo convite · ' + sel.name, kicker: theme.kicker, coverTitle: 'Título do evento', status: 'rascunho', theme, themeBase: theme })
+          .then((inv) => api.navigate('Editor/' + inv.id))
+          .catch((e) => this.setState({ busy: false, error: e.message }));
+      },
+      newTheme: () => api.navigate('CriarTema'),
+      editTheme: () => { if (sel.themeId) api.navigate('CriarTema/' + sel.themeId); }
     };
   }
 }

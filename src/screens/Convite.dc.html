@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Convite</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<style>
+body{margin:0}
+@keyframes ciFade{from{opacity:0}to{opacity:1}}
+@keyframes ciUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes ciZoom{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+.a-surgir{animation:ciFade .9s ease both}
+.a-deslizar{animation:ciUp .8s cubic-bezier(.2,.7,.2,1) both}
+.a-zoom{animation:ciZoom .7s cubic-bezier(.2,.7,.2,1) both}
+.pg-in{animation:ciFade .45s ease both}
+.gf{width:100%;box-sizing:border-box;min-height:46px;padding:11px 13px;border-radius:12px;font:inherit;font-size:15px}
+@media (prefers-reduced-motion: reduce){.a-surgir,.a-deslizar,.a-zoom,.pg-in{animation:none}}
+</style>
+</helmet>
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: {{T.bg}}; color: {{T.fg}}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+
+  <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; opacity: 0.8">Abrindo convite…</div>
+  </sc-if>
+
+  <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 32px; text-align: center; background: #1C1B22; color: #F3F2F7">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9 6 9-6M3 7h18v12H3z"></path></svg>
+      <p style="margin: 0; font-size: 17px; font-weight: 700">Convite indisponível</p>
+      <p style="margin: 0; font-size: 14px; opacity: 0.85">{{error}}</p>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{isClosed}}" hint-placeholder-val="{{ true }}">
+    <dc-import name="Abertura" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{coverTitle}}" data="{{dateDots}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
+  </sc-if>
+
+  <sc-if value="{{isPages}}" hint-placeholder-val="{{ false }}">
+    <div style="position: absolute; inset: 0; display: flex; flex-direction: column">
+      <main key="{{pageKey}}" class="pg-in" style="flex: 1 1 auto; overflow-y: auto; padding: 22px 20px 28px; display: flex; flex-direction: column; font-family: {{T.body}}">
+        <div style="flex: 1 0 auto; display: flex; flex-direction: column; gap: 14px; padding: {{T.framePad}}; border: {{T.frame}}; border-left: {{T.band}}; text-align: {{T.align}}">
+          <sc-for list="{{blocks}}" as="b" hint-placeholder-count="5">
+            <div key="{{b.key}}" class="{{b.animClass}}" style="animation-delay: {{b.delay}}">
+
+              <sc-if value="{{b.showFoto}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; overflow: hidden; height: {{T.photoH}}; width: {{T.photoW}}; margin: {{T.photoM}}; border-radius: {{T.photoR}}; transform: {{T.photoRot}}; border: {{T.photoBorder}}; background: {{T.ph}}; font-size: 13px">
+                  <sc-if value="{{b.hasMedia}}" hint-placeholder-val="{{ false }}">
+                    <img src="{{b.mediaUrl}}" alt="{{b.label}}" style="width: 100%; height: 100%; object-fit: cover; display: block">
+                  </sc-if>
+                  <sc-if value="{{b.noMedia}}" hint-placeholder-val="{{ true }}">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.6"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
+                    <span style="opacity: 0.8">{{b.label}}</span>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{b.showVideoPlayer}}" hint-placeholder-val="{{ false }}">
+                <video src="{{b.mediaUrl}}" controls="{{ true }}" playsinline="{{ true }}" muted="{{b.autoplay}}" autoplay="{{b.autoplay}}" loop="{{b.loopVid}}" style="display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 12px; background: #000000"></video>
+              </sc-if>
+              <sc-if value="{{b.showVideoLink}}" hint-placeholder-val="{{ false }}">
+                <a href="{{b.url}}" target="_blank" rel="noopener" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; aspect-ratio: 16 / 9; border-radius: 12px; background: {{T.ph}}; color: {{T.fg}}; text-decoration: none; font-size: 14px">
+                  <span style="width: 56px; height: 56px; border-radius: 50%; background: {{T.accent}}; color: {{T.btnFg}}; display: flex; align-items: center; justify-content: center">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+                  </span>
+                  Assistir: {{b.label}}
+                </a>
+              </sc-if>
+              <sc-if value="{{b.showVideoPlaceholder}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; aspect-ratio: 16 / 9; border-radius: 12px; background: {{T.ph}}; font-size: 13px; opacity: 0.85">{{b.label}}</div>
+              </sc-if>
+
+              <sc-if value="{{b.isTitulo}}" hint-placeholder-val="{{ false }}">
+                <h1 style="margin: 0; font-family: {{T.font}}; font-size: {{T.titleSize}}; line-height: 1.05; font-weight: {{T.weight}}; font-style: {{T.fstyle}}">{{b.text}}</h1>
+              </sc-if>
+              <sc-if value="{{b.isTexto}}" hint-placeholder-val="{{ false }}">
+                <p style="margin: 0; font-size: 15px; line-height: 1.55; opacity: 0.9; white-space: pre-line">{{b.text}}</p>
+              </sc-if>
+              <sc-if value="{{b.isOrient}}" hint-placeholder-val="{{ false }}">
+                <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; text-align: left">
+                  <sc-for list="{{b.lines}}" as="ln" hint-placeholder-count="3">
+                    <li style="display: flex; gap: 10px; align-items: flex-start; padding: 11px 13px; border-radius: 12px; border: 1px solid {{T.line}}; font-size: 14px">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="{{T.accent}}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none; margin-top: 2px"><path d="m5 12 5 5 9-10"></path></svg>
+                      <span>{{ln}}</span>
+                    </li>
+                  </sc-for>
+                </ul>
+              </sc-if>
+
+              <sc-if value="{{b.isContagem}}" hint-placeholder-val="{{ false }}">
+                <sc-if value="{{b.cdRunning}}" hint-placeholder-val="{{ true }}">
+                  <div aria-label="Contagem regressiva" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: center">
+                    <div style="padding: 10px 0 8px; border-radius: 12px; border: 1px solid {{T.line}}; background: {{T.surface}}; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{T.font}}; font-size: 30px; line-height: 1; font-weight: 600">{{b.cd.d}}</span><span style="font-size: 11px; opacity: 0.8">dias</span></div>
+                    <div style="padding: 10px 0 8px; border-radius: 12px; border: 1px solid {{T.line}}; background: {{T.surface}}; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{T.font}}; font-size: 30px; line-height: 1; font-weight: 600">{{b.cd.h}}</span><span style="font-size: 11px; opacity: 0.8">horas</span></div>
+                    <div style="padding: 10px 0 8px; border-radius: 12px; border: 1px solid {{T.line}}; background: {{T.surface}}; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{T.font}}; font-size: 30px; line-height: 1; font-weight: 600">{{b.cd.m}}</span><span style="font-size: 11px; opacity: 0.8">min</span></div>
+                    <div style="padding: 10px 0 8px; border-radius: 12px; border: 1px solid {{T.line}}; background: {{T.surface}}; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{T.font}}; font-size: 30px; line-height: 1; font-weight: 600">{{b.cd.s}}</span><span style="font-size: 11px; opacity: 0.8">seg</span></div>
+                  </div>
+                </sc-if>
+                <sc-if value="{{b.cdDone}}" hint-placeholder-val="{{ false }}">
+                  <p style="margin: 0; font-family: {{T.font}}; font-size: 28px; font-weight: {{T.weight}}">{{b.endText}}</p>
+                </sc-if>
+              </sc-if>
+
+              <sc-if value="{{b.isMapa}}" hint-placeholder-val="{{ false }}">
+                <div style="border-radius: 14px; overflow: hidden; border: 1px solid {{T.line}}; background: {{T.surface}}; text-align: left">
+                  <div aria-hidden="true" style="height: 120px; background: {{T.ph}}; display: flex; align-items: center; justify-content: center; color: {{T.accent}}">
+                    <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
+                  </div>
+                  <div style="padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px">
+                    <div>
+                      <div style="font-weight: 700; font-size: 16px">{{b.text}}</div>
+                      <div style="font-size: 14px; opacity: 0.85">{{b.address}}</div>
+                    </div>
+                    <sc-if value="{{b.showRoutes}}" hint-placeholder-val="{{ true }}">
+                      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                        <a href="{{b.gmaps}}" target="_blank" rel="noopener" style="min-height: 44px; border-radius: {{T.radius}}; background: {{T.accent}}; color: {{T.btnFg}}; font-weight: 700; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center">Google Maps</a>
+                        <a href="{{b.waze}}" target="_blank" rel="noopener" style="min-height: 44px; border-radius: {{T.radius}}; border: 1px solid {{T.accent}}; color: {{T.fg}}; font-weight: 700; font-size: 14px; text-decoration: none; display: flex; align-items: center; justify-content: center">Waze</a>
+                      </div>
+                    </sc-if>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{b.isBotao}}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{b.press}}" style="min-height: 48px; padding: 0 26px; border-radius: {{T.radius}}; border: 0; background: {{T.accent}}; color: {{T.btnFg}}; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer">{{b.text}}</button>
+              </sc-if>
+
+              <sc-if value="{{b.isRsvp}}" hint-placeholder-val="{{ false }}">
+                <div style="text-align: left">
+                  <sc-if value="{{b.r.closed}}" hint-placeholder-val="{{ false }}">
+                    <p style="margin: 0; padding: 14px; border-radius: 12px; border: 1px solid {{T.line}}; font-size: 14px">{{b.r.closedText}}</p>
+                  </sc-if>
+                  <sc-if value="{{b.r.showDone}}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding: 18px 12px; border-radius: 14px; border: 1px solid {{T.line}}; background: {{T.surface}}">
+                      <span style="width: 56px; height: 56px; border-radius: 50%; background: {{T.accent}}; color: {{T.btnFg}}; display: flex; align-items: center; justify-content: center">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>
+                      </span>
+                      <strong style="font-family: {{T.font}}; font-size: 26px; font-weight: {{T.weight}}">{{b.r.doneTitle}}</strong>
+                      <span style="font-size: 14px; opacity: 0.9">{{b.r.doneText}}</span>
+                      <sc-if value="{{b.r.canCalendar}}" hint-placeholder-val="{{ false }}">
+                        <button onClick="{{addToCalendar}}" style="min-height: 44px; padding: 0 20px; border-radius: {{T.radius}}; border: 0; background: {{T.accent}}; color: {{T.btnFg}}; font-weight: 700; font-size: 14px; font-family: inherit; cursor: pointer">Adicionar à agenda</button>
+                      </sc-if>
+                      <button onClick="{{b.r.edit}}" style="min-height: 40px; padding: 0 12px; border: 0; background: transparent; color: {{T.fg}}; font-weight: 600; font-size: 14px; font-family: inherit; cursor: pointer; text-decoration: underline">Alterar minha resposta</button>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{b.r.showForm}}" hint-placeholder-val="{{ true }}">
+                    <form onSubmit="{{b.r.submit}}" style="display: flex; flex-direction: column; gap: 14px">
+                      <div>
+                        <label for="{{b.r.ids.name}}" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px">Nome completo</label>
+                        <input class="gf" id="{{b.r.ids.name}}" autocomplete="name" value="{{b.r.name}}" onChange="{{b.r.onName}}" style="border: 1px solid {{T.line}}; background: {{T.surface}}; color: {{T.fg}}">
+                      </div>
+                      <fieldset style="border: 0; margin: 0; padding: 0">
+                        <legend style="font-size: 13px; font-weight: 600; margin-bottom: 6px; padding: 0">Você vai?</legend>
+                        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                          <button type="button" onClick="{{b.r.yes}}" aria-pressed="{{b.r.yesPressed}}" style="min-height: 50px; border-radius: 12px; border: 1px solid {{b.r.yesBorder}}; background: {{b.r.yesBg}}; color: {{b.r.yesFg}}; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer">Sim, eu vou</button>
+                          <button type="button" onClick="{{b.r.no}}" aria-pressed="{{b.r.noPressed}}" style="min-height: 50px; border-radius: 12px; border: 1px solid {{b.r.noBorder}}; background: {{b.r.noBg}}; color: {{b.r.noFg}}; font-weight: 700; font-size: 15px; font-family: inherit; cursor: pointer">Não poderei ir</button>
+                        </div>
+                      </fieldset>
+                      <sc-if value="{{b.r.showGuests}}" hint-placeholder-val="{{ false }}">
+                        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid {{T.line}}">
+                          <span style="display: flex; flex-direction: column; line-height: 1.3"><strong style="font-size: 15px">Acompanhantes</strong><span style="font-size: 12px; opacity: 0.8">{{b.r.maxLabel}}</span></span>
+                          <span style="display: flex; align-items: center; gap: 10px">
+                            <button type="button" onClick="{{b.r.dec}}" aria-label="Menos um acompanhante" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid {{T.accent}}; background: transparent; color: {{T.fg}}; font-size: 20px; cursor: pointer">−</button>
+                            <span aria-live="polite" style="min-width: 20px; text-align: center; font-family: {{T.font}}; font-size: 26px; font-weight: 600">{{b.r.guests}}</span>
+                            <button type="button" onClick="{{b.r.inc}}" aria-label="Mais um acompanhante" style="width: 44px; height: 44px; border-radius: 50%; border: 0; background: {{T.accent}}; color: {{T.btnFg}}; font-size: 20px; cursor: pointer">+</button>
+                          </span>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{b.r.showDiet}}" hint-placeholder-val="{{ false }}">
+                        <div>
+                          <label for="{{b.r.ids.diet}}" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px">Restrição alimentar (opcional)</label>
+                          <input class="gf" id="{{b.r.ids.diet}}" value="{{b.r.diet}}" onChange="{{b.r.onDiet}}" placeholder="Ex.: vegetariano, sem glúten" style="border: 1px solid {{T.line}}; background: {{T.surface}}; color: {{T.fg}}">
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{b.r.showMsg}}" hint-placeholder-val="{{ false }}">
+                        <div>
+                          <label for="{{b.r.ids.msg}}" style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px">Mensagem (opcional)</label>
+                          <textarea class="gf" id="{{b.r.ids.msg}}" rows="3" value="{{b.r.msg}}" onChange="{{b.r.onMsg}}" style="border: 1px solid {{T.line}}; background: {{T.surface}}; color: {{T.fg}}; resize: none"></textarea>
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{b.r.hasError}}" hint-placeholder-val="{{ false }}">
+                        <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #4A2B22; color: #FFE1D6; font-size: 14px">{{b.r.error}}</p>
+                      </sc-if>
+                      <sc-if value="{{b.r.isPreview}}" hint-placeholder-val="{{ false }}">
+                        <p style="margin: 0; font-size: 12px; opacity: 0.8">Na pré-visualização, a resposta não é enviada.</p>
+                      </sc-if>
+                      <button type="submit" disabled="{{b.r.sending}}" style="min-height: 50px; border-radius: {{T.radius}}; border: 0; background: {{T.accent}}; color: {{T.btnFg}}; font-weight: 700; font-size: 16px; font-family: inherit; cursor: pointer">{{b.r.submitLabel}}</button>
+                      <sc-if value="{{b.r.hasDeadline}}" hint-placeholder-val="{{ false }}">
+                        <p style="margin: 0; font-size: 13px; opacity: 0.8; text-align: center">{{b.r.deadlineText}}</p>
+                      </sc-if>
+                    </form>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+            </div>
+          </sc-for>
+        </div>
+      </main>
+
+      <sc-if value="{{hasNav}}" hint-placeholder-val="{{ true }}">
+        <nav aria-label="Páginas do convite" style="flex: none; display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}">
+          <sc-for list="{{nav}}" as="n" hint-placeholder-count="4">
+            <button onClick="{{n.go}}" aria-current="{{n.current}}" style="flex: 1 1 0; min-width: 0; min-height: 60px; border: 0; border-top: 2px solid {{n.line}}; background: transparent; color: {{n.color}}; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px">{{n.name}}</button>
+          </sc-for>
+        </nav>
+      </sc-if>
+
+      <sc-if value="{{hasMusic}}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{toggleMusic}}" aria-label="{{musicAria}}" style="position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(20, 20, 20, 0.6); color: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center">
+          <sc-if value="{{musicPlaying}}" hint-placeholder-val="{{ true }}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5ZM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"></path></svg>
+          </sc-if>
+          <sc-if value="{{musicPaused}}" hint-placeholder-val="{{ false }}">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5ZM16 9l6 6M22 9l-6 6"></path></svg>
+          </sc-if>
+        </button>
+      </sc-if>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"invite":{"editor":null},"preview":{"editor":null},"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const inv = props.invite || null;
+    this.state = { inv, error: '', phase: inv ? this.firstPhase(inv) : 'loading', page: null, now: Date.now(), forms: {}, musicPlaying: false };
+  }
+
+  firstPhase(inv) {
+    return inv.theme && inv.theme.anim === 'nenhuma' ? 'pages' : 'closed';
+  }
+
+  componentDidMount() {
+    this.timer = setInterval(() => { if (this.state.phase === 'pages') this.setState({ now: Date.now() }); }, 1000);
+    if (this.props.invite) { this.restoreRsvp(); return; }
+    const id = this.props.route && this.props.route.params && this.props.route.params.id;
+    if (!id) { this.setState({ phase: 'error', error: 'Link de convite incompleto.' }); return; }
+    api.getInvite(id)
+      .then((inv) => { this.setState({ inv, phase: this.firstPhase(inv) }); this.restoreRsvp(inv); })
+      .catch((e) => this.setState({ phase: 'error', error: e.status === 404 ? 'Este convite não existe ou ainda não foi publicado.' : e.message }));
+  }
+
+  componentDidUpdate(prev) {
+    if (this.props.invite && prev.invite !== this.props.invite) {
+      const keepPhase = this.state.phase;
+      this.setState({ inv: this.props.invite, phase: keepPhase === 'loading' ? this.firstPhase(this.props.invite) : keepPhase });
+    }
+  }
+
+  componentWillUnmount() {
+    clearInterval(this.timer);
+    this.musicStop();
+  }
+
+  restoreRsvp(loaded) {
+    const inv = loaded || this.state.inv || this.props.invite;
+    if (!inv || this.props.preview) return;
+    const saved = api.local.get('rsvp:' + inv.id);
+    if (saved && saved.rsvpId) this.setState({ saved });
+  }
+
+  // ---------- música ----------
+  synthStart(preset, volume, loop) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    const songs = {
+      caixinha: { bpm: 112, wave: 'sine', gain: 0.5, notes: [[84, .5], [88, .5], [91, .5], [96, 1], [91, .5], [88, .5], [89, .5], [93, .5], [96, .5], [98, 1], [96, .5], [93, .5], [91, .5], [88, .5], [84, .5], [86, 1], [88, .5], [84, 1.5]] },
+      valsa: { bpm: 132, wave: 'triangle', gain: 0.6, notes: [[67, 1], [72, 1], [76, 1], [74, 2], [72, 1], [71, 1], [72, 1], [74, 1], [67, 3], [69, 1], [72, 1], [77, 1], [76, 2], [74, 1], [72, 3]] },
+      festa: { bpm: 150, wave: 'square', gain: 0.16, notes: [[72, .5], [72, .5], [79, .5], [79, .5], [81, .5], [81, .5], [79, 1], [77, .5], [77, .5], [76, .5], [76, .5], [74, .5], [74, .5], [72, 1]] }
+    };
+    const song = songs[preset] || songs.valsa;
+    const ctx = new AC();
+    const master = ctx.createGain();
+    master.gain.value = Math.max(0, Math.min(1, volume)) * song.gain;
+    master.connect(ctx.destination);
+    const beat = 60 / song.bpm;
+    const total = song.notes.reduce((s, n) => s + n[1], 0) * beat;
+    const playLoop = (t0) => {
+      let t = t0;
+      song.notes.forEach((n) => {
+        const d = n[1] * beat;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = song.wave;
+        o.frequency.value = 440 * Math.pow(2, (n[0] - 69) / 12);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(1, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + d * 0.95);
+        o.connect(g); g.connect(master);
+        o.start(t); o.stop(t + d);
+        t += d;
+      });
+    };
+    let next = ctx.currentTime + 0.05;
+    playLoop(next); next += total;
+    const timer = setInterval(() => { if (loop && next - ctx.currentTime < 1) { playLoop(next); next += total; } }, 250);
+    if (ctx.state === 'suspended') ctx.resume();
+    return { stop: () => { clearInterval(timer); try { ctx.close(); } catch (e) {} }, pause: () => ctx.suspend(), resume: () => ctx.resume() };
+  }
+
+  musicCfg() {
+    const m = (this.state.inv && this.state.inv.music) || {};
+    const base = { volume: (m.volume == null ? 70 : m.volume) / 100, loop: m.loop !== false };
+    if (m.kind === 'biblioteca') return Object.assign({ kind: 'biblioteca', preset: m.preset || 'valsa' }, base);
+    if (m.kind === 'arquivo' && m.fileUrl) return Object.assign({ kind: 'arquivo', url: m.fileUrl }, base);
+    if (m.kind === 'link' && /^https?:\/\//.test((m.link || '').trim())) return Object.assign({ kind: 'link', url: m.link.trim() }, base);
+    return { kind: 'nenhuma' };
+  }
+
+  musicStart() {
+    this.musicStop();
+    const cfg = this.musicCfg();
+    if (cfg.kind === 'nenhuma') return false;
+    if (cfg.kind === 'biblioteca') { this.player = this.synthStart(cfg.preset, cfg.volume, cfg.loop); return !!this.player; }
+    try {
+      const a = new Audio(cfg.url);
+      a.loop = cfg.loop; a.volume = cfg.volume;
+      const fail = () => { this.musicStop(); this.setState({ musicPlaying: false }); };
+      a.onerror = fail;
+      const pr = a.play();
+      if (pr && pr.catch) pr.catch(fail);
+      this.player = { stop: () => { a.onerror = null; a.pause(); a.removeAttribute('src'); }, pause: () => a.pause(), resume: () => a.play() };
+      return true;
+    } catch (e) { return false; }
+  }
+
+  musicStop() { if (this.player) { this.player.stop(); this.player = null; } }
+
+  // ---------- utilidades ----------
+  mediaUrl(b) {
+    if (b.src === 'upload') return b.fileUrl || '';
+    const u = (b.url || '').trim();
+    if (!/^https?:\/\//i.test(u)) return '';
+    if (/youtube\.com|youtu\.be|vimeo\.com|drive\.google\.com|instagram\.com/i.test(u)) return '';
+    const ext = b.type === 'video' ? /\.(mp4|webm|ogv|mov|m4v)(\?|#|$)/i : /\.(jpe?g|png|webp|gif|avif|svg)(\?|#|$)/i;
+    return ext.test(u) ? u : '';
+  }
+
+  countdown(iso) {
+    const t = iso ? new Date(iso).getTime() : NaN;
+    if (isNaN(t)) return null;
+    let diff = Math.floor((t - this.state.now) / 1000);
+    if (diff <= 0) return { done: true };
+    const d = Math.floor(diff / 86400); diff -= d * 86400;
+    const h = Math.floor(diff / 3600); diff -= h * 3600;
+    const mi = Math.floor(diff / 60);
+    const pad = (n) => (n < 10 ? '0' + n : String(n));
+    return { d: String(d), h: pad(h), m: pad(mi), s: pad(diff - mi * 60) };
+  }
+
+  downloadIcs() {
+    const inv = this.state.inv;
+    if (!inv || !inv.eventDate) return;
+    const start = new Date(inv.eventDate);
+    const end = new Date(start.getTime() + 6 * 3600 * 1000);
+    const f = (d) => d.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+    const map = [].concat(...(inv.pages || []).map((p) => p.blocks)).find((x) => x.type === 'mapa');
+    const esc = (v) => String(v || '').replace(/[\\,;]/g, (c) => '\\' + c).replace(/\n/g, '\\n');
+    const loc = map ? [map.text, map.address].filter(Boolean).join(' - ') : '';
+    const ics = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Convite Interativo//PT-BR', 'BEGIN:VEVENT',
+      'UID:' + inv.id + '@convite-interativo', 'DTSTAMP:' + f(new Date()), 'DTSTART:' + f(start), 'DTEND:' + f(end),
+      'SUMMARY:' + esc(inv.coverTitle || inv.title), loc ? 'LOCATION:' + esc(loc) : '', 'END:VEVENT', 'END:VCALENDAR'].filter(Boolean).join('\r\n');
+    const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar;charset=utf-8' }));
+    const a = document.createElement('a');
+    a.href = url; a.download = 'convite.ics';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  }
+
+  form(bid) {
+    const saved = this.state.saved;
+    const base = saved ? { name: saved.name, go: saved.go, guests: saved.guests || 0, diet: saved.diet || '', msg: saved.msg || '', done: true, rsvpId: saved.rsvpId }
+      : { name: '', go: null, guests: 0, diet: '', msg: '', done: false };
+    return Object.assign({ sending: false, error: '' }, base, this.state.forms[bid] || {});
+  }
+
+  setForm(bid, patch) {
+    this.setState((s) => ({ forms: Object.assign({}, s.forms, { [bid]: Object.assign({}, this.form(bid), s.forms[bid] || {}, patch) }) }));
+  }
+
+  renderVals() {
+    const st = this.state;
+    const inv = st.inv;
+    const T = api.themeTokens(inv ? inv.theme : null);
+    const base = { T, isLoading: st.phase === 'loading', isError: st.phase === 'error', error: st.error, isClosed: false, isPages: false, noMusic: { kind: 'nenhuma' } };
+    if (!inv) return base;
+
+    const pages = (inv.pages || []).filter((p) => p.blocks && p.blocks.length);
+    const cur = pages.find((p) => p.id === st.page) || pages[0] || { id: 'vazio', blocks: [] };
+    const goPage = (id) => this.setState({ page: id });
+    const preview = !!this.props.preview;
+    const lastIndex = {};
+
+    const blocks = cur.blocks.map((x, i) => {
+      const url = this.mediaUrl(x);
+      const o = {
+        key: cur.id + '-' + x.id,
+        animClass: x.anim && x.anim !== 'nenhuma' ? 'a-' + x.anim : '',
+        delay: (i * 0.08).toFixed(2) + 's',
+        text: x.text || '', label: x.label || '', url: x.url || '', address: x.address || '',
+        mediaUrl: url, hasMedia: !!url, noMedia: !url,
+        showFoto: x.type === 'foto' && (!!url || preview),
+        showVideoPlayer: x.type === 'video' && !!url,
+        showVideoLink: x.type === 'video' && !url && /^https?:\/\//.test(x.url || '') && x.src === 'link',
+        showVideoPlaceholder: x.type === 'video' && !url && preview && !(x.src === 'link' && /^https?:\/\//.test(x.url || '')),
+        autoplay: !!x.autoplay, loopVid: !!x.loopVid,
+        isTitulo: x.type === 'titulo', isTexto: x.type === 'texto', isOrient: x.type === 'orientacoes',
+        lines: String(x.text || '').split('\n').map((l) => l.trim()).filter(Boolean),
+        isContagem: x.type === 'contagem', isMapa: x.type === 'mapa', isBotao: x.type === 'botao', isRsvp: x.type === 'rsvp'
+      };
+      if (o.isContagem) {
+        const cd = this.countdown(x.target || inv.eventDate);
+        o.cd = cd && !cd.done ? cd : { d: '--', h: '--', m: '--', s: '--' };
+        o.cdDone = !!(cd && cd.done);
+        o.cdRunning = !o.cdDone;
+        o.endText = x.endText == null ? 'O grande dia chegou!' : x.endText;
+        if (!cd && !preview) o.isContagem = false;
+      }
+      if (o.isMapa) {
+        const q = encodeURIComponent([x.text, x.address].filter(Boolean).join(', '));
+        o.gmaps = 'https://www.google.com/maps/search/?api=1&query=' + q;
+        o.waze = 'https://waze.com/ul?q=' + q + '&navigate=yes';
+        o.showRoutes = x.showRoutes !== false && !!q;
+      }
+      if (o.isBotao) {
+        o.press = () => {
+          const act = x.action || 'pagina';
+          if (act === 'pagina') {
+            const target = pages.find((p) => p.id === x.dest) || pages[pages.indexOf(cur) + 1] || pages[0];
+            if (target) goPage(target.id);
+          } else if (act === 'link' && /^https?:\/\//.test(x.dest || '')) {
+            window.open(x.dest, '_blank', 'noopener');
+          } else if (act === 'whatsapp') {
+            let d = String(x.dest || '').replace(/\D/g, '');
+            if (d && d.length <= 11) d = '55' + d;
+            if (d) window.open('https://wa.me/' + d, '_blank', 'noopener');
+          }
+        };
+      }
+      if (o.isRsvp) {
+        const f = this.form(x.id);
+        const max = x.maxGuests == null ? 2 : x.maxGuests;
+        const closed = !!x.deadline && api.fmt.isPast(x.deadline) && !f.done;
+        const yes = f.go === true, no = f.go === false;
+        const first = String(f.name || '').trim().split(' ')[0];
+        o.r = {
+          ids: { name: 'rn-' + x.id, diet: 'rd-' + x.id, msg: 'rm-' + x.id },
+          closed, closedText: 'O prazo para confirmar presença terminou em ' + api.fmt.day(x.deadline) + '.',
+          showDone: f.done, showForm: !f.done && !closed,
+          doneTitle: f.go ? 'Presença confirmada!' : 'Resposta enviada',
+          doneText: f.go ? 'Obrigado, ' + first + '! Reservamos ' + (1 + (f.guests || 0) === 1 ? '1 lugar' : (1 + (f.guests || 0)) + ' lugares') + ' para você.' : 'Obrigado por avisar, ' + first + '.',
+          canCalendar: f.go && !!inv.eventDate,
+          name: f.name, diet: f.diet, msg: f.msg, guests: String(f.guests || 0),
+          showGuests: yes && x.askGuests !== false && max > 0,
+          showDiet: yes && x.askDiet !== false,
+          showMsg: x.askMsg !== false,
+          maxLabel: 'Até ' + max + (max === 1 ? ' pessoa' : ' pessoas'),
+          yesPressed: yes ? 'true' : 'false', noPressed: no ? 'true' : 'false',
+          yesBg: yes ? T.accent : 'transparent', yesFg: yes ? T.btnFg : T.fg, yesBorder: yes ? T.accent : T.line,
+          noBg: no ? T.fg : 'transparent', noFg: no ? T.bg : T.fg, noBorder: no ? T.fg : T.line,
+          hasError: !!f.error, error: f.error,
+          isPreview: preview, sending: f.sending,
+          submitLabel: f.sending ? 'Enviando…' : 'Enviar resposta',
+          hasDeadline: !!x.deadline, deadlineText: 'Responda até ' + api.fmt.day(x.deadline),
+          onName: (e) => this.setForm(x.id, { name: e.target.value, error: '' }),
+          onDiet: (e) => this.setForm(x.id, { diet: e.target.value }),
+          onMsg: (e) => this.setForm(x.id, { msg: e.target.value }),
+          yes: () => this.setForm(x.id, { go: true, error: '' }),
+          no: () => this.setForm(x.id, { go: false, guests: 0, error: '' }),
+          inc: () => this.setForm(x.id, { guests: Math.min(max, (this.form(x.id).guests || 0) + 1) }),
+          dec: () => this.setForm(x.id, { guests: Math.max(0, (this.form(x.id).guests || 0) - 1) }),
+          edit: () => this.setForm(x.id, { done: false }),
+          submit: (e) => {
+            if (e && e.preventDefault) e.preventDefault();
+            const cf = this.form(x.id);
+            if (!String(cf.name || '').trim()) { this.setForm(x.id, { error: 'Informe seu nome completo.' }); return; }
+            if (cf.go !== true && cf.go !== false) { this.setForm(x.id, { error: 'Escolha se você vai ou não.' }); return; }
+            const payload = { rsvpId: cf.rsvpId || (st.saved && st.saved.rsvpId) || undefined, name: cf.name.trim(), go: cf.go, guests: cf.go ? cf.guests || 0 : 0, diet: cf.go && x.askDiet !== false ? cf.diet : '', msg: x.askMsg !== false ? cf.msg : '' };
+            if (preview) { this.setForm(x.id, { done: true, error: '' }); return; }
+            this.setForm(x.id, { sending: true, error: '' });
+            api.sendRsvp(inv.id, payload).then((r) => {
+              const saved = Object.assign({}, payload, { rsvpId: r.rsvpId });
+              api.local.set('rsvp:' + inv.id, saved);
+              this.setState({ saved });
+              this.setForm(x.id, { sending: false, done: true, rsvpId: r.rsvpId });
+            }).catch((err) => this.setForm(x.id, { sending: false, error: err.message }));
+          }
+        };
+      }
+      return o;
+    });
+
+    const nav = pages.map((p) => {
+      const on = p.id === cur.id;
+      return { name: p.name, current: on ? 'page' : 'false', color: on ? T.accent : T.fg, line: on ? T.accent : 'transparent', go: () => goPage(p.id) };
+    });
+    const cfg = this.musicCfg();
+    return Object.assign(base, {
+      isClosed: st.phase === 'closed',
+      isPages: st.phase === 'pages',
+      kicker: inv.kicker || '',
+      coverTitle: inv.coverTitle || inv.title,
+      dateDots: api.fmt.dots(inv.eventDate),
+      blocks, nav, hasNav: pages.length > 1,
+      pageKey: cur.id,
+      onOpen: () => { const ok = this.musicStart(); this.setState({ musicPlaying: ok }); },
+      onOpened: () => this.setState({ phase: 'pages' }),
+      hasMusic: st.phase === 'pages' && cfg.kind !== 'nenhuma',
+      musicPlaying: st.musicPlaying, musicPaused: !st.musicPlaying,
+      musicAria: st.musicPlaying ? 'Pausar música' : 'Tocar música',
+      toggleMusic: () => {
+        if (!this.player) { const ok = this.musicStart(); this.setState({ musicPlaying: ok }); return; }
+        if (st.musicPlaying) { this.player.pause(); this.setState({ musicPlaying: false }); }
+        else { this.player.resume(); this.setState({ musicPlaying: true }); }
+      },
+      addToCalendar: () => this.downloadIcs()
+    });
+  }
+}
+</script>
+</body>
+</html>

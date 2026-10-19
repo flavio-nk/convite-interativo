@@ -1,385 +1,282 @@
-"""Bateria de testes de navegador do protótipo.
+"""Bateria de testes de navegador: dados salvos de ponta a ponta.
 
-Uso: npm run build && npx vite preview  (em outro terminal)
-     cp tests/fixtures/foto.png dist/teste.png
-     pip install playwright && python -m playwright install chromium
-     python tests/e2e.py   # ou BASE_URL=https://... python tests/e2e.py
+Uso (local):
+    npm run build && rm -rf .data && npm run serve      # em outro terminal (senha local: convite)
+    pip install playwright && python -m playwright install chromium
+    python tests/e2e.py
+Contra outro endereço:  BASE_URL=https://... ADMIN_PASSWORD=... python tests/e2e.py
 """
-import re, sys, traceback
+import os
 from playwright.sync_api import sync_playwright
 
-import os
-SP = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'fixtures') + '/'
-os.makedirs(SP + 'shots', exist_ok=True)
-BASE = os.environ.get('BASE_URL', 'http://localhost:4173/')
-results = []
-errors = []
+HERE = os.path.dirname(os.path.abspath(__file__))
+FIX = os.path.join(HERE, 'fixtures') + '/'
+BASE = os.environ.get('BASE_URL', 'http://localhost:3000/').rstrip('/') + '/'
+PASSWORD = os.environ.get('ADMIN_PASSWORD', 'convite')
+results, errors = [], []
+
 
 def ok(name, cond, info=''):
     results.append((bool(cond), name, info))
 
-def step(name):
-    def deco(fn):
-        def run(pg):
-            try:
-                fn(pg)
-            except Exception as e:
-                results.append((False, name + ' [exceção]', str(e).split('\n')[0][:200]))
-        run.__name__ = name
-        return run
-    return deco
 
-def go(pg, route, wait=600):
+def safe(name, fn, *a):
+    try:
+        return fn(*a)
+    except Exception as e:  # noqa
+        results.append((False, name + ' [exceção]', str(e).split('\n')[0][:220]))
+
+
+def go(pg, route, wait=900):
     pg.goto('about:blank')
     pg.goto(BASE + '#/' + route)
     pg.wait_for_timeout(wait)
 
+
 def count(pg, sel):
     return pg.locator(sel).count()
 
+
 def text(pg):
-    return pg.inner_text('#app')
+    return pg.inner_text('body')
 
-# ---------------- MAIN ----------------
-@step('Painel')
-def t_main(pg):
+
+def wait_saved(pg, timeout=8000):
+    pg.wait_for_function("() => document.body.innerText.includes('todas as alterações salvas')", timeout=timeout)
+
+
+state = {}
+
+
+def t_login(pg):
     go(pg, 'Main')
-    ok('Painel: 5 convites listados', '5 convites' in text(pg))
-    pg.click('button.pill:has-text("Rascunhos")'); pg.wait_for_timeout(150)
-    ok('Painel: filtro Rascunhos mostra só 1', count(pg, 'article') == 1, count(pg, 'article'))
-    pg.click('button.pill:has-text("Encerrados")'); pg.wait_for_timeout(150)
-    ok('Painel: filtro Encerrados mostra 1', count(pg, 'article') == 1)
-    pg.click('button.pill:has-text("Todos")'); pg.wait_for_timeout(150)
-    pg.click('[aria-label="Excluir 40 anos da Carla"]'); pg.wait_for_timeout(150)
-    ok('Painel: modal de exclusão abre', count(pg, '[role=dialog]') == 1)
-    pg.click('[role=dialog] >> text=Cancelar'); pg.wait_for_timeout(150)
-    ok('Painel: cancelar fecha modal sem excluir', count(pg, '[role=dialog]') == 0 and count(pg, 'article') == 5)
-    pg.click('[aria-label="Excluir 40 anos da Carla"]'); pg.wait_for_timeout(150)
-    pg.click('text=Excluir convite'); pg.wait_for_timeout(200)
-    ok('Painel: excluir remove o card', count(pg, 'article') == 4 and '4 convites' in text(pg))
-    ok('Painel: aviso com Desfazer', count(pg, 'text=Desfazer') == 1)
-    pg.click('text=Desfazer'); pg.wait_for_timeout(200)
-    ok('Painel: desfazer restaura', count(pg, 'article') == 5)
-    pg.click('article >> nth=0 >> text=Ver'); pg.wait_for_timeout(400)
-    ok('Painel: Ver abre convite fechado', '#/Abertura' in pg.url)
-    go(pg, 'Main'); pg.click('article >> nth=0 >> text=Editar'); pg.wait_for_timeout(400)
-    ok('Painel: Editar abre editor', '#/Editor' in pg.url)
-    go(pg, 'Main'); pg.click('article >> nth=0 >> a:has-text("Respostas")'); pg.wait_for_timeout(400)
-    ok('Painel: Respostas abre lista', '#/Respostas' in pg.url)
-    go(pg, 'Main'); pg.click('nav[aria-label=Principal] >> text=Temas'); pg.wait_for_timeout(400)
-    ok('Painel: menu Temas abre galeria', '#/Temas' in pg.url)
+    ok('Login: pede senha', count(pg, '#pw') == 1)
+    pg.fill('#pw', 'errada'); pg.click('button:has-text("Entrar")'); pg.wait_for_timeout(900)
+    ok('Login: senha errada recusada', 'Senha incorreta' in text(pg))
+    pg.fill('#pw', PASSWORD); pg.click('button:has-text("Entrar")'); pg.wait_for_timeout(1000)
+    ok('Login: entra no painel', 'Meus convites' in text(pg))
 
-# ---------------- TEMAS ----------------
-@step('Temas')
-def t_temas(pg):
-    go(pg, 'Temas', 1200)
-    n_all = count(pg, 'button.tcard')
-    ok('Temas: 28 cartões (27 + 1 seu)', n_all == 28, n_all)
-    pg.click('button:has-text("Infantil")'); pg.wait_for_timeout(300)
-    ok('Temas: filtro Infantil = 5 + Em branco', count(pg, 'button.tcard') == 6, count(pg, 'button.tcard'))
-    pg.click('button:has-text("Meus temas")'); pg.wait_for_timeout(300)
-    ok('Temas: Meus temas = 1', count(pg, 'button.tcard') == 1, count(pg, 'button.tcard'))
-    pg.click('button[aria-pressed]:has-text("Todos")'); pg.wait_for_timeout(300)
-    pg.select_option('#f-layout', 'arco'); pg.wait_for_timeout(300)
-    n_arco = count(pg, 'button.tcard')
-    ok('Temas: filtro layout Arco', 0 < n_arco < 28, n_arco)
-    pg.select_option('#f-anim', 'presente'); pg.wait_for_timeout(300)
-    ok('Temas: arco + presente vazio mostra Limpar filtros', count(pg, 'text=Limpar filtros') == 1, count(pg, 'button.tcard'))
-    pg.click('text=Limpar filtros'); pg.wait_for_timeout(300)
-    ok('Temas: limpar filtros volta a 28', count(pg, 'button.tcard') == 28)
-    ok('Temas: selects resetados', pg.input_value('#f-layout') == 'todos' and pg.input_value('#f-anim') == 'todas', pg.input_value('#f-layout') + '/' + pg.input_value('#f-anim'))
-    pg.click('[aria-label="Tema Tropical"]'); pg.wait_for_timeout(200)
-    ok('Temas: barra mostra tema selecionado', 'Tropical' in pg.inner_text('strong >> nth=-1') or 'Tema selecionado: Tropical' in text(pg).replace('\n', ' '))
-    pg.click('button:has-text("Ver abertura")'); pg.wait_for_timeout(600)
-    ok('Temas: modal de abertura abre', count(pg, '[role=dialog]') == 1)
-    pg.click('[role=dialog] [aria-label="Toque para abrir o convite"]'); pg.wait_for_timeout(2300)
-    ok('Temas: abertura na prévia completa', count(pg, '[role=dialog] >> text=Rever abertura') == 1)
-    pg.click('[aria-label="Fechar prévia"]'); pg.wait_for_timeout(200)
-    ok('Temas: modal fecha', count(pg, '[role=dialog]') == 0)
-    pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(1000)
-    ok('Temas → Editor com tema Tropical', pg.input_value('#inv-title') == 'Novo convite · Tropical', pg.input_value('#inv-title'))
-    ok('Editor: status mostra tema Tropical', 'tema Tropical' in text(pg))
-    pg.click('button[role=tab]:has-text("Tema")'); pg.wait_for_timeout(200)
-    ok('Editor: layout veio do tema (Dividido)', pg.input_value('#th-layout') == 'dividido', pg.input_value('#th-layout'))
-    ok('Editor: abertura veio do tema (Cortina)', pg.input_value('#th-anim') == 'cortina', pg.input_value('#th-anim'))
-    ok('Editor: fonte veio do tema (Bricolage)', pg.input_value('#th-font') == 'bricolage', pg.input_value('#th-font'))
-    pg.click('button:has-text("Trocar tema base")'); pg.wait_for_timeout(600)
-    ok('Editor (fluxo): Trocar tema base volta à galeria', count(pg, 'h1:has-text("Escolha um tema")') == 1)
-    # criar tema a partir da galeria
-    pg.click('button.newcard'); pg.wait_for_timeout(800)
-    ok('Temas: Criar novo tema abre formulário', count(pg, '#t-name') == 1)
-    pg.click('text=Cancelar'); pg.wait_for_timeout(600)
-    ok('Criar tema (fluxo): Cancelar volta à galeria', count(pg, 'h1:has-text("Escolha um tema")') == 1)
-    pg.click('button:has-text("Meus temas")'); pg.wait_for_timeout(300)
-    pg.click('[aria-label="Tema Verão na serra"]'); pg.wait_for_timeout(200)
-    pg.click('button:has-text("Editar tema")'); pg.wait_for_timeout(800)
-    ok('Editar tema: nome preenchido', pg.input_value('#t-name') == 'Verão na serra', pg.input_value('#t-name'))
-    ok('Editar tema: cabeçalho diz Editar tema', 'Editar tema' in text(pg))
-    ok('Editar tema: fonte Playfair', pg.input_value('#t-font') == 'playfair', pg.input_value('#t-font'))
 
-# ---------------- CRIAR TEMA ----------------
-@step('Criar tema')
-def t_criar(pg):
-    go(pg, 'CriarTema', 1200)
-    pg.fill('#t-name', 'Tema de teste'); pg.wait_for_timeout(150)
-    ok('Criar tema: nome reflete no cabeçalho', 'Tema de teste' in pg.inner_text('header'))
-    groups = count(pg, '[role=group][aria-label^="Paletas "]')
-    ok('Criar tema: 6 grupos de paletas', groups == 6, groups)
-    ok('Criar tema: 24 paletas', count(pg, 'button[aria-label^="Paleta "]') == 24, count(pg, 'button[aria-label^="Paleta "]'))
-    pg.click('[aria-label="Paleta Oceano"]'); pg.wait_for_timeout(150)
-    ok('Criar tema: paleta aplica fundo', pg.input_value('#c-bg').lower() == '#0b3c5d', pg.input_value('#c-bg'))
-    ok('Criar tema: paleta fica marcada', pg.get_attribute('[aria-label="Paleta Oceano"]', 'aria-pressed') == 'true')
-    pg.click('text=Sortear uma paleta'); pg.wait_for_timeout(150)
-    ok('Criar tema: sortear muda paleta', pg.input_value('#c-bg').lower() != '#0b3c5d', pg.input_value('#c-bg'))
-    pg.fill('#c-fg', '#222222'); pg.wait_for_timeout(100)
-    pg.fill('#c-bg', '#2a2a2a'); pg.wait_for_timeout(150)
-    ok('Criar tema: alerta de contraste baixo', count(pg, '[role=alert]') >= 1)
-    pg.click('[aria-label="Paleta Floresta"]'); pg.wait_for_timeout(150)
-    ok('Criar tema: alerta some com boa paleta', count(pg, '[role=alert]') == 0)
-    pg.select_option('#t-font', 'greatvibes'); pg.wait_for_timeout(150)
-    ok('Criar tema: fonte cursiva aumenta título', '125%' in text(pg))
-    pg.click('[aria-label="Formato dos botões"] button:has-text("Reto")'); pg.wait_for_timeout(100)
-    ok('Criar tema: botão reto selecionado', pg.get_attribute('[aria-label="Formato dos botões"] button:has-text("Reto")', 'aria-pressed') == 'true')
-    pg.click('button.tile:has-text("Polaroid")'); pg.wait_for_timeout(150)
-    ok('Criar tema: layout Polaroid selecionado', pg.get_attribute('button.tile:has-text("Polaroid")', 'aria-pressed') == 'true')
-    ok('Criar tema: sem campo de música', count(pg, '#t-music') == 0)
-    pg.click('button.tile:has-text("Livro")'); pg.wait_for_timeout(500)
-    ok('Criar tema: escolher abertura muda prévia p/ Abertura', count(pg, 'aside [aria-label="Toque para abrir o convite"]') == 1)
-    pg.click('aside [aria-label="Toque para abrir o convite"]'); pg.wait_for_timeout(2200)
-    ok('Criar tema: prévia da abertura abre', count(pg, 'aside button:has-text("Rever abertura")') == 1)
-    pg.click('button:has-text("Salvar tema")'); pg.wait_for_timeout(200)
-    ok('Criar tema: salvar mostra confirmação', 'salvo em Meus temas' in text(pg))
-    pg.click('text=Usar em um novo convite'); pg.wait_for_timeout(1000)
-    ok('Criar tema → Editor com o tema', pg.input_value('#inv-title') == 'Novo convite · Tema de teste', pg.input_value('#inv-title') if count(pg, '#inv-title') else 'sem editor')
-    pg.click('button[role=tab]:has-text("Tema")'); pg.wait_for_timeout(200)
-    ok('Criar tema → Editor: layout polaroid e abertura livro', pg.input_value('#th-layout') == 'polaroid' and pg.input_value('#th-anim') == 'livro', pg.input_value('#th-layout') + '/' + pg.input_value('#th-anim'))
-    ok('Criar tema → Editor: botões retos', pg.input_value('#th-radius') == 'reto', pg.input_value('#th-radius'))
+def t_create(pg):
+    go(pg, 'Main')
+    pg.click('a:has-text("Novo convite")'); pg.wait_for_timeout(1200)
+    ok('Novo convite abre galeria de temas', count(pg, 'h1:has-text("Escolha um tema")') == 1)
+    pg.click('[aria-label="Tema Neon"]'); pg.wait_for_timeout(200)
+    pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(1800)
+    ok('Usar tema cria convite e abre editor', '#/Editor/' in pg.url, pg.url)
+    state['id'] = pg.url.split('#/Editor/')[1].split('?')[0]
+    ok('Editor: título com o tema', pg.input_value('#inv-title') == 'Novo convite · Neon', pg.input_value('#inv-title'))
+    wait_saved(pg)
+    ok('Editor: páginas iniciais salvas', 'todas as alterações salvas' in text(pg))
 
-# ---------------- EDITOR ----------------
-@step('Editor')
-def t_editor(pg):
-    go(pg, 'Editor', 900)
-    pg.click('button.pg:has-text("Detalhes")'); pg.wait_for_timeout(200)
-    ok('Editor: trocar página', 'Página 2 de 4' in text(pg))
-    pg.click('button.addb:has-text("Vídeo")'); pg.wait_for_timeout(200)
-    ok('Editor: adicionar bloco aumenta contagem', '6 blocos' in text(pg))
-    ok('Editor: bloco novo fica selecionado', 'Vídeo' in pg.inner_text('aside[aria-label=Propriedades]'))
-    pg.click('button:has-text("Link externo")'); pg.wait_for_timeout(150)
-    ok('Editor: origem link mostra campo de URL', count(pg, '#media-url') == 1)
-    pg.click('[aria-label="Mover bloco para cima"]'); pg.wait_for_timeout(150)
-    labels = [pg.get_attribute(f'.blk >> nth={i}', 'aria-label') for i in range(count(pg, '.blk'))]
-    ok('Editor: mover para cima', labels[-2] == 'Bloco Vídeo', labels)
-    pg.click('button:has-text("Excluir bloco")'); pg.wait_for_timeout(150)
-    ok('Editor: excluir bloco', '5 blocos' in text(pg))
+
+def t_edit_persist(pg):
+    iid = state['id']
+    go(pg, 'Editor/' + iid, 1500)
+    pg.fill('#inv-title', 'Festa de Teste')
+    pg.click('.blk >> nth=1'); pg.wait_for_timeout(150)
+    pg.fill('#blk-text', 'Joana & Bruno')
     pg.click('.blk >> nth=0'); pg.wait_for_timeout(150)
-    pg.fill('#blk-text', 'Onde vai ser'); pg.wait_for_timeout(150)
-    ok('Editor: texto ao vivo na prévia', count(pg, '.blk >> text=Onde vai ser') == 1)
-    pg.select_option('#blk-anim', 'zoom'); pg.wait_for_timeout(150)
-    ok('Editor: animação do bloco mostra selo', count(pg, '.blk >> text=Zoom') == 1)
-    pg.click('button:has-text("Adicionar página")'); pg.wait_for_timeout(200)
-    ok('Editor: adicionar página', 'Página 5 de 5' in text(pg))
-    pg.fill('#pg-name', 'Hospedagem'); pg.wait_for_timeout(150)
-    ok('Editor: renomear página', count(pg, 'button.pg:has-text("Hospedagem")') == 1)
-    pg.click('text=Excluir esta página'); pg.wait_for_timeout(200)
-    ok('Editor: excluir página', 'de 4' in text(pg))
-    pg.click('button:has-text("Publicar")'); pg.wait_for_timeout(150)
-    ok('Editor: publicar mostra link', 'Convite publicado' in text(pg))
-    pg.click('button:has-text("Despublicar")'); pg.wait_for_timeout(150)
-    ok('Editor: despublicar', 'Convite publicado' not in text(pg))
-    # tema
-    pg.click('button[role=tab]:has-text("Tema")'); pg.wait_for_timeout(200)
-    ok('Editor/Tema: 24 paletas', count(pg, 'button[aria-label^="Paleta "]') == 24, count(pg, 'button[aria-label^="Paleta "]'))
-    pg.click('[aria-label="Paleta Neon"]'); pg.wait_for_timeout(200)
-    ok('Editor/Tema: paleta muda cor do fundo', pg.input_value('#tc-bg').lower() == '#14082b', pg.input_value('#tc-bg'))
-    ok('Editor/Tema: marca Personalizado', count(pg, 'text="Personalizado"') >= 1)
-    pg.select_option('#th-layout', 'editorial'); pg.wait_for_timeout(150)
-    pg.select_option('#th-font', 'syne'); pg.wait_for_timeout(150)
-    pg.click('button:has-text("Restaurar tema")'); pg.wait_for_timeout(200)
-    ok('Editor/Tema: restaurar volta ao Jardim', pg.input_value('#tc-bg').lower() == '#1f3329' and pg.input_value('#th-layout') == 'arco', pg.input_value('#tc-bg') + '/' + pg.input_value('#th-layout'))
-    ok('Editor/Tema: Restaurar fica desativado sem mudanças', pg.is_disabled('button:has-text("Restaurar tema")'))
-    pg.click('button:has-text("Salvar como novo tema")'); pg.wait_for_timeout(150)
-    ok('Editor/Tema: salvar como novo tema avisa', 'salvo em Meus temas' in text(pg))
-    # todas as aberturas
-    for anim in ['envelope', 'cortina', 'portas', 'lacre', 'presente', 'livro', 'iris', 'neblina']:
-        pg.click('button[role=tab]:has-text("Tema")'); pg.wait_for_timeout(100)
-        pg.select_option('#th-anim', anim); pg.wait_for_timeout(500)
-        has = count(pg, 'main [aria-label="Toque para abrir o convite"]') == 1
-        if has:
-            pg.click('main [aria-label="Toque para abrir o convite"]'); pg.wait_for_timeout(2600)
-        ok('Abertura ' + anim + ': abre ao toque', has and count(pg, 'main >> text=Rever abertura') == 1)
-    pg.select_option('#th-anim', 'nenhuma'); pg.wait_for_timeout(400)
-    ok('Abertura nenhuma: já aberto', count(pg, 'main [aria-label="Toque para abrir o convite"]') == 0)
-    pg.click('button[aria-pressed]:has-text("Conteúdo")'); pg.wait_for_timeout(200)
-    ok('Editor: voltar ao conteúdo', count(pg, '.blk') > 0)
-
-@step('Editor música')
-def t_musica(pg):
-    go(pg, 'Editor', 900)
-    pg.click('button[role=tab]:has-text("Música")'); pg.wait_for_timeout(200)
-    ok('Música: 3 trilhas na biblioteca', count(pg, '[aria-label="Músicas da biblioteca"] [role=radio]') == 3)
-    pg.click('[aria-label="Ouvir Caixinha de música"]'); pg.wait_for_timeout(400)
-    ok('Música: ouvir vira parar', count(pg, '[aria-label="Parar Caixinha de música"]') == 1)
-    pg.click('[aria-label="Parar Caixinha de música"]'); pg.wait_for_timeout(200)
-    ok('Música: parar', count(pg, '[aria-label="Ouvir Caixinha de música"]') == 1)
-    pg.click('[aria-label="Músicas da biblioteca"] [role=radio]:has-text("Festa animada")'); pg.wait_for_timeout(150)
-    ok('Música: status mostra trilha escolhida', 'música: Festa animada' in text(pg))
-    pg.click('[role=radio]:has-text("Link do áudio")'); pg.wait_for_timeout(150)
-    pg.fill('#mus-link', 'https://www.youtube.com/watch?v=abc'); pg.wait_for_timeout(150)
-    ok('Música: aviso de link do YouTube', count(pg, 'text=não tocam dentro do convite') == 1)
-    pg.click('[role=radio]:has-text("Enviar arquivo")'); pg.wait_for_timeout(150)
-    pg.set_input_files('#mus-file', SP + 'tom.wav'); pg.wait_for_timeout(400)
-    ok('Música: arquivo selecionado aparece', 'tom.wav' in text(pg))
-    pg.click('button:has-text("Ouvir")'); pg.wait_for_timeout(600)
-    ok('Música: arquivo toca sem erro', count(pg, 'text=Não foi possível tocar este áudio') == 0 and count(pg, 'button:has-text("Parar")') == 1)
-    pg.fill('#mus-vol', '40') if False else None
-    pg.locator('#mus-vol').evaluate("e => { e.value = 40; e.dispatchEvent(new Event('input', {bubbles:true})); }"); pg.wait_for_timeout(150)
-    ok('Música: volume', 'Volume · 40%' in text(pg))
-    pg.click('button:has-text("Testar no convite")'); pg.wait_for_timeout(500)
-    pg.click('main [aria-label="Toque para abrir o convite"]'); pg.wait_for_timeout(2600)
-    ok('Música: no convite aparece botão de som', count(pg, 'main [aria-label="Pausar música"]') == 1)
-    ok('Música: arquivo tocou sem erro no convite', count(pg, 'main >> text=Não foi possível tocar a música') == 0)
-    pg.click('main [aria-label="Pausar música"]'); pg.wait_for_timeout(200)
-    ok('Música: pausar vira tocar', count(pg, 'main [aria-label="Tocar música"]') == 1)
+    pg.set_input_files('#media-file', FIX + 'foto.png')
+    pg.wait_for_function("() => !document.body.innerText.includes('Enviando foto.png')", timeout=10000)
+    pg.click('button[role=tab]:has-text("Evento")'); pg.wait_for_timeout(150)
+    pg.fill('#ev-kicker', 'Casamento')
+    pg.fill('#ev-date', '2027-05-20T17:30')
     pg.click('button[role=tab]:has-text("Música")'); pg.wait_for_timeout(150)
-    pg.click('[role=radio]:has-text("Sem música")'); pg.wait_for_timeout(200)
-    ok('Música: sem música no status', 'música: sem música' in text(pg))
+    pg.click('[aria-label="Músicas da biblioteca"] [role=radio]:has-text("Caixinha de música")')
+    pg.click('button[role=tab]:has-text("Tema")'); pg.wait_for_timeout(150)
+    pg.click('[aria-label="Paleta Oceano"]')
+    pg.click('button[role=tab]:has-text("Bloco")')
+    pg.click('button.pg:has-text("Detalhes")'); pg.wait_for_timeout(150)
+    pg.click('[aria-label="Bloco Mapa"]'); pg.wait_for_timeout(150)
+    pg.fill('#map-name', 'Sítio das Flores'); pg.fill('#map-addr', 'Rua das Acácias, 100, Campinas')
+    wait_saved(pg)
+    ok('Editor: salva automaticamente', True)
+    pg.reload(); pg.wait_for_timeout(1800)
+    ok('Recarregar: título salvo', pg.input_value('#inv-title') == 'Festa de Teste', pg.input_value('#inv-title'))
+    ok('Recarregar: texto do bloco salvo', count(pg, '.blk >> text=Joana & Bruno') == 1)
+    ok('Recarregar: foto enviada continua', count(pg, '.blk img') >= 1)
+    src = pg.get_attribute('.blk img >> nth=0', 'src') if count(pg, '.blk img') else ''
+    ok('Recarregar: foto vem do armazenamento (não é temporária)', src and not src.startswith('blob:'), src)
+    ok('Recarregar: música salva', 'música: Caixinha de música' in text(pg))
+    pg.click('button[role=tab]:has-text("Tema")'); pg.wait_for_timeout(150)
+    ok('Recarregar: paleta salva', pg.input_value('#tc-bg').lower() == '#0b3c5d', pg.input_value('#tc-bg'))
+    pg.click('button[role=tab]:has-text("Evento")'); pg.wait_for_timeout(150)
+    ok('Recarregar: data do evento salva', pg.input_value('#ev-date') == '2027-05-20T17:30', pg.input_value('#ev-date'))
+    pg.click('button[role=tab]:has-text("Bloco")')
+    pg.click('button.pg:has-text("Detalhes")'); pg.wait_for_timeout(150)
+    pg.click('[aria-label="Bloco Mapa"]'); pg.wait_for_timeout(150)
+    ok('Recarregar: endereço do mapa salvo', pg.input_value('#map-addr') == 'Rua das Acácias, 100, Campinas')
 
-# ---------------- RESPOSTAS ----------------
-@step('Respostas')
-def t_resp(pg):
-    go(pg, 'Respostas')
-    ok('Respostas: 8 linhas', count(pg, 'tbody tr') == 8, count(pg, 'tbody tr'))
-    pg.click('button[aria-pressed]:has-text("Não vão")'); pg.wait_for_timeout(150)
-    ok('Respostas: filtro Não vão = 2', count(pg, 'tbody tr') == 2, count(pg, 'tbody tr'))
-    pg.click('button[aria-pressed]:has-text("Todas")'); pg.wait_for_timeout(150)
-    pg.fill('#busca', 'hel'); pg.wait_for_timeout(150)
-    ok('Respostas: busca', count(pg, 'tbody tr') == 1, count(pg, 'tbody tr'))
-    pg.fill('#busca', 'zzz'); pg.wait_for_timeout(150)
-    ok('Respostas: busca vazia mostra aviso', count(pg, 'text=Nenhuma resposta encontrada') == 1)
 
-# ---------------- CONVIDADO ----------------
-@step('Convidado')
-def t_guest(pg):
-    go(pg, 'ConviteCapa', 600)
-    s1 = pg.inner_text('[aria-label="Contagem regressiva"]')
-    pg.wait_for_timeout(1300)
-    s2 = pg.inner_text('[aria-label="Contagem regressiva"]')
-    ok('Capa: contagem regressiva anda', s1 != s2)
-    pg.click('a:has-text("Ver detalhes")'); pg.wait_for_timeout(400)
-    ok('Capa → Detalhes', '#/ConviteDetalhes' in pg.url)
-    ok('Detalhes: Google Maps abre nova aba', pg.get_attribute('a:has-text("Google Maps")', 'target') == '_blank')
-    pg.click('nav[aria-label="Páginas do convite"] >> text=Galeria'); pg.wait_for_timeout(400)
-    ok('Menu inferior → Galeria', '#/ConviteGaleria' in pg.url)
-    pg.click('[aria-label="Ampliar foto: O noivado"]'); pg.wait_for_timeout(300)
-    ok('Galeria: ampliar', '3 de 6' in text(pg))
-    pg.click('[aria-label="Próxima foto"]'); pg.wait_for_timeout(150)
-    ok('Galeria: próxima', '4 de 6' in text(pg))
-    pg.click('[aria-label="Foto anterior"]'); pg.click('[aria-label="Foto anterior"]'); pg.click('[aria-label="Foto anterior"]'); pg.wait_for_timeout(150)
-    ok('Galeria: anterior circular', '1 de 6' in text(pg))
-    pg.click('[aria-label="Fechar"]'); pg.wait_for_timeout(150)
-    ok('Galeria: fechar', count(pg, '[role=dialog]') == 0)
-    pg.click('nav[aria-label="Páginas do convite"] >> text=Presença'); pg.wait_for_timeout(400)
-    pg.click('button:has-text("Enviar resposta")'); pg.wait_for_timeout(150)
-    ok('RSVP: valida nome', 'Informe seu nome' in text(pg))
-    pg.fill('#g-name', 'Maria Teste'); pg.click('button:has-text("Enviar resposta")'); pg.wait_for_timeout(150)
-    ok('RSVP: valida resposta', 'Escolha se você vai' in text(pg))
-    pg.click('button:has-text("Sim, eu vou")'); pg.wait_for_timeout(150)
-    for _ in range(4):
-        pg.click('[aria-label="Mais um acompanhante"]')
-    pg.wait_for_timeout(150)
-    ok('RSVP: máximo 2 acompanhantes', pg.inner_text('[aria-live=polite]') == '2')
-    pg.click('button:has-text("Enviar resposta")'); pg.wait_for_timeout(300)
-    ok('RSVP: confirmação com 3 lugares', 'Presença confirmada' in text(pg) and '3 lugares' in text(pg))
-    pg.click('text=Alterar minha resposta'); pg.wait_for_timeout(200)
-    ok('RSVP: alterar mantém nome', pg.input_value('#g-name') == 'Maria Teste')
-    pg.click('button:has-text("Não poderei ir")'); pg.click('button:has-text("Enviar resposta")'); pg.wait_for_timeout(300)
-    ok('RSVP: resposta não', 'Resposta enviada' in text(pg))
-    go(pg, 'Abertura', 600)
-    pg.click('[aria-label="Toque para abrir o convite"]'); pg.wait_for_timeout(2700)
-    ok('Abertura: abre e mostra Entrar', count(pg, 'text=Entrar no convite') == 1)
-    pg.click('text=Rever abertura'); pg.wait_for_timeout(300)
-    ok('Abertura: rever fecha de novo', count(pg, '[aria-label="Toque para abrir o convite"]') == 1)
-    pg.click('[aria-label="Toque para abrir o convite"]'); pg.wait_for_timeout(2700)
-    pg.click('text=Entrar no convite'); pg.wait_for_timeout(400)
-    ok('Abertura → Capa', '#/ConviteCapa' in pg.url)
+def t_preview(pg):
+    go(pg, 'Editor/' + state['id'], 1500)
+    pg.click('header button:has-text("Pré-visualizar")'); pg.wait_for_timeout(600)
+    dlg = '[aria-label="Pré-visualização do convite"]'
+    ok('Pré-visualizar abre', count(pg, dlg) == 1)
+    pg.click(dlg + ' [aria-label="Toque para abrir o convite"]'); pg.wait_for_timeout(3000)
+    ok('Pré-visualizar: abre e mostra o conteúdo editado', count(pg, dlg + ' >> text=Joana & Bruno') >= 1)
+    ok('Pré-visualizar: música ativa', count(pg, dlg + ' [aria-label="Pausar música"]') == 1)
+    pg.click('text=Fechar prévia')
 
-# ---------------- MENU / CELULAR ----------------
-@step('Menu e celular')
-def t_mobile(pg):
-    go(pg, 'Main')
-    pg.click('button:has-text("Telas")'); pg.wait_for_timeout(150)
-    pg.click('nav[aria-label="Telas do protótipo"] >> text=Galeria'); pg.wait_for_timeout(400)
-    ok('Menu Telas navega', '#/ConviteGaleria' in pg.url)
-    pg.set_viewport_size({'width': 390, 'height': 844})
-    for r in ['Main', 'Temas', 'CriarTema', 'Editor', 'Respostas', 'Abertura', 'ConviteCapa']:
-        go(pg, r, 900)
-        sw = pg.evaluate('document.documentElement.scrollWidth')
-        ok('Celular sem rolagem lateral: ' + r, sw <= 392, sw)
-        pg.screenshot(path=SP + 'shots/m_' + r + '.png')
-    pg.set_viewport_size({'width': 1280, 'height': 900})
 
-@step('Correções')
-def t_fixes(pg):
-    pg.context.grant_permissions(['clipboard-read', 'clipboard-write'])
-    go(pg, 'Editor', 900)
-    pg.click('.blk >> nth=0'); pg.wait_for_timeout(150)
-    pg.set_input_files('#media-file', SP + 'foto.png'); pg.wait_for_timeout(400)
-    ok('Foto: upload aparece na prévia', count(pg, '.blk img') == 1)
-    ok('Foto: nome do arquivo no painel', 'foto.png' in text(pg))
-    pg.click('button:has-text("Link externo")'); pg.wait_for_timeout(150)
-    pg.fill('#media-url', 'https://www.instagram.com/p/abc'); pg.wait_for_timeout(150)
-    ok('Foto: aviso para link de página', count(pg, 'text=não podem ser exibidos') == 1)
-    pg.fill('#media-url', BASE + 'teste.png'); pg.wait_for_timeout(150)
-    ok('Foto: link direto vira imagem', count(pg, '.blk img') == 1)
-    pg.click('button.pg:has-text("Galeria")'); pg.wait_for_timeout(150)
-    pg.click('[aria-label="Bloco Vídeo"]'); pg.wait_for_timeout(150)
-    pg.fill('#media-url', 'https://example.com/filme.mp4'); pg.wait_for_timeout(200)
-    ok('Vídeo: link direto vira player', count(pg, '.blk video') == 1)
-    pg.click('button[role=tab]:has-text("Tema")'); pg.click('[aria-label="Paleta Neon"]'); pg.wait_for_timeout(150)
-    pg.click('header button:has-text("Pré-visualizar")'); pg.wait_for_timeout(500)
-    ok('Pré-visualizar abre prévia em tela cheia', count(pg, '[aria-label="Pré-visualização do convite"]') == 1)
-    bg = pg.evaluate("""() => { const d = document.querySelector('[aria-label="Pré-visualização do convite"] [aria-label="Toque para abrir o convite"]'); return d ? getComputedStyle(d.firstElementChild).backgroundColor : '' }""")
-    ok('Pré-visualizar usa o tema editado (Neon)', bg == 'rgb(20, 8, 43)', bg)
-    pg.click('[aria-label="Pré-visualização do convite"] [aria-label="Toque para abrir o convite"]'); pg.wait_for_timeout(2600)
-    ok('Pré-visualizar: abre e toca música', count(pg, '[aria-label="Pré-visualização do convite"] [aria-label="Pausar música"]') == 1)
-    pg.click('text=Fechar prévia'); pg.wait_for_timeout(200)
-    ok('Pré-visualizar: fechar', count(pg, '[aria-label="Pré-visualização do convite"]') == 0)
-    pg.click('header button:has-text("Publicar")'); pg.wait_for_timeout(150)
-    ok('Link publicado é real', '#/Abertura' in text(pg))
-    pg.click('button:has-text("Copiar link")'); pg.wait_for_timeout(300)
-    clip = pg.evaluate('navigator.clipboard.readText()')
-    ok('Copiar link copia', clip.endswith('#/Abertura'), clip)
-    go(pg, 'Respostas')
+def t_unpublished_guest(browser):
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844})
+    g = ctx.new_page()
+    g.goto(BASE + '#/c/' + state['id']); g.wait_for_timeout(1500)
+    ok('Convidado: rascunho não abre', 'Convite indisponível' in g.inner_text('body'))
+    ctx.close()
+
+
+def t_publish(pg):
+    go(pg, 'Editor/' + state['id'], 1500)
+    pg.click('header button:has-text("Publicar")'); wait_saved(pg)
+    ok('Publicar mostra link', '#/c/' + state['id'] in text(pg))
+
+
+def t_guest(browser):
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}, accept_downloads=True)
+    g = ctx.new_page()
+    g.on('pageerror', lambda e: errors.append('convidado: ' + str(e)))
+    g.goto(BASE + '#/c/' + state['id']); g.wait_for_timeout(1800)
+    ok('Convidado: convite fechado', count(g, '[aria-label="Toque para abrir o convite"]') == 1)
+    ok('Convidado: abertura mostra título e data', 'Joana & Bruno' in g.inner_text('body') and '20 · 05 · 2027' in g.inner_text('body'))
+    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(3200)
+    ok('Convidado: abre e mostra a capa', count(g, 'h1:has-text("Joana & Bruno")') == 1)
+    ok('Convidado: foto aparece', count(g, 'main img') >= 1)
+    ok('Convidado: música tocando', count(g, '[aria-label="Pausar música"]') == 1)
+    cd1 = g.inner_text('[aria-label="Contagem regressiva"]'); g.wait_for_timeout(1200)
+    ok('Convidado: contagem anda', cd1 != g.inner_text('[aria-label="Contagem regressiva"]'))
+    g.click('main button:has-text("Ver detalhes")'); g.wait_for_timeout(500)
+    ok('Convidado: botão leva à página Detalhes', 'Sítio das Flores' in g.inner_text('body'))
+    href = g.get_attribute('a:has-text("Google Maps")', 'href')
+    ok('Convidado: rota do Google Maps com endereço', href and 'Acácias' in __import__('urllib.parse').parse.unquote(href), href)
+    g.click('nav[aria-label="Páginas do convite"] >> text=Presença'); g.wait_for_timeout(500)
+    g.click('button:has-text("Enviar resposta")'); g.wait_for_timeout(200)
+    ok('Convidado: valida nome', 'Informe seu nome' in g.inner_text('body'))
+    g.fill('input[autocomplete=name]', 'Carlos Convidado')
+    g.click('button:has-text("Sim, eu vou")')
+    g.click('[aria-label="Mais um acompanhante"]')
+    g.click('button:has-text("Enviar resposta")'); g.wait_for_timeout(1200)
+    ok('Convidado: confirmação enviada', 'Presença confirmada' in g.inner_text('body') and '2 lugares' in g.inner_text('body'))
+    with g.expect_download() as d:
+        g.click('button:has-text("Adicionar à agenda")')
+    ok('Convidado: agenda .ics', d.value.suggested_filename.endswith('.ics'))
+    g.reload(); g.wait_for_timeout(1500)
+    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(3200)
+    g.click('nav[aria-label="Páginas do convite"] >> text=Presença'); g.wait_for_timeout(500)
+    ok('Convidado: ao voltar, resposta lembrada', 'Presença confirmada' in g.inner_text('body'))
+    g.click('text=Alterar minha resposta'); g.wait_for_timeout(200)
+    ok('Convidado: alterar traz o nome', g.input_value('input[autocomplete=name]') == 'Carlos Convidado')
+    g.click('button:has-text("Não poderei ir")'); g.click('button:has-text("Enviar resposta")'); g.wait_for_timeout(1200)
+    ok('Convidado: altera para não vai', 'Resposta enviada' in g.inner_text('body'))
+    # segundo convidado, outro aparelho
+    ctx2 = browser.new_context(viewport={'width': 390, 'height': 844})
+    g2 = ctx2.new_page()
+    g2.goto(BASE + '#/c/' + state['id']); g2.wait_for_timeout(1500)
+    g2.click('[aria-label="Toque para abrir o convite"]'); g2.wait_for_timeout(3200)
+    g2.click('nav[aria-label="Páginas do convite"] >> text=Presença'); g2.wait_for_timeout(500)
+    g2.fill('input[autocomplete=name]', 'Dora Silva'); g2.click('button:has-text("Sim, eu vou")')
+    g2.click('button:has-text("Enviar resposta")'); g2.wait_for_timeout(1200)
+    ok('Segundo convidado responde', 'Presença confirmada' in g2.inner_text('body'))
+    sw = g2.evaluate('document.documentElement.scrollWidth')
+    ok('Convidado no celular sem rolagem lateral', sw <= 392, sw)
+    ctx2.close(); ctx.close()
+
+
+def t_rsvps(pg):
+    go(pg, 'Respostas/' + state['id'], 1500)
+    ok('Respostas: 2 linhas', count(pg, 'tbody tr') == 2, count(pg, 'tbody tr'))
+    body = text(pg)
+    ok('Respostas: resposta alterada aparece como Não vai', 'Carlos Convidado' in body and 'Não vai' in body)
+    ok('Respostas: Dora confirmada', 'Dora Silva' in body)
     with pg.expect_download() as d:
         pg.click('button:has-text("Exportar planilha")')
-    path = d.value.path(); content = open(path, encoding='utf-8-sig').read()
-    ok('Exportar planilha baixa CSV', d.value.suggested_filename.endswith('.csv') and 'Mariana Souza' in content and content.count('\n') >= 8, d.value.suggested_filename)
-    pg.evaluate("window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; 0")
-    pg.click('button:has-text("Enviar por WhatsApp")'); pg.wait_for_timeout(150)
-    opened = pg.evaluate('window.__opened')
-    ok('WhatsApp abre wa.me com link do convite', len(opened) == 1 and opened[0].startswith('https://wa.me/?text=') and 'Abertura' in opened[0], opened)
-    pg.click('button:has-text("Copiar link")'); pg.wait_for_timeout(300)
-    ok('Respostas: copiar link avisa', 'Link copiado' in text(pg))
-    go(pg, 'ConviteDetalhes')
-    with pg.expect_download() as d:
-        pg.click('button:has-text("Adicionar à agenda")')
-    ics = open(d.value.path(), encoding='utf-8').read()
-    ok('Agenda (detalhes) baixa .ics', 'BEGIN:VEVENT' in ics and 'DTSTART:20270417T190000Z' in ics)
-    go(pg, 'ConviteRSVP')
-    pg.fill('#g-name', 'Ana Teste'); pg.click('button:has-text("Sim, eu vou")'); pg.click('button:has-text("Enviar resposta")'); pg.wait_for_timeout(300)
-    with pg.expect_download() as d:
-        pg.click('button:has-text("Adicionar à agenda")')
-    ok('Agenda (confirmação) baixa .ics', d.value.suggested_filename.endswith('.ics'))
+    csv = open(d.value.path(), encoding='utf-8-sig').read()
+    ok('Respostas: planilha com dados reais', 'Dora Silva' in csv and 'Carlos Convidado' in csv)
+
+
+def t_dashboard(pg):
+    go(pg, 'Main', 1500)
+    ok('Painel: convite salvo na lista', count(pg, 'article:has-text("Festa de Teste")') == 1)
+    ok('Painel: contagem de respostas', '1 vão · 1 não vão' in text(pg))
+    ok('Painel: data do evento', 'Qui, 20 mai 2027 · 17h30' in text(pg))
+    pg.click('[aria-label="Excluir Festa de Teste"]'); pg.wait_for_timeout(200)
+    pg.click('button:has-text("Excluir convite")'); pg.wait_for_timeout(900)
+    ok('Painel: excluir remove', count(pg, 'article:has-text("Festa de Teste")') == 0)
+    pg.reload(); pg.wait_for_timeout(1500)
+    ok('Painel: exclusão persiste', count(pg, 'article:has-text("Festa de Teste")') == 0)
+
+
+def t_undo(pg):
+    # cria e exclui outro para testar o desfazer
+    go(pg, 'Temas', 1200)
+    pg.click('[aria-label="Tema Jardim"]'); pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(1800)
+    wait_saved(pg)
+    go(pg, 'Main', 1500)
+    pg.click('[aria-label^="Excluir Novo convite · Jardim"]'); pg.wait_for_timeout(200)
+    pg.click('button:has-text("Excluir convite")'); pg.wait_for_timeout(900)
+    pg.click('text=Desfazer'); pg.wait_for_timeout(1500)
+    ok('Desfazer restaura o convite', count(pg, 'article:has-text("Novo convite · Jardim")') == 1)
+    pg.reload(); pg.wait_for_timeout(1500)
+    ok('Desfazer persiste', count(pg, 'article:has-text("Novo convite · Jardim")') == 1)
+
+
+def t_change_theme(pg):
+    go(pg, 'Main', 1500)
+    pg.click('article:has-text("Novo convite · Jardim") >> text=Editar'); pg.wait_for_timeout(1500)
+    eid = pg.url.split('#/Editor/')[1]
+    pg.click('button[role=tab]:has-text("Tema")'); pg.click('button:has-text("Trocar tema base")'); pg.wait_for_timeout(1300)
+    ok('Trocar tema abre galeria em modo troca', 'Trocar o tema do convite' in text(pg))
+    pg.click('[aria-label="Tema Tropical"]'); pg.click('button:has-text("Aplicar ao convite")'); pg.wait_for_timeout(1800)
+    ok('Trocar tema volta ao mesmo convite', pg.url.endswith('#/Editor/' + eid), pg.url)
+    pg.click('button[role=tab]:has-text("Tema")'); pg.wait_for_timeout(150)
+    ok('Trocar tema aplica Tropical', pg.input_value('#th-layout') == 'dividido' and 'Tropical' in text(pg))
+
+
+def t_custom_theme(pg):
+    go(pg, 'CriarTema', 1200)
+    pg.fill('#t-name', 'Tema Salvo E2E'); pg.click('[aria-label="Paleta Café"]')
+    pg.click('button:has-text("Salvar tema")'); pg.wait_for_timeout(900)
+    ok('Criar tema: salvo', 'salvo em Meus temas' in text(pg))
+    go(pg, 'Temas', 1300)
+    pg.click('button[aria-pressed]:has-text("Meus temas")'); pg.wait_for_timeout(300)
+    ok('Meus temas lista o tema salvo', count(pg, '[aria-label="Tema Tema Salvo E2E"]') == 1)
+    pg.click('[aria-label="Tema Tema Salvo E2E"]'); pg.click('button:has-text("Editar tema")'); pg.wait_for_timeout(1300)
+    ok('Editar tema carrega dados', pg.input_value('#t-name') == 'Tema Salvo E2E' and pg.input_value('#c-bg').lower() == '#3b2a20')
+    pg.click('button:has-text("Excluir tema")'); pg.click('[role=alert] button:has-text("Excluir")'); pg.wait_for_timeout(1300)
+    pg.click('button[aria-pressed]:has-text("Meus temas")'); pg.wait_for_timeout(300)
+    ok('Excluir tema', count(pg, '[aria-label="Tema Tema Salvo E2E"]') == 0)
+
+
+def t_logout(pg):
+    go(pg, 'Main', 1200)
+    pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
+    ok('Sair volta ao login', count(pg, '#pw') == 1)
+    pg.fill('#pw', PASSWORD); pg.click('button:has-text("Entrar")'); pg.wait_for_timeout(1000)
+
+
+def t_mobile(pg):
+    pg.set_viewport_size({'width': 390, 'height': 844})
+    for r in ['Main', 'Temas', 'CriarTema', 'Respostas']:
+        go(pg, r, 1200)
+        sw = pg.evaluate('document.documentElement.scrollWidth')
+        ok('Celular sem rolagem lateral: ' + r, sw <= 392, sw)
+    pg.set_viewport_size({'width': 1280, 'height': 900})
+
 
 with sync_playwright() as p:
     b = p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
     ctx = b.new_context(viewport={'width': 1280, 'height': 900}, accept_downloads=True)
     pg = ctx.new_page()
-    pg.set_default_timeout(5000)
+    pg.set_default_timeout(6000)
     pg.on('pageerror', lambda e: errors.append(str(e)))
-    pg.on('console', lambda m: errors.append(m.text) if m.type == 'error' and 'ERR_TUNNEL' not in m.text and 'Failed to load resource' not in m.text else None)
-    for t in [t_main, t_temas, t_criar, t_editor, t_musica, t_resp, t_guest, t_fixes, t_mobile]:
-        t(pg)
+    pg.on('console', lambda m: errors.append(m.text) if m.type == 'error' and 'Failed to load resource' not in m.text and 'ERR_' not in m.text else None)
+    for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
+                          ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
+                          ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
+                          ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+        safe(name, fn, arg)
     b.close()
 
 fails = [r for r in results if not r[0]]
