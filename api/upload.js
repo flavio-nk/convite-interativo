@@ -6,6 +6,7 @@ import path from 'node:path';
 import { handleUpload } from '@vercel/blob/client';
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
 import { isAdmin, requireAdmin } from './_lib/auth.js';
+import { blobToken, relatedNames } from './_lib/env.js';
 
 const DIR = path.join(process.cwd(), '.data', 'uploads');
 const MAX = 100 * 1024 * 1024;
@@ -14,10 +15,12 @@ const TYPES = ['image/*', 'video/*', 'audio/*'];
 export default handler(async (req, res) => {
   const q = query(req);
 
-  if (process.env.BLOB_READ_WRITE_TOKEN) {
+  const token = blobToken();
+  if (token) {
     if (req.method !== 'POST') throw httpError(405, 'Método não permitido.');
     const body = await readBody(req);
     const result = await handleUpload({
+      token,
       body,
       request: req,
       onBeforeGenerateToken: async () => {
@@ -30,7 +33,8 @@ export default handler(async (req, res) => {
   }
 
   if (process.env.VERCEL) {
-    throw httpError(503, 'Armazenamento de arquivos não configurado. No Vercel, crie um Blob em Storage e conecte ao projeto.');
+    const names = relatedNames();
+    throw httpError(503, 'Armazenamento de arquivos não configurado. No Vercel, conecte um Blob (Storage › Blob) ao projeto e faça um novo deploy.' + (names.length ? ' Variáveis encontradas: ' + names.join(', ') + '.' : ''));
   }
 
   // modo local
