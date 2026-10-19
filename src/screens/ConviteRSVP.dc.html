@@ -1,0 +1,163 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Ana &amp; Pedro — Confirmar presença</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#CDAE6B}a:hover{color:#E2C88E}
+button,input,textarea{font-family:inherit}
+.gf{width:100%;box-sizing:border-box;min-height:48px;padding:12px 14px;border-radius:12px;border:1px solid #4A6B5A;background:#24392F;color:#F3EEE4;font-size:15px}
+.gf::placeholder{color:#9AA79C}
+.gf:focus{outline:2px solid #CDAE6B;outline-offset:1px;border-color:#CDAE6B}
+.gl{display:block;font-size:13px;font-weight:600;color:#D9DED6;margin-bottom:6px}
+@keyframes subir{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+.anim-up{animation:subir .8s cubic-bezier(.2,.7,.2,1) both}
+@media (prefers-reduced-motion: reduce){.anim-up{animation:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #1F3329; color: #F3EEE4; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <main style="flex: 1 1 auto; overflow-y: auto; padding: 36px 20px 28px; display: flex; flex-direction: column; gap: 20px">
+
+    <sc-if value="{{showForm}}" hint-placeholder-val="{{ true }}">
+      <header class="anim-up" style="text-align: center; display: flex; flex-direction: column; gap: 6px">
+        <span style="font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: #CDAE6B; font-weight: 600">Ana &amp; Pedro</span>
+        <h1 style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 42px; line-height: 1.05; font-weight: 500">Confirme sua presença</h1>
+        <p style="margin: 0; font-size: 14px; color: #C3CCC1">Responda até 17 de março de 2027</p>
+      </header>
+
+      <form class="anim-up" onSubmit="{{submit}}" style="display: flex; flex-direction: column; gap: 16px; animation-delay: .15s">
+        <div>
+          <label class="gl" for="g-name">Nome completo</label>
+          <input class="gf" id="g-name" autocomplete="name" placeholder="Como está no convite" value="{{name}}" onChange="{{onName}}">
+        </div>
+
+        <fieldset style="border: 0; margin: 0; padding: 0">
+          <legend class="gl" style="padding: 0">Você vai?</legend>
+          <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <button type="button" onClick="{{sayYes}}" aria-pressed="{{yesPressed}}" style="min-height: 52px; border-radius: 12px; border: 1px solid {{yesBorder}}; background: {{yesBg}}; color: {{yesFg}}; font-weight: 700; font-size: 15px; cursor: pointer">Sim, eu vou</button>
+            <button type="button" onClick="{{sayNo}}" aria-pressed="{{noPressed}}" style="min-height: 52px; border-radius: 12px; border: 1px solid {{noBorder}}; background: {{noBg}}; color: {{noFg}}; font-weight: 700; font-size: 15px; cursor: pointer">Não poderei ir</button>
+          </div>
+        </fieldset>
+
+        <sc-if value="{{isYes}}" hint-placeholder-val="{{ true }}">
+          <div style="display: flex; flex-direction: column; gap: 16px">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; border: 1px solid #4A6B5A">
+              <div style="display: flex; flex-direction: column; line-height: 1.35">
+                <span style="font-weight: 600; font-size: 15px">Acompanhantes</span>
+                <span style="font-size: 12px; color: #C3CCC1">Até 2 por convidado</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px">
+                <button type="button" onClick="{{dec}}" aria-label="Menos um acompanhante" style="width: 44px; height: 44px; border-radius: 50%; border: 1px solid #CDAE6B; background: transparent; color: #CDAE6B; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M5 12h14"></path></svg>
+                </button>
+                <span aria-live="polite" style="min-width: 20px; text-align: center; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 28px; font-weight: 600">{{guests}}</span>
+                <button type="button" onClick="{{inc}}" aria-label="Mais um acompanhante" style="width: 44px; height: 44px; border-radius: 50%; border: 0; background: #CDAE6B; color: #1F3329; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="gl" for="g-diet">Restrição alimentar <span style="font-weight: 400; color: #C3CCC1">(opcional)</span></label>
+              <input class="gf" id="g-diet" placeholder="Ex.: vegetariano, sem glúten">
+            </div>
+          </div>
+        </sc-if>
+
+        <div>
+          <label class="gl" for="g-msg">Mensagem para os noivos <span style="font-weight: 400; color: #C3CCC1">(opcional)</span></label>
+          <textarea class="gf" id="g-msg" rows="3" placeholder="Deixe um recado carinhoso" style="resize: none; line-height: 1.5"></textarea>
+        </div>
+
+        <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #4A2B22; color: #FFD9CC; font-size: 14px">{{error}}</p>
+        </sc-if>
+
+        <button type="submit" style="min-height: 52px; border-radius: 999px; border: 0; background: #CDAE6B; color: #1F3329; font-weight: 700; font-size: 16px; cursor: pointer">Enviar resposta</button>
+      </form>
+    </sc-if>
+
+    <sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+      <div class="anim-up" style="flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 14px; padding: 20px 8px">
+        <span style="width: 72px; height: 72px; border-radius: 50%; background: #CDAE6B; color: #1F3329; display: flex; align-items: center; justify-content: center">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>
+        </span>
+        <h1 style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; line-height: 1.05; font-weight: 500">{{doneTitle}}</h1>
+        <p style="margin: 0; font-size: 15px; color: #D9DED6; max-width: 290px">{{doneText}}</p>
+        <sc-if value="{{doneYes}}" hint-placeholder-val="{{ true }}">
+          <button style="margin-top: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; background: #CDAE6B; color: #1F3329; font-weight: 700; font-size: 15px; cursor: pointer">Adicionar à agenda</button>
+        </sc-if>
+        <button onClick="{{edit}}" style="min-height: 44px; padding: 0 16px; border: 0; background: transparent; color: #CDAE6B; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: underline">Alterar minha resposta</button>
+      </div>
+    </sc-if>
+  </main>
+
+  <nav aria-label="Páginas do convite" style="flex: none; height: 68px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #1A2C23; border-top: 1px solid #3C5A4B">
+    <a href="ConviteCapa.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #C3CCC1; font-size: 11px; font-weight: 600; text-decoration: none; border-top: 2px solid transparent">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"></path></svg>Capa</a>
+    <a href="ConviteDetalhes.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #C3CCC1; font-size: 11px; font-weight: 600; text-decoration: none; border-top: 2px solid transparent">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>Detalhes</a>
+    <a href="ConviteGaleria.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #C3CCC1; font-size: 11px; font-weight: 600; text-decoration: none; border-top: 2px solid transparent">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>Galeria</a>
+    <a href="ConviteRSVP.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #CDAE6B; font-size: 11px; font-weight: 700; text-decoration: none; border-top: 2px solid #CDAE6B">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8M20 12v7H4V5h11"></path></svg>Presença</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { name: '', answer: null, guests: 0, error: '', done: false };
+  }
+  renderVals() {
+    const st = this.state;
+    const yes = st.answer === 'yes';
+    const no = st.answer === 'no';
+    const first = st.name.trim().split(' ')[0];
+    const total = 1 + st.guests;
+    return {
+      showForm: !st.done,
+      done: st.done,
+      name: st.name,
+      onName: (e) => this.setState({ name: e.target.value, error: '' }),
+      isYes: yes,
+      yesPressed: yes ? 'true' : 'false',
+      noPressed: no ? 'true' : 'false',
+      yesBg: yes ? '#CDAE6B' : 'transparent',
+      yesFg: yes ? '#1F3329' : '#F3EEE4',
+      yesBorder: yes ? '#CDAE6B' : '#4A6B5A',
+      noBg: no ? '#F3EEE4' : 'transparent',
+      noFg: no ? '#1F3329' : '#F3EEE4',
+      noBorder: no ? '#F3EEE4' : '#4A6B5A',
+      sayYes: () => this.setState({ answer: 'yes', error: '' }),
+      sayNo: () => this.setState({ answer: 'no', guests: 0, error: '' }),
+      guests: String(st.guests),
+      inc: () => this.setState({ guests: Math.min(2, st.guests + 1) }),
+      dec: () => this.setState({ guests: Math.max(0, st.guests - 1) }),
+      hasError: !!st.error,
+      error: st.error,
+      submit: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        if (!st.name.trim()) { this.setState({ error: 'Informe seu nome completo.' }); return; }
+        if (!st.answer) { this.setState({ error: 'Escolha se você vai ou não.' }); return; }
+        this.setState({ done: true, error: '' });
+      },
+      doneYes: yes,
+      doneTitle: yes ? 'Presença confirmada!' : 'Resposta enviada',
+      doneText: yes
+        ? 'Obrigado, ' + first + '! Reservamos ' + (total === 1 ? '1 lugar' : total + ' lugares') + ' para 17 de abril. Até lá!'
+        : 'Obrigado por avisar, ' + first + '. Sentiremos sua falta.',
+      edit: () => this.setState({ done: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

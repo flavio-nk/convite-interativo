@@ -1,0 +1,305 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Escolher tema</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<style>
+body{margin:0;background:#F5F4F8}
+a{color:#4A32C4}a:hover{color:#2F1F8F}
+button,select{font-family:inherit}
+.tcard:hover{border-color:#B9B4CC}
+.newcard:hover{border-color:#5B3FD6;background:#F7F5FE}
+.fld{box-sizing:border-box;min-height:40px;padding:8px 12px;border:1px solid #D6D3E0;border-radius:10px;background:#FFFFFF;color:#17151F;font-size:14px;font-weight:600}
+.fld:focus{outline:2px solid #5B3FD6;outline-offset:1px}
+</style>
+</helmet>
+<div>
+<sc-if value="{{isGallery}}" hint-placeholder-val="{{ true }}">
+<div style="min-height: 100vh; background: #F5F4F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5; padding-bottom: 110px; box-sizing: border-box">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 24px">
+      <a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: #17151F; font-weight: 600; text-decoration: none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+        Meus convites
+      </a>
+      <ol aria-label="Etapas" style="display: flex; flex-wrap: wrap; gap: 8px 20px; margin: 0; padding: 0; list-style: none; font-size: 14px">
+        <li style="display: flex; align-items: center; gap: 8px; font-weight: 700; color: #17151F"><span style="width: 24px; height: 24px; border-radius: 50%; background: #5B3FD6; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 12px">1</span>Tema</li>
+        <li style="display: flex; align-items: center; gap: 8px; color: #5E5A6B"><span style="width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid #B9B4CC; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; box-sizing: border-box">2</span>Conteúdo</li>
+        <li style="display: flex; align-items: center; gap: 8px; color: #5E5A6B"><span style="width: 24px; height: 24px; border-radius: 50%; border: 1.5px solid #B9B4CC; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; box-sizing: border-box">3</span>Publicar</li>
+      </ol>
+    </div>
+  </header>
+
+  <main style="max-width: 1240px; margin: 0 auto; padding: 40px 24px 32px">
+    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+      <div>
+        <h1 style="margin: 0; font-size: 32px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700">Escolha um tema para o convite</h1>
+        <p style="margin: 8px 0 0; color: #5E5A6B; max-width: 680px">O tema é só o ponto de partida: cores, fontes, layout e abertura podem ser alterados depois, no editor do convite.</p>
+      </div>
+      <button onClick="{{newTheme}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.5-1.6 0-1.3-1-1.6-1-2.6 0-.9.7-1.3 1.6-1.3H16a5 5 0 0 0 5-5C21 6.4 17 3 12 3Z"></path><path d="M7.5 11h.01M10 7.5h.01M14.5 7.5h.01"></path></svg>
+        Criar tema
+      </button>
+    </div>
+
+    <div role="group" aria-label="Filtrar por tipo de evento" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px">
+      <sc-for list="{{cats}}" as="c" hint-placeholder-count="9">
+        <button onClick="{{c.pick}}" aria-pressed="{{c.pressed}}" style="min-height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid {{c.border}}; background: {{c.bg}}; color: {{c.fg}}; font-size: 14px; font-weight: 600; cursor: pointer">{{c.label}}</button>
+      </sc-for>
+    </div>
+
+    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; margin-top: 16px">
+      <div style="display: flex; align-items: center; gap: 8px">
+        <label for="f-layout" style="font-size: 14px; color: #3D3A4A; font-weight: 600">Layout</label>
+        <select class="fld" id="f-layout" value="{{layoutFilter}}" onChange="{{onLayout}}">
+          <option value="todos">Todos</option>
+          <option value="centro">Centralizado</option>
+          <option value="foto-topo">Foto no topo</option>
+          <option value="foto-fundo">Foto de fundo</option>
+          <option value="moldura">Moldura</option>
+          <option value="dividido">Dividido</option>
+          <option value="editorial">Editorial</option>
+          <option value="arco">Arco</option>
+          <option value="polaroid">Polaroid</option>
+        </select>
+      </div>
+      <div style="display: flex; align-items: center; gap: 8px">
+        <label for="f-anim" style="font-size: 14px; color: #3D3A4A; font-weight: 600">Abertura</label>
+        <select class="fld" id="f-anim" value="{{animFilter}}" onChange="{{onAnim}}">
+          <option value="todas">Todas</option>
+          <option value="envelope">Carta</option>
+          <option value="cortina">Cortina</option>
+          <option value="portas">Portas</option>
+          <option value="lacre">Lacre de cera</option>
+          <option value="presente">Presente</option>
+          <option value="livro">Livro</option>
+          <option value="iris">Íris</option>
+          <option value="neblina">Neblina</option>
+        </select>
+      </div>
+      <span style="font-size: 14px; color: #5E5A6B">{{countLabel}}</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(214px, 1fr)); gap: 20px; margin-top: 24px">
+      <button class="newcard" onClick="{{newTheme}}" style="min-height: 380px; border-radius: 18px; border: 2px dashed #C9C4DB; background: #FFFFFF; color: #17151F; cursor: pointer; font-size: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; text-align: center">
+        <span style="width: 52px; height: 52px; border-radius: 14px; background: #EFECFB; color: #3B26A8; display: flex; align-items: center; justify-content: center">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+        </span>
+        <span style="font-weight: 700; font-size: 17px">Criar novo tema</span>
+        <span style="font-size: 14px; color: #5E5A6B">Defina cores, fontes, layout e animação de abertura do seu jeito.</span>
+      </button>
+      <sc-for list="{{themes}}" as="t" hint-placeholder-count="12">
+        <button class="tcard" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" aria-label="Tema {{t.name}}" style="text-align: left; padding: 10px; border-radius: 18px; border: 2px solid {{t.ring}}; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; flex-direction: column; gap: 12px; position: relative">
+          <span style="display: block; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #ECEAF2">
+            <dc-import name="CapaPreview" layout="{{t.layout}}" bg="{{t.bg}}" fg="{{t.fg}}" accent="{{t.accent}}" ph="{{t.ph}}" btn-fg="{{t.btnFg}}" font="{{t.font}}" weight="{{t.weight}}" fstyle="{{t.fstyle}}" kicker="{{t.kicker}}" titulo="{{t.sample}}" data="{{t.date}}" btn-radius="{{t.radius}}" title-scale="{{t.ts}}" aspect="4 / 5" hint-size="100%,260px"></dc-import>
+          </span>
+          <sc-if value="{{t.selected}}" hint-placeholder-val="{{ false }}">
+            <span style="position: absolute; top: 18px; right: 18px; width: 28px; height: 28px; border-radius: 50%; background: #5B3FD6; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>
+            </span>
+          </sc-if>
+          <sc-if value="{{t.custom}}" hint-placeholder-val="{{ false }}">
+            <span style="position: absolute; top: 18px; left: 18px; padding: 2px 10px; border-radius: 999px; background: #17151F; color: #FFFFFF; font-size: 12px; font-weight: 700">Seu tema</span>
+          </sc-if>
+          <span style="padding: 0 4px 4px; display: flex; flex-direction: column; gap: 4px">
+            <span style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px">
+              <span style="font-size: 16px; font-weight: 700">{{t.name}}</span>
+              <span style="font-size: 12px; color: #5E5A6B; font-weight: 600; text-align: right">{{t.cat}}</span>
+            </span>
+            <span style="display: flex; gap: 4px" aria-hidden="true">
+              <span style="width: 18px; height: 18px; border-radius: 50%; background: {{t.bg}}; border: 1px solid #DDDAE5"></span>
+              <span style="width: 18px; height: 18px; border-radius: 50%; background: {{t.fg}}; border: 1px solid #DDDAE5"></span>
+              <span style="width: 18px; height: 18px; border-radius: 50%; background: {{t.accent}}; border: 1px solid #DDDAE5"></span>
+              <span style="width: 18px; height: 18px; border-radius: 50%; background: {{t.paper}}; border: 1px solid #DDDAE5"></span>
+            </span>
+            <span style="font-size: 13px; color: #5E5A6B; line-height: 1.4">{{t.desc}}</span>
+            <span style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px">
+              <span style="padding: 2px 8px; border-radius: 6px; background: #F1EFF6; color: #3D3A4A; font-size: 12px; font-weight: 600">{{t.layoutLabel}}</span>
+              <span style="padding: 2px 8px; border-radius: 6px; background: #EFECFB; color: #3B26A8; font-size: 12px; font-weight: 600">Abertura: {{t.animLabel}}</span>
+            </span>
+          </span>
+        </button>
+      </sc-for>
+    </div>
+    <sc-if value="{{isEmpty}}" hint-placeholder-val="{{ false }}">
+      <p style="margin: 24px 0 0; padding: 32px; text-align: center; border: 1px dashed #CFCBDB; border-radius: 16px; color: #5E5A6B">Nenhum tema com esses filtros. <button onClick="{{clearFilters}}" style="border: 0; background: transparent; color: #4A32C4; font-weight: 700; font-size: 15px; cursor: pointer; text-decoration: underline">Limpar filtros</button></p>
+    </sc-if>
+  </main>
+
+  <div style="position: fixed; left: 0; right: 0; bottom: 0; background: #FFFFFF; border-top: 1px solid #E3E1EA">
+    <div style="max-width: 1240px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+      <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+        <span aria-hidden="true" style="display: flex; width: 40px; height: 40px; border-radius: 10px; overflow: hidden; border: 1px solid #E3E1EA; flex: none">
+          <span style="flex: 2; background: {{sel.bg}}"></span><span style="flex: 1; background: {{sel.accent}}"></span>
+        </span>
+        <span style="display: flex; flex-direction: column; line-height: 1.35">
+          <span><span style="color: #5E5A6B">Tema selecionado:</span> <strong>{{sel.name}}</strong></span>
+          <span style="font-size: 13px; color: #5E5A6B">Layout {{sel.layoutLabel}} · Abertura {{sel.animLabel}}</span>
+        </span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <sc-if value="{{sel.custom}}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{editTheme}}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">Editar tema</button>
+        </sc-if>
+        <button onClick="{{showOpening}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9 6 9-6M3 7v12h18V7M3 7l9-4 9 4"></path></svg>
+          Ver abertura
+        </button>
+        <button onClick="{{useTheme}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">
+          Usar este tema
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <sc-if value="{{openingVisible}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; background: rgba(23, 21, 31, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto">
+      <div role="dialog" aria-modal="true" aria-labelledby="op-title" style="background: #FFFFFF; border-radius: 20px; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 14px; max-width: 100%">
+        <div style="width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 16px">
+          <div style="display: flex; flex-direction: column; line-height: 1.3">
+            <span id="op-title" style="font-weight: 700; font-size: 17px">Abertura: {{sel.animLabel}}</span>
+            <span style="font-size: 13px; color: #5E5A6B">Tema {{sel.name}} · toque no convite para abrir</span>
+          </div>
+          <button onClick="{{hideOpening}}" aria-label="Fechar prévia" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; align-items: center; justify-content: center">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg>
+          </button>
+        </div>
+        <div style="width: 320px; height: 692px; border-radius: 36px; overflow: hidden; border: 8px solid #17151F; flex: none">
+          <div style="width: 390px; height: 844px; transform: scale(0.8205); transform-origin: top left">
+            <dc-import name="Abertura" anim="{{sel.anim}}" layout="{{sel.layout}}" bg="{{sel.bg}}" fg="{{sel.fg}}" accent="{{sel.accent}}" paper="{{sel.paper}}" ph="{{sel.ph}}" btn-fg="{{sel.btnFg}}" font="{{sel.font}}" weight="{{sel.weight}}" fstyle="{{sel.fstyle}}" kicker="{{sel.kicker}}" titulo="{{sel.sample}}" data="{{sel.date}}" btn-radius="{{sel.radius}}" show-link="{{noLink}}" music="{{noMusic}}" hint-size="390px,844px"></dc-import>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</sc-if>
+<sc-if value="{{isEditor}}" hint-placeholder-val="{{ false }}">
+  <dc-import name="Editor" initial-theme="{{payload}}" on-back="{{resetFlow}}" on-change-theme="{{resetFlow}}" hint-size="100%,1100px"></dc-import>
+</sc-if>
+<sc-if value="{{isCriar}}" hint-placeholder-val="{{ false }}">
+  <dc-import name="CriarTema" initial-theme="{{editPayload}}" on-exit="{{resetFlow}}" on-back="{{resetFlow}}" hint-size="100%,1500px"></dc-import>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":2900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { cat: 'Todos', picked: 'jardim', layout: 'todos', anim: 'todas', opening: false, step: 'galeria', editing: null };
+  }
+  toPayload(x) {
+    const f = x.font;
+    const fontKey = f.indexOf('Cormorant') !== -1 ? 'cormorant' : f.indexOf('Playfair') !== -1 ? 'playfair' : f.indexOf('Bodoni') !== -1 ? 'bodoni'
+      : f.indexOf('DM Serif') !== -1 ? 'dmserif' : f.indexOf('Italiana') !== -1 ? 'italiana' : f.indexOf('Great Vibes') !== -1 ? 'greatvibes'
+      : f.indexOf('Caveat') !== -1 ? 'caveat' : f.indexOf('Bricolage') !== -1 ? 'bricolage' : f.indexOf('Syne') !== -1 ? 'syne'
+      : f.indexOf('Josefin') !== -1 ? 'josefin' : 'jakarta';
+    const radiusKey = x.radius === '999px' ? 'pilula' : (x.radius === '0px' || x.radius === '2px') ? 'reto' : 'arredondado';
+    return {
+      name: x.name, baseName: x.name, cat: x.cat, bg: x.bg, fg: x.fg, accent: x.accent, btnFg: x.btnFg, paper: x.paper, ph: x.ph,
+      fontKey, italic: x.fstyle === 'italic', layout: x.layout, radiusKey, anim: x.anim,
+      kicker: x.kicker, sample: x.sample, date: x.date, titleScale: x.ts
+    };
+  }
+  themes() {
+    const CG = "'Cormorant Garamond', Georgia, serif", PF = "'Playfair Display', Georgia, serif", BM = "'Bodoni Moda', Georgia, serif";
+    const GV = "'Great Vibes', cursive", IT = "'Italiana', serif", DM = "'DM Serif Display', Georgia, serif";
+    const BG = "'Bricolage Grotesque', sans-serif", SY = "'Syne', sans-serif", JO = "'Josefin Sans', sans-serif";
+    const CV = "'Caveat', cursive", PJ = "'Plus Jakarta Sans', sans-serif";
+    const t = (id, name, cat, desc, bg, fg, accent, paper, ph, btnFg, font, weight, fstyle, layout, anim, radius, kicker, sample, date, ts, custom) =>
+      ({ id, name, cat, desc, bg, fg, accent, paper, ph, btnFg, font, weight, fstyle, layout, anim, radius, kicker, sample, date, ts: ts || 1, custom: !!custom });
+    return [
+      t('jardim', 'Jardim', 'Casamento', 'Verde profundo, dourado e tipografia clássica.', '#1F3329', '#F3EEE4', '#CDAE6B', '#E9E1D0', '#2B4538', '#1F3329', CG, '500', 'normal', 'arco', 'envelope', '999px', 'Casamento', 'Ana & Pedro', '17 · 04 · 2027'),
+      t('terracota', 'Terracota', 'Casamento', 'Barro, areia e serifas elegantes, clima rústico.', '#F4E7DC', '#5A2E1F', '#A8482A', '#C9673F', '#E3CBB8', '#FFF6EF', PF, '600', 'normal', 'foto-topo', 'envelope', '999px', 'Casamento', 'Lia & Davi', '22 · 05 · 2027'),
+      t('noite', 'Noite estrelada', 'Casamento', 'Azul-noite profundo com detalhes dourados.', '#0F1A3A', '#EDE6D6', '#D8B868', '#16244F', '#1C2B55', '#0F1A3A', BM, '500', 'normal', 'centro', 'cortina', '999px', 'Casamento', 'Clara & Hugo', '09 · 10 · 2027'),
+      t('rosa', 'Rosa seco', 'Casamento', 'Rosé suave e letra cursiva romântica.', '#F3E3E1', '#5B2E3A', '#9E4A60', '#E8C9C6', '#E6CBC8', '#FFF5F6', GV, '400', 'normal', 'arco', 'lacre', '999px', 'Casamento', 'Bia & Leo', '14 · 02 · 2027', 1.25),
+      t('praia', 'Pé na areia', 'Casamento', 'Turquesa e areia para cerimônias ao ar livre.', '#EAF4F4', '#103C4A', '#1F7C8A', '#F6EFE2', '#BFDCDC', '#FFFFFF', IT, '400', 'normal', 'foto-fundo', 'neblina', '999px', 'Casamento na praia', 'Nina & Rui', '30 · 01 · 2027'),
+      t('festa', 'Festa', 'Aniversário', 'Cores vivas e letras grandes para comemorar.', '#C2361F', '#FFF4EE', '#FFD166', '#FFD166', '#A82C18', '#3A1208', BG, '800', 'normal', 'editorial', 'presente', '12px', 'Aniversário', '40 anos da Carla', '12 · 03 · 2027', 0.85),
+      t('neon', 'Neon', 'Aniversário', 'Roxo escuro com verde neon para festas à noite.', '#14082B', '#F5F0FF', '#2FE6C8', '#2A1260', '#22124A', '#14082B', SY, '800', 'normal', 'foto-fundo', 'iris', '999px', 'Festa', 'Noite Neon', '27 · 11 · 2026', 0.85),
+      t('tropical', 'Tropical', 'Aniversário', 'Verde-folha e laranja vibrante, clima de verão.', '#0E4D3A', '#FFF7E6', '#FF8A3D', '#FF8A3D', '#146149', '#2B1406', BG, '800', 'normal', 'dividido', 'cortina', '999px', 'Aniversário', 'Luau do Rafa', '06 · 02 · 2027', 0.9),
+      t('boteco', 'Boteco', 'Aniversário', 'Amarelo e vermelho, descontraído e divertido.', '#F6C744', '#2B1A0E', '#9E2A17', '#9E2A17', '#E8B42C', '#FFF4DE', JO, '700', 'normal', 'polaroid', 'presente', '6px', 'Aniversário', 'Boteco do Beto', '20 · 03 · 2027'),
+      t('pop', 'Pop', 'Aniversário', 'Branco com roxo elétrico, moderno e divertido.', '#FFFFFF', '#1D1A2E', '#7A3CF0', '#7A3CF0', '#F1EAFE', '#FFFFFF', BG, '800', 'normal', 'polaroid', 'presente', '16px', 'Aniversário', 'Duda 15', '05 · 09 · 2027'),
+      t('delicado', 'Delicado', 'Infantil', 'Tons suaves para chá de bebê e batizado.', '#EBDDD3', '#4A3328', '#8C5638', '#F7EFE8', '#D9C6B8', '#FFF7F1', CG, '500', 'italic', 'moldura', 'lacre', '999px', 'Chá de bebê', 'Theo está chegando', '15 · 11 · 2026', 0.85),
+      t('confete', 'Confete', 'Infantil', 'Divertido e colorido para festas infantis.', '#FFF1D6', '#2A2340', '#C42F3E', '#D93A4A', '#F5DDB0', '#FFFFFF', BG, '800', 'normal', 'polaroid', 'presente', '14px', 'Festa infantil', 'Lara faz 6!', '08 · 05 · 2027'),
+      t('aventura', 'Aventura', 'Infantil', 'Verde claro e laranja para pequenos exploradores.', '#DFF2D8', '#1E3B1A', '#B04414', '#4E8A3E', '#C5E5BA', '#FFFFFF', BG, '800', 'normal', 'centro', 'livro', '999px', 'Festa infantil', 'Dino Party do Gui', '11 · 04 · 2027', 0.8),
+      t('espacial', 'Espacial', 'Infantil', 'Céu profundo e amarelo estrela.', '#1B1446', '#F2EEFF', '#FFC94D', '#2A2163', '#2A2163', '#1B1446', JO, '700', 'normal', 'arco', 'iris', '999px', 'Festa infantil', 'Missão Lua da Mia', '02 · 07 · 2027', 0.85),
+      t('nuvem', 'Nuvem azul', 'Infantil', 'Azul suave e letra manuscrita para chá de bebê.', '#EEF3FA', '#2C3E5C', '#4F6FA5', '#DCE6F4', '#D3DFF0', '#FFFFFF', CV, '700', 'normal', 'moldura', 'neblina', '999px', 'Chá de bebê', 'Bem-vindo, Davi', '16 · 01 · 2027', 1.15),
+      t('corporativo', 'Corporativo', 'Corporativo', 'Sóbrio e direto para eventos de empresa.', '#1F3A5F', '#EAF0F7', '#8FBCEB', '#EAF0F7', '#2B4C76', '#10213A', PJ, '800', 'normal', 'dividido', 'portas', '8px', 'Evento', 'Encontro de parceiros', '25 · 02 · 2027', 0.8),
+      t('mono', 'Monocromo', 'Corporativo', 'Preto e branco, tipografia forte e editorial.', '#F2F2F0', '#111111', '#111111', '#111111', '#DADAD6', '#F2F2F0', SY, '800', 'normal', 'editorial', 'iris', '0px', 'Lançamento', 'Coleção Outono', '18 · 03 · 2027', 0.85),
+      t('tech', 'Tech', 'Corporativo', 'Escuro e azul elétrico para eventos de tecnologia.', '#0B0F14', '#E6EDF3', '#4F8CFF', '#111925', '#18202B', '#0B0F14', SY, '800', 'normal', 'editorial', 'portas', '6px', 'Conferência', 'Dev Summit 27', '14 · 05 · 2027', 0.85),
+      t('conferencia', 'Conferência', 'Corporativo', 'Branco limpo com azul-marinho e coral.', '#FFFFFF', '#0F2A44', '#C23E22', '#0F2A44', '#EEF1F5', '#FFFFFF', PJ, '800', 'normal', 'dividido', 'iris', '8px', 'Workshop', 'Inovação em Saúde', '08 · 06 · 2027', 0.85),
+      t('classico', 'Clássico', 'Formatura', 'Preto e dourado para formaturas e galas.', '#222026', '#E9E2CF', '#C9A961', '#5A1622', '#34313A', '#222026', CG, '600', 'normal', 'moldura', 'cortina', '2px', 'Formatura', 'Turma 2026', '03 · 10 · 2026'),
+      t('bordo', 'Bordô', 'Formatura', 'Vinho e caramelo para galas e jantares.', '#3A0F1C', '#F5E6D8', '#D9A35B', '#5A1A2B', '#521728', '#3A0F1C', PF, '600', 'normal', 'moldura', 'portas', '2px', 'Jantar de gala', 'Baile de Formatura', '11 · 12 · 2026', 0.85),
+      t('beca', 'Beca', 'Formatura', 'Azul acadêmico e dourado, sóbrio e solene.', '#0D2B4E', '#F4F1E8', '#C9A961', '#F4F1E8', '#183B63', '#0D2B4E', BM, '600', 'normal', 'centro', 'livro', '2px', 'Formatura', 'Medicina 2027', '17 · 12 · 2027', 0.9),
+      t('lavanda', 'Lavanda', 'Religioso', 'Lavanda delicada para batizados.', '#EDE8F5', '#3B2C5A', '#6E51A0', '#DCD1EE', '#DED5EE', '#FFFFFF', CG, '500', 'italic', 'arco', 'lacre', '999px', 'Batizado', 'Batizado da Alice', '07 · 03 · 2027', 0.85),
+      t('oliveira', 'Oliveira', 'Religioso', 'Verde oliva e creme, sereno e natural.', '#E9E8DA', '#2F3A22', '#5A6532', '#5F6A35', '#D6D4C0', '#F5F4EA', IT, '400', 'normal', 'moldura', 'livro', '999px', 'Primeira comunhão', 'Pedro Henrique', '23 · 05 · 2027', 0.9),
+      t('arraia', 'Arraiá', 'Temático', 'Palha, chita e vermelho para festas juninas.', '#F2E3C6', '#4A2410', '#A8301C', '#B8351F', '#E3CDA3', '#FFF4DE', JO, '700', 'normal', 'polaroid', 'cortina', '6px', 'Festa junina', 'Arraiá da Firma', '19 · 06 · 2027'),
+      t('retro', 'Retrô 70', 'Temático', 'Laranja queimado e marrom, estilo anos 70.', '#F3D9B1', '#3D1F0F', '#9C4317', '#3D1F0F', '#E8C48F', '#FFF1DC', DM, '400', 'normal', 'editorial', 'neblina', '999px', 'Festa anos 70', 'Disco Night', '13 · 11 · 2026'),
+      t('branco', 'Em branco', 'Qualquer evento', 'Comece do zero e monte cada página.', '#FFFFFF', '#17151F', '#17151F', '#F1F0F4', '#ECEBF0', '#FFFFFF', PJ, '700', 'normal', 'centro', 'neblina', '10px', 'Seu evento', 'Título do evento', 'Data do evento', 0.8),
+      t('serra', 'Verão na serra', 'Meus temas', 'Criado por você em 18/10/2026.', '#F7F3EA', '#2E3B2F', '#9A4E2A', '#2E3B2F', '#E4DCCB', '#FFFFFF', PF, '600', 'normal', 'foto-topo', 'portas', '999px', 'Casamento', 'Júlia & Caio', '28 · 08 · 2027', 1, true)
+    ];
+  }
+  renderVals() {
+    const layoutLabels = { centro: 'Centralizado', 'foto-topo': 'Foto no topo', 'foto-fundo': 'Foto de fundo', moldura: 'Moldura', dividido: 'Dividido', editorial: 'Editorial', arco: 'Arco', polaroid: 'Polaroid' };
+    const animLabels = { envelope: 'Carta', cortina: 'Cortina', portas: 'Portas', lacre: 'Lacre de cera', presente: 'Presente', livro: 'Livro', iris: 'Íris', neblina: 'Neblina', nenhuma: 'Sem abertura' };
+    const st = this.state;
+    const all = this.themes().map((x) => Object.assign({}, x, { layoutLabel: layoutLabels[x.layout], animLabel: animLabels[x.anim] }));
+    const catNames = ['Todos', 'Casamento', 'Aniversário', 'Infantil', 'Corporativo', 'Formatura', 'Religioso', 'Temático', 'Meus temas'];
+    const cats = catNames.map((label) => {
+      const on = label === st.cat;
+      return {
+        label, pressed: on ? 'true' : 'false',
+        bg: on ? '#17151F' : '#FFFFFF', fg: on ? '#FFFFFF' : '#17151F', border: on ? '#17151F' : '#D6D3E0',
+        pick: () => this.setState({ cat: label })
+      };
+    });
+    const themes = all
+      .filter((x) => st.cat === 'Todos' || x.cat === st.cat || (x.id === 'branco' && st.cat !== 'Meus temas'))
+      .filter((x) => st.layout === 'todos' || x.layout === st.layout)
+      .filter((x) => st.anim === 'todas' || x.anim === st.anim)
+      .map((x) => {
+        const on = x.id === st.picked;
+        return Object.assign({}, x, {
+          selected: on, pressed: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA',
+          pick: () => this.setState({ picked: x.id })
+        });
+      });
+    const sel = all.find((x) => x.id === st.picked) || all[0];
+    const ready = all.filter((x) => !x.custom).length;
+    const mine = all.length - ready;
+    return {
+      cats, themes, sel,
+      isEmpty: themes.length === 0,
+      countLabel: 'Mostrando ' + themes.length + ' · ' + ready + ' temas prontos e ' + mine + ' criado por você',
+      layoutFilter: st.layout, animFilter: st.anim,
+      onLayout: (e) => this.setState({ layout: e.target.value }),
+      onAnim: (e) => this.setState({ anim: e.target.value }),
+      clearFilters: () => this.setState({ cat: 'Todos', layout: 'todos', anim: 'todas' }),
+      openingVisible: st.opening,
+      showOpening: () => this.setState({ opening: true }),
+      hideOpening: () => this.setState({ opening: false }),
+      noLink: false,
+      noMusic: { kind: 'nenhuma' },
+      isGallery: st.step === 'galeria',
+      isEditor: st.step === 'editor',
+      isCriar: st.step === 'criar',
+      payload: this.toPayload(sel),
+      editPayload: st.editing,
+      useTheme: () => this.setState({ step: 'editor', opening: false }),
+      resetFlow: () => this.setState({ step: 'galeria', editing: null, opening: false }),
+      newTheme: () => this.setState({ step: 'criar', editing: null, opening: false }),
+      editTheme: () => this.setState({ step: 'criar', editing: this.toPayload(sel), opening: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

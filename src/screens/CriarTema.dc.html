@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Criar tema</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<style>
+body{margin:0;background:#F5F4F8}
+a{color:#4A32C4}a:hover{color:#2F1F8F}
+button,input,select{font-family:inherit}
+.fld{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid #D6D3E0;border-radius:10px;background:#FFFFFF;color:#17151F;font-size:14px}
+.fld:focus{outline:2px solid #5B3FD6;outline-offset:1px;border-color:#5B3FD6}
+.lbl{display:block;font-size:13px;font-weight:600;color:#3D3A4A;margin-bottom:6px}
+.card{background:#FFFFFF;border:1px solid #E3E1EA;border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:16px}
+.h2{margin:0;font-size:17px;font-weight:700}
+.sub{margin:-10px 0 0;font-size:14px;color:#5E5A6B}
+.tile:hover{border-color:#B9B4CC}
+</style>
+</helmet>
+<div>
+<sc-if value="{{isFormStep}}" hint-placeholder-val="{{ true }}">
+<div style="min-height: 100vh; background: #F5F4F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA; position: sticky; top: 0; z-index: 5">
+    <div style="max-width: 1320px; margin: 0 auto; padding: 12px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
+      <a href="Temas.dc.html" onClick="{{exitClick}}" aria-label="Voltar para temas" style="width: 44px; height: 44px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #17151F">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+      </a>
+      <div style="flex: 1 1 240px; display: flex; flex-direction: column; line-height: 1.3">
+        <span style="font-size: 13px; color: #5E5A6B; font-weight: 600">{{modeLabel}}</span>
+        <span style="font-size: 18px; font-weight: 700">{{name}}</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <a href="Temas.dc.html" onClick="{{exitClick}}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; color: #17151F; font-weight: 600; text-decoration: none">Cancelar</a>
+        <button onClick="{{save}}" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">Salvar tema</button>
+      </div>
+    </div>
+    <sc-if value="{{saved}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="background: #E3F3EA; color: #1E6B43; padding: 10px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; font-size: 14px">
+        <strong>Tema “{{name}}” salvo em Meus temas.</strong>
+        <button onClick="{{useInInvite}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #9BCBB1; background: #FFFFFF; color: #14472D; font-weight: 700; font-size: 14px; cursor: pointer">Usar em um novo convite</button>
+        <a href="Temas.dc.html" onClick="{{exitClick}}" style="color: #14472D; font-weight: 700">Ver Meus temas</a>
+      </div>
+    </sc-if>
+  </header>
+
+  <div style="max-width: 1320px; margin: 0 auto; padding: 28px 24px 64px; display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start">
+
+    <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+
+      <section class="card" aria-labelledby="s-basico">
+        <h2 class="h2" id="s-basico">Informações</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px">
+          <div>
+            <label class="lbl" for="t-name">Nome do tema</label>
+            <input class="fld" id="t-name" value="{{name}}" onChange="{{onName}}">
+          </div>
+          <div>
+            <label class="lbl" for="t-cat">Tipo de evento</label>
+            <select class="fld" id="t-cat" value="{{cat}}" onChange="{{onCat}}">
+              <option>Casamento</option><option>Aniversário</option><option>Infantil</option><option>Corporativo</option><option>Formatura</option><option>Religioso</option><option>Temático</option><option>Qualquer evento</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl" for="t-base">Começar a partir de</label>
+            <select class="fld" id="t-base" value="{{base}}" onChange="{{onBase}}">
+              <option value="jardim">Jardim</option>
+              <option value="terracota">Terracota</option>
+              <option value="noite">Noite estrelada</option>
+              <option value="neon">Neon</option>
+              <option value="delicado">Delicado</option>
+              <option value="branco">Em branco</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="s-cores">
+        <h2 class="h2" id="s-cores">Cores</h2>
+        <p class="sub">24 paletas prontas em 6 estilos. Depois, ajuste cada cor como quiser.</p>
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <sc-for list="{{paletteGroups}}" as="g" hint-placeholder-count="6">
+            <div role="group" aria-label="Paletas {{g.name}}" style="display: flex; flex-direction: column; gap: 8px">
+              <span style="font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5E5A6B">{{g.name}}</span>
+              <div style="display: flex; flex-wrap: wrap; gap: 10px">
+                <sc-for list="{{g.items}}" as="pl" hint-placeholder-count="4">
+                  <button class="tile" onClick="{{pl.apply}}" aria-pressed="{{pl.pressed}}" aria-label="Paleta {{pl.label}}" style="display: flex; flex-direction: column; align-items: flex-start; gap: 6px; padding: 7px; border-radius: 12px; border: 2px solid {{pl.ring}}; background: #FFFFFF; cursor: pointer">
+                    <span style="display: flex; width: 112px; height: 32px; border-radius: 8px; overflow: hidden; border: 1px solid #ECEAF2" aria-hidden="true">
+                      <span style="flex: 3; background: {{pl.bg}}"></span><span style="flex: 1; background: {{pl.fg}}"></span><span style="flex: 1; background: {{pl.accent}}"></span><span style="flex: 1; background: {{pl.paper}}"></span>
+                    </span>
+                    <span style="font-size: 12px; font-weight: 600; color: #3D3A4A">{{pl.label}}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-for>
+          <button onClick="{{randomPalette}}" style="align-self: flex-start; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px dashed #B9B4CC; background: #FFFFFF; color: #3B26A8; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"></path></svg>
+            Sortear uma paleta
+          </button>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px">
+          <sc-for list="{{colors}}" as="c" hint-placeholder-count="6">
+            <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #E3E1EA; border-radius: 12px">
+              <input type="color" id="{{c.id}}" value="{{c.value}}" onChange="{{c.change}}" style="width: 44px; height: 44px; padding: 0; border: 0; border-radius: 8px; background: transparent; cursor: pointer">
+              <label for="{{c.id}}" style="display: flex; flex-direction: column; line-height: 1.3; cursor: pointer">
+                <span style="font-size: 14px; font-weight: 600">{{c.label}}</span>
+                <span style="font-size: 12px; color: #5E5A6B; font-family: ui-monospace, monospace">{{c.value}}</span>
+              </label>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{lowContrast}}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FBEFD9; color: #6B3A00; font-size: 14px">{{contrastMsg}}</p>
+        </sc-if>
+      </section>
+
+      <section class="card" aria-labelledby="s-fontes">
+        <h2 class="h2" id="s-fontes">Tipografia e botões</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px">
+          <div>
+            <label class="lbl" for="t-font">Fonte dos títulos</label>
+            <select class="fld" id="t-font" value="{{fontKey}}" onChange="{{onFont}}">
+              <option value="cormorant">Cormorant Garamond (clássica)</option>
+              <option value="playfair">Playfair Display (elegante)</option>
+              <option value="bodoni">Bodoni Moda (sofisticada)</option>
+              <option value="dmserif">DM Serif Display (marcante)</option>
+              <option value="italiana">Italiana (leve)</option>
+              <option value="greatvibes">Great Vibes (cursiva)</option>
+              <option value="caveat">Caveat (manuscrita)</option>
+              <option value="bricolage">Bricolage Grotesque (divertida)</option>
+              <option value="syne">Syne (moderna)</option>
+              <option value="josefin">Josefin Sans (geométrica)</option>
+              <option value="jakarta">Plus Jakarta Sans (neutra)</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl" for="t-body">Fonte dos textos</label>
+            <select class="fld" id="t-body" value="{{bodyKey}}" onChange="{{onBody}}">
+              <option value="jakarta">Plus Jakarta Sans</option>
+              <option value="josefin">Josefin Sans</option>
+              <option value="cormorant">Cormorant Garamond</option>
+            </select>
+          </div>
+          <div>
+            <label class="lbl" for="t-scale">Tamanho do título · {{scaleLabel}}</label>
+            <input id="t-scale" type="range" min="0.7" max="1.4" step="0.05" value="{{titleScale}}" onChange="{{onScale}}" style="width: 100%; min-height: 44px; accent-color: #5B3FD6">
+          </div>
+        </div>
+        <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked="{{italic}}" onChange="{{toggleItalic}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Títulos em itálico</label>
+        <div>
+          <span class="lbl">Formato dos botões</span>
+          <div role="group" aria-label="Formato dos botões" style="display: flex; flex-wrap: wrap; gap: 8px">
+            <sc-for list="{{shapes}}" as="s" hint-placeholder-count="3">
+              <button onClick="{{s.pick}}" aria-pressed="{{s.pressed}}" style="min-height: 48px; padding: 0 14px; border-radius: 12px; border: 2px solid {{s.ring}}; background: #FFFFFF; cursor: pointer; display: inline-flex; align-items: center; gap: 10px; font-weight: 600; font-size: 14px; color: #17151F">
+                <span aria-hidden="true" style="width: 44px; height: 18px; border-radius: {{s.radius}}; background: {{accent}}"></span>{{s.label}}
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="s-layout">
+        <h2 class="h2" id="s-layout">Layout da capa</h2>
+        <p class="sub">Como foto, título e data se organizam na primeira página.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px">
+          <sc-for list="{{layouts}}" as="l" hint-placeholder-count="8">
+            <button class="tile" onClick="{{l.pick}}" aria-pressed="{{l.pressed}}" style="padding: 6px; border-radius: 14px; border: 2px solid {{l.ring}}; background: #FFFFFF; cursor: pointer; display: flex; flex-direction: column; gap: 6px; text-align: center; color: #17151F">
+              <span style="display: block; border-radius: 8px; overflow: hidden">
+                <dc-import name="CapaPreview" layout="{{l.id}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" body-font="{{bodyFont}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{cat}}" titulo="Ana &amp; Pedro" data="17 · 04 · 2027" btn-radius="{{radius}}" title-scale="{{titleScale}}" aspect="4 / 5" hint-size="100%,130px"></dc-import>
+              </span>
+              <span style="font-size: 13px; font-weight: 600">{{l.label}}</span>
+            </button>
+          </sc-for>
+        </div>
+      </section>
+
+      <section class="card" aria-labelledby="s-abertura">
+        <h2 class="h2" id="s-abertura">Animação de abertura</h2>
+        <p class="sub">O convite chega fechado e só se abre quando o convidado interage.</p>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px">
+          <sc-for list="{{anims}}" as="a" hint-placeholder-count="9">
+            <button class="tile" onClick="{{a.pick}}" aria-pressed="{{a.pressed}}" style="padding: 12px; border-radius: 14px; border: 2px solid {{a.ring}}; background: {{a.bgTile}}; cursor: pointer; display: flex; align-items: flex-start; gap: 10px; text-align: left; color: #17151F">
+              <span style="width: 40px; height: 40px; flex: none; border-radius: 10px; background: #EFECFB; color: #3B26A8; display: flex; align-items: center; justify-content: center">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{a.icon}}"></path></svg>
+              </span>
+              <span style="display: flex; flex-direction: column; line-height: 1.3">
+                <span style="font-weight: 700; font-size: 14px">{{a.label}}</span>
+                <span style="font-size: 12px; color: #5E5A6B">{{a.desc}}</span>
+              </span>
+            </button>
+          </sc-for>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px">
+          <div>
+            <label class="lbl" for="t-trigger">Como o convidado abre</label>
+            <select class="fld" id="t-trigger">
+              <option>Toque em qualquer lugar</option>
+              <option>Botão “Abrir convite”</option>
+              <option>Deslizar para cima</option>
+            </select>
+          </div>
+        </div>
+        <p style="margin: 0; font-size: 13px; color: #5E5A6B">A música de fundo é escolhida em cada convite, na aba Música do editor.</p>
+      </section>
+    </div>
+
+    <aside aria-label="Prévia do tema" style="flex: 1 1 340px; position: sticky; top: 96px; display: flex; flex-direction: column; align-items: center; gap: 14px">
+      <div role="group" aria-label="Prévia" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #E9E7F0; width: 300px; box-sizing: border-box">
+        <button onClick="{{showCapa}}" aria-pressed="{{capaPressed}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{capaBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Capa</button>
+        <button onClick="{{showAbertura}}" aria-pressed="{{abPressed}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{abBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Abertura</button>
+      </div>
+      <div style="width: 300px; height: 649px; border-radius: 40px; border: 9px solid #17151F; overflow: hidden; box-sizing: content-box; background: {{bg}}">
+        <sc-if value="{{isCapaTab}}" hint-placeholder-val="{{ true }}">
+          <dc-import name="CapaPreview" layout="{{layout}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" body-font="{{bodyFont}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{cat}}" titulo="Ana &amp; Pedro" data="17 · 04 · 2027" btn-radius="{{radius}}" title-scale="{{titleScale}}" aspect="300 / 649" hint-size="300px,649px"></dc-import>
+        </sc-if>
+        <sc-if value="{{isAbTab}}" hint-placeholder-val="{{ false }}">
+          <div style="width: 390px; height: 844px; transform: scale(0.7692); transform-origin: top left">
+            <dc-import name="Abertura" anim="{{anim}}" layout="{{layout}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" paper="{{paper}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{cat}}" titulo="Ana &amp; Pedro" data="17 · 04 · 2027" btn-radius="{{radius}}" show-link="{{noLink}}" music="{{noMusic}}" hint-size="390px,844px"></dc-import>
+          </div>
+        </sc-if>
+      </div>
+      <p style="margin: 0; font-size: 13px; color: #5E5A6B; text-align: center; max-width: 300px">{{previewHint}}</p>
+    </aside>
+  </div>
+</div>
+</sc-if>
+<sc-if value="{{isEditorStep}}" hint-placeholder-val="{{ false }}">
+  <dc-import name="Editor" initial-theme="{{payload}}" on-back="{{editorBack}}" on-change-theme="{{editorChangeTheme}}" hint-size="100%,1100px"></dc-import>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"initialTheme":{"editor":null},"onExit":{"editor":null},"onBack":{"editor":null},"$preview":{"width":1440,"height":1500}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const it = props.initialTheme;
+    const fromIt = it ? {
+      name: it.name, cat: it.cat || 'Casamento', bg: it.bg, fg: it.fg, accent: it.accent, btnFg: it.btnFg, paper: it.paper, ph: it.ph,
+      fontKey: it.fontKey || 'cormorant', italic: !!it.italic, layout: it.layout, anim: it.anim, radiusKey: it.radiusKey || 'pilula', titleScale: it.titleScale || 1
+    } : {};
+    this.state = Object.assign(
+      { name: 'Meu tema', cat: 'Casamento', base: 'jardim', tab: 'capa', saved: false, bodyKey: 'jakarta', titleScale: 1, italic: false, radiusKey: 'pilula', step: 'form', editing: !!it },
+      this.presets().jardim,
+      fromIt
+    );
+  }
+  palettes() {
+    const p = (group, label, bg, fg, accent, btnFg, paper, ph) => ({ group, label, bg, fg, accent, btnFg, paper, ph });
+    return [
+      p('Clássicas', 'Floresta', '#1F3329', '#F3EEE4', '#CDAE6B', '#1F3329', '#E9E1D0', '#2B4538'),
+      p('Clássicas', 'Noite', '#0F1A3A', '#EDE6D6', '#D8B868', '#0F1A3A', '#16244F', '#1C2B55'),
+      p('Clássicas', 'Preto e ouro', '#17161A', '#EFE8D8', '#C9A961', '#17161A', '#2A282E', '#2A282E'),
+      p('Clássicas', 'Bordô', '#3A0F1C', '#F5E6D8', '#D9A35B', '#3A0F1C', '#5A1A2B', '#521728'),
+      p('Românticas', 'Rosa seco', '#F3E3E1', '#5B2E3A', '#9E4A60', '#FFFFFF', '#E8C9C6', '#E6CBC8'),
+      p('Românticas', 'Pêssego', '#FCE8DD', '#4D2C24', '#B04A31', '#FFFFFF', '#E9A68A', '#F2D3C2'),
+      p('Românticas', 'Lavanda', '#EDE8F5', '#3B2C5A', '#6E51A0', '#FFFFFF', '#DCD1EE', '#DED5EE'),
+      p('Românticas', 'Marfim', '#FAF6EE', '#3A3328', '#8A6D3B', '#FFFFFF', '#E8DCC4', '#EDE5D5'),
+      p('Vibrantes', 'Festa', '#C2361F', '#FFF4EE', '#FFD166', '#3A1208', '#FFD166', '#A82C18'),
+      p('Vibrantes', 'Tropical', '#0E4D3A', '#FFF7E6', '#FF8A3D', '#2B1406', '#FF8A3D', '#146149'),
+      p('Vibrantes', 'Neon', '#14082B', '#F5F0FF', '#2FE6C8', '#14082B', '#2A1260', '#22124A'),
+      p('Vibrantes', 'Pop', '#FFFFFF', '#1D1A2E', '#7A3CF0', '#FFFFFF', '#7A3CF0', '#F1EAFE'),
+      p('Suaves', 'Menta', '#E3F4EE', '#1D3F35', '#23735A', '#FFFFFF', '#2E8B6E', '#CBE9DE'),
+      p('Suaves', 'Nuvem', '#EEF3FA', '#2C3E5C', '#4F6FA5', '#FFFFFF', '#DCE6F4', '#D3DFF0'),
+      p('Suaves', 'Baunilha', '#FFF6E0', '#4A3A1A', '#9A6210', '#FFFFFF', '#F2DDA8', '#F5E6C0'),
+      p('Suaves', 'Algodão-doce', '#FDEFF4', '#4A2238', '#B33A6B', '#FFFFFF', '#F6CFDD', '#F7DCE6'),
+      p('Terrosas', 'Terracota', '#F4E7DC', '#5A2E1F', '#A8482A', '#FFF6EF', '#C9673F', '#E3CBB8'),
+      p('Terrosas', 'Oliveira', '#E9E8DA', '#2F3A22', '#5A6532', '#F5F4EA', '#5F6A35', '#D6D4C0'),
+      p('Terrosas', 'Café', '#3B2A20', '#F2E6D8', '#D9A066', '#3B2A20', '#5A4030', '#4D372A'),
+      p('Terrosas', 'Areia', '#EFE4D2', '#3D3123', '#8B5E34', '#FFFFFF', '#D8C4A4', '#E2D3BB'),
+      p('Modernas', 'Monocromo', '#F2F2F0', '#111111', '#111111', '#F2F2F0', '#111111', '#DADAD6'),
+      p('Modernas', 'Grafite', '#2A2D34', '#F2F1EE', '#E8B04B', '#2A2D34', '#3A3E47', '#3A3E47'),
+      p('Modernas', 'Tech', '#0B0F14', '#E6EDF3', '#4F8CFF', '#0B0F14', '#111925', '#18202B'),
+      p('Modernas', 'Oceano', '#0B3C5D', '#F1F6F9', '#F2B134', '#0B3C5D', '#F1F6F9', '#164E73')
+    ];
+  }
+  fonts() {
+    return {
+      cormorant: ["'Cormorant Garamond', Georgia, serif", '500'], playfair: ["'Playfair Display', Georgia, serif", '600'],
+      bodoni: ["'Bodoni Moda', Georgia, serif", '500'], dmserif: ["'DM Serif Display', Georgia, serif", '400'],
+      italiana: ["'Italiana', serif", '400'], greatvibes: ["'Great Vibes', cursive", '400'], caveat: ["'Caveat', cursive", '700'],
+      bricolage: ["'Bricolage Grotesque', sans-serif", '800'], syne: ["'Syne', sans-serif", '800'],
+      josefin: ["'Josefin Sans', sans-serif", '700'], jakarta: ["'Plus Jakarta Sans', sans-serif", '800']
+    };
+  }
+  presets() {
+    const p = (bg, fg, accent, btnFg, paper, ph, fontKey, layout, anim, extra) => Object.assign({ bg, fg, accent, btnFg, paper, ph, fontKey, layout, anim }, extra || {});
+    return {
+      jardim: p('#1F3329', '#F3EEE4', '#CDAE6B', '#1F3329', '#E9E1D0', '#2B4538', 'cormorant', 'arco', 'envelope', { radiusKey: 'pilula', italic: false }),
+      terracota: p('#F4E7DC', '#5A2E1F', '#A8482A', '#FFF6EF', '#C9673F', '#E3CBB8', 'playfair', 'foto-topo', 'envelope', { radiusKey: 'pilula', italic: false }),
+      noite: p('#0F1A3A', '#EDE6D6', '#D8B868', '#0F1A3A', '#16244F', '#1C2B55', 'bodoni', 'centro', 'cortina', { radiusKey: 'pilula', italic: false }),
+      neon: p('#14082B', '#F5F0FF', '#2FE6C8', '#14082B', '#2A1260', '#22124A', 'syne', 'foto-fundo', 'iris', { radiusKey: 'pilula', italic: false }),
+      delicado: p('#EBDDD3', '#4A3328', '#8C5638', '#FFF7F1', '#F7EFE8', '#D9C6B8', 'cormorant', 'moldura', 'lacre', { radiusKey: 'pilula', italic: true }),
+      branco: p('#FFFFFF', '#17151F', '#17151F', '#FFFFFF', '#F1F0F4', '#ECEBF0', 'jakarta', 'centro', 'neblina', { radiusKey: 'arredondado', italic: false })
+    };
+  }
+  lum(hex) {
+    const h = String(hex || '#000000').replace('#', '').slice(0, 6);
+    const ch = [0, 2, 4].map((i) => {
+      const v = parseInt(h.slice(i, i + 2), 16) / 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  }
+  ratio(a, b) {
+    const x = this.lum(a), y = this.lum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  renderVals() {
+    const st = this.state;
+    const F = this.fonts();
+    const font = F[st.fontKey] || F.cormorant;
+    const bodyFonts = { jakarta: "'Plus Jakarta Sans', system-ui, sans-serif", josefin: "'Josefin Sans', sans-serif", cormorant: "'Cormorant Garamond', Georgia, serif" };
+    const radii = { pilula: '999px', arredondado: '10px', reto: '0px' };
+    const set = (k) => (e) => this.setState({ [k]: e.target.value, saved: false });
+
+    const colorDefs = [
+      ['bg', 'Fundo'], ['fg', 'Texto'], ['accent', 'Destaque'], ['btnFg', 'Texto sobre destaque'], ['paper', 'Cor da abertura'], ['ph', 'Área de foto']
+    ];
+    const colors = colorDefs.map((d) => ({ id: 'c-' + d[0], label: d[1], value: st[d[0]], change: set(d[0]) }));
+
+    const applyPal = (p) => this.setState({ bg: p.bg, fg: p.fg, accent: p.accent, btnFg: p.btnFg, paper: p.paper, ph: p.ph, saved: false });
+    const allPal = this.palettes();
+    const groupNames = [];
+    allPal.forEach((p) => { if (groupNames.indexOf(p.group) === -1) groupNames.push(p.group); });
+    const paletteGroups = groupNames.map((name) => ({
+      name,
+      items: allPal.filter((p) => p.group === name).map((p) => {
+        const on = p.bg === st.bg && p.fg === st.fg && p.accent === st.accent;
+        return Object.assign({}, p, { ring: on ? '#5B3FD6' : '#E3E1EA', pressed: on ? 'true' : 'false', apply: () => applyPal(p) });
+      })
+    }));
+    const randomPalette = () => {
+      const others = allPal.filter((p) => !(p.bg === st.bg && p.accent === st.accent));
+      applyPal(others[Math.floor(Math.random() * others.length)]);
+    };
+    const payload = {
+      name: st.name, baseName: st.name, cat: st.cat, bg: st.bg, fg: st.fg, accent: st.accent, btnFg: st.btnFg, paper: st.paper, ph: st.ph,
+      fontKey: st.fontKey, italic: st.italic, layout: st.layout, radiusKey: st.radiusKey, anim: st.anim,
+      kicker: st.cat, sample: 'Título do evento', date: 'Data do evento'
+    };
+
+    const layoutDefs = [['centro', 'Centralizado'], ['foto-topo', 'Foto no topo'], ['foto-fundo', 'Foto de fundo'], ['moldura', 'Moldura'], ['dividido', 'Dividido'], ['editorial', 'Editorial'], ['arco', 'Arco'], ['polaroid', 'Polaroid']];
+    const layouts = layoutDefs.map((d) => {
+      const on = d[0] === st.layout;
+      return { id: d[0], label: d[1], pressed: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', pick: () => this.setState({ layout: d[0], saved: false }) };
+    });
+
+    const animDefs = [
+      ['envelope', 'Carta', 'O envelope abre e o cartão sobe', 'M3 7l9 6 9-6M3 7h18v12H3z'],
+      ['cortina', 'Cortina', 'Cortinas se abrem para os lados', 'M3 3h18M5 3v18c3-4 4-10 4-18M19 3v18c-3-4-4-10-4-18'],
+      ['portas', 'Portas', 'Portas duplas se abrem em 3D', 'M4 21V3h16v18M12 3v18M9.5 12h.01M14.5 12h.01'],
+      ['lacre', 'Lacre de cera', 'O selo se rompe e o papel se abre', 'M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10ZM9 12l-2 9 5-3 5 3-2-9'],
+      ['presente', 'Presente', 'O laço se desfaz e a tampa sobe', 'M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9c-2-4-6-4-6-1s6 1 6 1Zm0 0c2-4 6-4 6-1s-6 1-6 1Z'],
+      ['livro', 'Livro', 'A capa vira como um livro', 'M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z'],
+      ['iris', 'Íris', 'Um círculo se fecha e revela o convite', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z'],
+      ['neblina', 'Neblina', 'O véu se dissipa e o convite ganha foco', 'M3 8h12M6 12h15M3 16h12M8 20h10'],
+      ['nenhuma', 'Sem abertura', 'O convite já aparece aberto', 'M5 5l14 14M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z']
+    ];
+    const anims = animDefs.map((d) => {
+      const on = d[0] === st.anim;
+      return { label: d[1], desc: d[2], icon: d[3], pressed: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', bgTile: on ? '#F7F5FE' : '#FFFFFF', pick: () => this.setState({ anim: d[0], tab: 'abertura', saved: false }) };
+    });
+
+    const shapes = [['pilula', 'Pílula'], ['arredondado', 'Arredondado'], ['reto', 'Reto']].map((d) => {
+      const on = d[0] === st.radiusKey;
+      return { label: d[1], radius: radii[d[0]], pressed: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', pick: () => this.setState({ radiusKey: d[0], saved: false }) };
+    });
+
+    const textRatio = this.ratio(st.fg, st.bg);
+    const accRatio = this.ratio(st.accent, st.bg);
+    const btnRatio = this.ratio(st.btnFg, st.accent);
+    let msg = '';
+    if (textRatio < 4.5) msg = 'Contraste baixo entre texto e fundo (' + textRatio.toFixed(1) + ':1). Prefira cores com mais diferença para facilitar a leitura.';
+    else if (accRatio < 3) msg = 'A cor de destaque aparece pouco sobre o fundo (' + accRatio.toFixed(1) + ':1).';
+    else if (btnRatio < 4.5) msg = 'O texto dos botões tem pouco contraste com a cor de destaque (' + btnRatio.toFixed(1) + ':1).';
+
+    const isCapa = st.tab === 'capa';
+    return {
+      name: st.name, cat: st.cat, base: st.base,
+      saved: st.saved,
+      onName: set('name'), onCat: set('cat'),
+      onBase: (e) => { const k = e.target.value; this.setState(Object.assign({ base: k, saved: false }, this.presets()[k])); },
+      bg: st.bg, fg: st.fg, accent: st.accent, btnFg: st.btnFg, paper: st.paper, ph: st.ph,
+      colors, paletteGroups, randomPalette, layouts, anims, shapes,
+      modeLabel: st.editing ? 'Editar tema' : 'Criar tema',
+      isFormStep: st.step === 'form',
+      isEditorStep: st.step === 'editor',
+      payload,
+      useInInvite: () => this.setState({ step: 'editor' }),
+      exitClick: () => { if (typeof this.props.onExit === 'function') this.props.onExit(); },
+      editorBack: () => { this.setState({ step: 'form' }); if (typeof this.props.onBack === 'function') this.props.onBack(); },
+      editorChangeTheme: () => this.setState({ step: 'form' }),
+      noMusic: { kind: 'nenhuma' },
+      lowContrast: !!msg, contrastMsg: msg,
+      fontKey: st.fontKey, bodyKey: st.bodyKey,
+      onFont: (e) => { const k = e.target.value; this.setState({ fontKey: k, titleScale: k === 'greatvibes' ? 1.25 : (k === 'caveat' ? 1.15 : st.titleScale), saved: false }); },
+      onBody: set('bodyKey'),
+      font: font[0], weight: font[1], bodyFont: bodyFonts[st.bodyKey],
+      fstyle: st.italic ? 'italic' : 'normal',
+      italic: st.italic,
+      toggleItalic: () => this.setState({ italic: !st.italic, saved: false }),
+      titleScale: String(st.titleScale),
+      scaleLabel: Math.round(st.titleScale * 100) + '%',
+      onScale: (e) => this.setState({ titleScale: Number(e.target.value), saved: false }),
+      radius: radii[st.radiusKey],
+      layout: st.layout, anim: st.anim,
+      isCapaTab: isCapa, isAbTab: !isCapa,
+      capaPressed: isCapa ? 'true' : 'false', abPressed: isCapa ? 'false' : 'true',
+      capaBg: isCapa ? '#FFFFFF' : 'transparent', abBg: isCapa ? 'transparent' : '#FFFFFF',
+      showCapa: () => this.setState({ tab: 'capa' }),
+      showAbertura: () => this.setState({ tab: 'abertura' }),
+      previewHint: isCapa ? 'Prévia da primeira página com o layout escolhido.' : 'Toque no convite para ver a abertura. Use “Rever abertura” para repetir.',
+      noLink: false,
+      save: () => this.setState({ saved: true })
+    };
+  }
+}
+</script>
+</body>
+</html>

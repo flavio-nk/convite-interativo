@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Capa do tema</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 100%; aspect-ratio: {{aspect}}; container-type: inline-size; font-family: {{bodyFont}}; color: {{fg}}">
+  <div style="position: relative; width: 100%; height: 100%; overflow: hidden; background: {{bg}}; box-sizing: border-box">
+
+    <sc-if value="{{isCentro}}" hint-placeholder-val="{{ true }}">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3cqw; padding: 9cqw; box-sizing: border-box; text-align: center">
+        <span style="font-size: 3.4cqw; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 600; color: {{accent}}">{{kicker}}</span>
+        <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+        <span style="width: 12cqw; height: 0.6cqw; background: {{accent}}"></span>
+        <span style="font-size: 4.2cqw; font-weight: 500">{{data}}</span>
+        <span style="margin-top: 3cqw; padding: 2.4cqw 5.5cqw; border-radius: {{btnRadius}}; background: {{accent}}; color: {{btnFg}}; font-size: 3.6cqw; font-weight: 700">Confirmar presença</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isFotoTopo}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column">
+        <div style="height: 48%; background: {{ph}}; display: flex; align-items: center; justify-content: center">
+          <svg width="18%" viewBox="0 0 24 24" fill="none" stroke="{{fg}}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.5"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
+        </div>
+        <div style="flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.4cqw; padding: 5cqw 8cqw; text-align: center">
+          <span style="font-size: 3.4cqw; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 600; color: {{accent}}">{{kicker}}</span>
+          <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+          <span style="font-size: 4.2cqw; font-weight: 500">{{data}}</span>
+          <span style="margin-top: 1.5cqw; padding: 2.2cqw 5.5cqw; border-radius: {{btnRadius}}; background: {{accent}}; color: {{btnFg}}; font-size: 3.6cqw; font-weight: 700">Confirmar presença</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isFotoFundo}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; background: {{ph}}">
+        <div style="position: absolute; left: 0; right: 0; top: 0; height: 56%; display: flex; align-items: center; justify-content: center">
+          <svg width="18%" viewBox="0 0 24 24" fill="none" stroke="{{fg}}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.5"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
+        </div>
+        <div style="position: absolute; left: 5cqw; right: 5cqw; bottom: 5cqw; padding: 6cqw; border-radius: 3cqw; background: {{bg}}; display: flex; flex-direction: column; gap: 2cqw; text-align: left">
+          <span style="font-size: 3.4cqw; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 600; color: {{accent}}">{{kicker}}</span>
+          <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+          <span style="display: flex; align-items: center; justify-content: space-between; gap: 3cqw; margin-top: 1cqw">
+            <span style="font-size: 4cqw; font-weight: 500">{{data}}</span>
+            <span style="padding: 2cqw 4.5cqw; border-radius: {{btnRadius}}; background: {{accent}}; color: {{btnFg}}; font-size: 3.4cqw; font-weight: 700">Confirmar</span>
+          </span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isMoldura}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 5cqw; border: 1.6cqw double {{accent}}; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3cqw; padding: 7cqw; box-sizing: border-box; text-align: center">
+        <svg width="14cqw" viewBox="0 0 40 12" fill="none" stroke="{{accent}}" stroke-width="1.2" aria-hidden="true" style="width: 14cqw"><path d="M2 6h12M26 6h12M20 1l5 5-5 5-5-5z"></path></svg>
+        <span style="font-size: 3.4cqw; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 600; color: {{accent}}">{{kicker}}</span>
+        <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+        <span style="font-size: 4.2cqw; font-weight: 500">{{data}}</span>
+        <span style="margin-top: 2cqw; padding: 2.2cqw 5.5cqw; border-radius: {{btnRadius}}; border: 0.5cqw solid {{accent}}; color: {{fg}}; font-size: 3.6cqw; font-weight: 700">Confirmar presença</span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isDividido}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex">
+        <div style="width: 34%; background: {{accent}}; color: {{btnFg}}; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 8cqw; box-sizing: border-box">
+          <span style="writing-mode: vertical-rl; transform: rotate(180deg); font-size: 3.6cqw; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 700">{{kicker}}</span>
+        </div>
+        <div style="flex: 1 1 auto; display: flex; flex-direction: column; justify-content: center; gap: 3cqw; padding: 7cqw; text-align: left">
+          <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+          <span style="width: 10cqw; height: 0.6cqw; background: {{accent}}"></span>
+          <span style="font-size: 4.2cqw; font-weight: 500">{{data}}</span>
+          <span style="align-self: flex-start; margin-top: 2cqw; padding: 2.2cqw 4.5cqw; border-radius: {{btnRadius}}; background: {{accent}}; color: {{btnFg}}; font-size: 3.4cqw; font-weight: 700">Confirmar</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isEditorial}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between; padding: 8cqw; box-sizing: border-box; text-align: left">
+        <div style="display: flex; justify-content: space-between; gap: 3cqw; padding-bottom: 3cqw; border-bottom: 0.4cqw solid {{fg}}; font-size: 3.4cqw; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase">
+          <span>{{data}}</span><span style="color: {{accent}}">{{kicker}}</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 4cqw">
+          <span style="font-family: {{font}}; font-size: {{bigTitleSize}}; line-height: 0.95; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+          <span style="display: flex; align-items: center; gap: 3cqw">
+            <span style="flex: 1 1 auto; height: 0.4cqw; background: {{accent}}"></span>
+            <span style="padding: 2.2cqw 4.5cqw; border-radius: {{btnRadius}}; background: {{accent}}; color: {{btnFg}}; font-size: 3.4cqw; font-weight: 700">Confirmar</span>
+          </span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isArco}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 7cqw; box-sizing: border-box; text-align: center">
+        <div style="width: 58%; height: 46%; border-radius: 999px 999px 0 0; background: {{ph}}; border: 0.6cqw solid {{accent}}; display: flex; align-items: center; justify-content: center; box-sizing: border-box">
+          <svg width="26%" viewBox="0 0 24 24" fill="none" stroke="{{fg}}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.5"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
+        </div>
+        <div style="flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2.2cqw; padding: 3cqw 8cqw">
+          <span style="font-size: 3.4cqw; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 600; color: {{accent}}">{{kicker}}</span>
+          <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+          <span style="font-size: 4.2cqw; font-weight: 500">{{data}}</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isPolaroid}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 8cqw; box-sizing: border-box; text-align: center">
+        <div style="width: 60%; padding: 3cqw 3cqw 9cqw; background: #FFFFFF; transform: rotate(-4deg); box-shadow: 0 2cqw 5cqw rgba(0, 0, 0, 0.18); box-sizing: border-box">
+          <div style="aspect-ratio: 1 / 1; background: {{ph}}; display: flex; align-items: center; justify-content: center">
+            <svg width="30%" viewBox="0 0 24 24" fill="none" stroke="#3A3A3A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.45"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
+          </div>
+        </div>
+        <div style="flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2cqw; padding: 3cqw 8cqw">
+          <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+          <span style="font-size: 4.2cqw; font-weight: 600; color: {{accent}}">{{data}}</span>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"layout":{"editor":"enum","options":["centro","foto-topo","foto-fundo","moldura","dividido","editorial","arco","polaroid"],"default":"arco"},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"bodyFont":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"titleScale":{"editor":null},"aspect":{"editor":null},"$preview":{"width":300,"height":375}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const p = this.props;
+    const layout = p.layout ?? 'arco';
+    const scale = Number(p.titleScale ?? 1) || 1;
+    return {
+      isCentro: layout === 'centro',
+      isFotoTopo: layout === 'foto-topo',
+      isFotoFundo: layout === 'foto-fundo',
+      isMoldura: layout === 'moldura',
+      isDividido: layout === 'dividido',
+      isEditorial: layout === 'editorial',
+      isArco: layout === 'arco',
+      isPolaroid: layout === 'polaroid',
+      aspect: p.aspect ?? '4 / 5',
+      bg: p.bg ?? '#1F3329',
+      fg: p.fg ?? '#F3EEE4',
+      accent: p.accent ?? '#CDAE6B',
+      ph: p.ph ?? '#2B4538',
+      btnFg: p.btnFg ?? '#1F3329',
+      font: p.font ?? "'Cormorant Garamond', Georgia, serif",
+      bodyFont: p.bodyFont ?? "'Plus Jakarta Sans', system-ui, sans-serif",
+      weight: p.weight ?? '500',
+      fstyle: p.fstyle ?? 'normal',
+      kicker: p.kicker ?? 'Casamento',
+      titulo: p.titulo ?? 'Ana & Pedro',
+      data: p.data ?? '17 · 04 · 2027',
+      btnRadius: p.btnRadius ?? '999px',
+      titleSize: (11 * scale).toFixed(1) + 'cqw',
+      bigTitleSize: (15 * scale).toFixed(1) + 'cqw'
+    };
+  }
+}
+</script>
+</body>
+</html>

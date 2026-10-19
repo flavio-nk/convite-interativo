@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Ana &amp; Pedro — Capa</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#CDAE6B}a:hover{color:#E2C88E}
+@keyframes subir{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+@keyframes surgir{from{opacity:0}to{opacity:1}}
+.anim-up{animation:subir .9s cubic-bezier(.2,.7,.2,1) both}
+.anim-in{animation:surgir 1.2s ease both}
+@media (prefers-reduced-motion: reduce){.anim-up,.anim-in{animation:none}}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; background: #1F3329; color: #F3EEE4; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; flex-direction: column; overflow: hidden">
+  <main style="flex: 1 1 auto; overflow-y: auto; display: flex; flex-direction: column">
+    <div class="anim-in" role="img" aria-label="Foto do casal" style="height: 340px; flex: none; background: #2B4538; color: #C3CCC1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-size: 13px">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
+      Foto do casal
+    </div>
+
+    <div style="padding: 32px 24px 36px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 14px">
+      <span class="anim-up" style="font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; color: #CDAE6B; font-weight: 600; animation-delay: .2s">Casamento</span>
+      <h1 class="anim-up" style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 58px; line-height: 1; font-weight: 500; animation-delay: .35s">Ana <span style="font-style: italic; color: #CDAE6B">&amp;</span> Pedro</h1>
+      <p class="anim-up" style="margin: 0; font-size: 15px; line-height: 1.55; color: #D9DED6; max-width: 280px; animation-delay: .5s">convidam para a celebração do seu casamento</p>
+      <div class="anim-up" style="display: flex; align-items: center; gap: 14px; margin-top: 6px; animation-delay: .65s">
+        <span style="width: 32px; height: 1px; background: #CDAE6B"></span>
+        <span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 22px; letter-spacing: 0.08em">17 · 04 · 2027</span>
+        <span style="width: 32px; height: 1px; background: #CDAE6B"></span>
+      </div>
+      <p class="anim-up" style="margin: 0; font-size: 14px; color: #C3CCC1; animation-delay: .7s">Sábado, às 16h · Espaço Villa Jardim</p>
+
+      <div class="anim-up" aria-label="Contagem regressiva" style="width: 100%; margin-top: 14px; animation-delay: .85s">
+        <div style="font-size: 12px; color: #C3CCC1; margin-bottom: 10px">{{headline}}</div>
+        <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{units}}" as="u" hint-placeholder-count="4">
+            <div style="padding: 12px 0 10px; border-radius: 12px; border: 1px solid #3C5A4B; background: #24392F; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-family: 'Cormorant Garamond', Georgia, serif; font-size: 32px; line-height: 1; font-weight: 600">{{u.value}}</span>
+              <span style="font-size: 11px; color: #C3CCC1; letter-spacing: 0.04em">{{u.label}}</span>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <a class="anim-up" href="ConviteDetalhes.dc.html" style="margin-top: 18px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 50px; padding: 0 28px; border-radius: 999px; background: #CDAE6B; color: #1F3329; font-weight: 700; font-size: 15px; text-decoration: none; animation-delay: 1s">
+        Ver detalhes
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </a>
+    </div>
+  </main>
+
+  <nav aria-label="Páginas do convite" style="flex: none; height: 68px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #1A2C23; border-top: 1px solid #3C5A4B">
+    <a href="ConviteCapa.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #CDAE6B; font-size: 11px; font-weight: 700; text-decoration: none; border-top: 2px solid #CDAE6B">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20s-7-4.5-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.5-7 10-7 10Z"></path></svg>Capa</a>
+    <a href="ConviteDetalhes.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #C3CCC1; font-size: 11px; font-weight: 600; text-decoration: none; border-top: 2px solid transparent">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>Detalhes</a>
+    <a href="ConviteGaleria.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #C3CCC1; font-size: 11px; font-weight: 600; text-decoration: none; border-top: 2px solid transparent">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>Galeria</a>
+    <a href="ConviteRSVP.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; color: #C3CCC1; font-size: 11px; font-weight: 600; text-decoration: none; border-top: 2px solid transparent">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8M20 12v7H4V5h11"></path></svg>Presença</a>
+  </nav>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { now: Date.now() };
+  }
+  componentDidMount() {
+    this.timer = setInterval(() => this.setState({ now: Date.now() }), 1000);
+  }
+  componentWillUnmount() {
+    clearInterval(this.timer);
+  }
+  renderVals() {
+    const target = Date.parse('2027-04-17T16:00:00-03:00');
+    let diff = Math.max(0, Math.floor((target - this.state.now) / 1000));
+    const d = Math.floor(diff / 86400); diff -= d * 86400;
+    const h = Math.floor(diff / 3600); diff -= h * 3600;
+    const m = Math.floor(diff / 60);
+    const s = diff - m * 60;
+    const pad = (n) => (n < 10 ? '0' + n : String(n));
+    return {
+      headline: target > this.state.now ? 'Faltam' : 'O grande dia chegou!',
+      units: [
+        { value: String(d), label: d === 1 ? 'dia' : 'dias' },
+        { value: pad(h), label: 'horas' },
+        { value: pad(m), label: 'min' },
+        { value: pad(s), label: 'seg' }
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1121 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Editor do convite</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<style>
+body{margin:0;background:#ECEBF1}
+a{color:#4A32C4}a:hover{color:#2F1F8F}
+button,input,select,textarea{font-family:inherit}
+.fld{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid #D6D3E0;border-radius:10px;background:#FFFFFF;color:#17151F;font-size:14px}
+.fld:focus{outline:2px solid #5B3FD6;outline-offset:1px;border-color:#5B3FD6}
+.lbl{display:block;font-size:13px;font-weight:600;color:#3D3A4A;margin-bottom:6px}
+.addb:hover{background:#F1EFF8;border-color:#C9C4DB}
+.pg:hover{background:#F1EFF8}
+.blk:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
+.sec{margin:0;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#5E5A6B;font-weight:700}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #ECEBF1; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5; display: flex; flex-direction: column">
+
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA">
+    <div style="padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px">
+      <a href="Main.dc.html" onClick="{{onBackClick}}" aria-label="Voltar para Meus convites" style="width: 44px; height: 44px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #17151F">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
+      </a>
+      <div style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column">
+        <label for="inv-title" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Nome do convite</label>
+        <input id="inv-title" value="{{title}}" onChange="{{onTitle}}" style="border: 0; padding: 2px 0; font-size: 18px; font-weight: 700; color: #17151F; background: transparent; min-width: 0">
+        <span style="font-size: 13px; color: #5E5A6B">{{statusLine}}</span>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <a href="Abertura.dc.html" onClick="{{onBackClick}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; color: #17151F; font-weight: 600; text-decoration: none">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+          Pré-visualizar
+        </a>
+        <button onClick="{{togglePublish}}" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: {{publishBg}}; color: {{publishFg}}; font-weight: 600; font-size: 15px; cursor: pointer">{{publishLabel}}</button>
+      </div>
+    </div>
+    <sc-if value="{{published}}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="background: #E3F3EA; color: #1E6B43; padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 14px">
+        <strong>Convite publicado.</strong>
+        <span>Link para os convidados: <span style="font-family: ui-monospace, monospace; color: #14472D">[seu-domínio]/ana-e-pedro</span></span>
+        <button style="min-height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9BCBB1; background: #FFFFFF; color: #1E6B43; font-weight: 600; font-size: 14px; cursor: pointer">Copiar link</button>
+      </div>
+    </sc-if>
+  </header>
+
+  <div style="flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: stretch">
+
+    <aside aria-label="Páginas e blocos" style="flex: 1 1 240px; background: #FFFFFF; border-right: 1px solid #E3E1EA; padding: 20px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+      <section>
+        <h2 class="sec" style="margin-bottom: 10px">Páginas</h2>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+          <sc-for list="{{pageList}}" as="p" hint-placeholder-count="4">
+            <li>
+              <button class="pg" onClick="{{p.pick}}" aria-current="{{p.current}}" style="width: 100%; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; border: 1px solid {{p.border}}; background: {{p.bg}}; color: #17151F; cursor: pointer; text-align: left">
+                <span style="width: 26px; height: 26px; border-radius: 7px; background: {{p.numBg}}; color: {{p.numFg}}; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex: none">{{p.n}}</span>
+                <span style="display: flex; flex-direction: column; line-height: 1.25; min-width: 0">
+                  <span style="font-weight: 600; font-size: 14px">{{p.name}}</span>
+                  <span style="font-size: 12px; color: #5E5A6B">{{p.count}}</span>
+                </span>
+              </button>
+            </li>
+          </sc-for>
+        </ol>
+        <button onClick="{{addPage}}" style="margin-top: 8px; width: 100%; min-height: 44px; border-radius: 10px; border: 1px dashed #B9B4CC; background: transparent; color: #3B26A8; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+          Adicionar página
+        </button>
+      </section>
+
+      <section>
+        <h2 class="sec" style="margin-bottom: 4px">Adicionar bloco</h2>
+        <p style="margin: 0 0 10px; font-size: 13px; color: #5E5A6B">Entra no fim da página {{pageName}}.</p>
+        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+          <sc-for list="{{palette}}" as="t" hint-placeholder-count="9">
+            <button class="addb" onClick="{{t.add}}" style="min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 10px; border: 1px solid #E3E1EA; background: #FFFFFF; color: #17151F; font-size: 13px; font-weight: 600; cursor: pointer">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"></path></svg>
+              {{t.label}}
+            </button>
+          </sc-for>
+        </div>
+      </section>
+    </aside>
+
+    <main style="flex: 999 1 420px; min-width: 0; padding: 20px 16px 40px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 12px">
+      <div role="group" aria-label="Modo da prévia" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #DEDCE6; width: 300px; box-sizing: border-box">
+        <button onClick="{{viewPages}}" aria-pressed="{{pagesPressed}}" style="min-height: 38px; border-radius: 9px; border: 0; background: {{pagesTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Conteúdo</button>
+        <button onClick="{{viewOpening}}" aria-pressed="{{openPressed}}" style="min-height: 38px; border-radius: 9px; border: 0; background: {{openTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Abertura</button>
+      </div>
+      <div style="font-size: 14px; color: #5E5A6B; text-align: center">{{previewCaption}}</div>
+
+      <div style="width: 360px; max-width: 100%; height: 740px; border: 10px solid #17151F; border-radius: 44px; background: {{T.bg}}; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box">
+        <sc-if value="{{isPagesView}}" hint-placeholder-val="{{ true }}">
+          <div style="flex: 1 1 auto; overflow-y: auto; padding: 18px 14px; display: flex; flex-direction: column; color: {{T.fg}}; font-family: {{T.body}}">
+            <div style="flex: 1 0 auto; display: flex; flex-direction: column; gap: 10px; padding: {{T.framePad}}; border: {{T.frame}}; border-left: {{T.band}}; text-align: {{T.align}}">
+              <sc-for list="{{blocks}}" as="b" hint-placeholder-count="5">
+                <button class="blk" onClick="{{b.pick}}" aria-pressed="{{b.pressed}}" aria-label="Bloco {{b.typeLabel}}" style="display: block; width: 100%; padding: 6px; border-radius: 12px; border: 2px dashed {{b.outline}}; background: transparent; color: inherit; cursor: pointer; text-align: inherit; position: relative; font-family: inherit">
+                  <sc-if value="{{b.isFoto}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; height: {{T.photoH}}; width: {{T.photoW}}; margin: {{T.photoM}}; border-radius: {{T.photoR}}; transform: {{T.photoRot}}; border: {{T.photoBorder}}; background: {{T.ph}}; color: {{T.fg}}; font-size: 13px">
+                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.6"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
+                      <span style="opacity: 0.8">{{b.label}}</span>
+                    </span>
+                  </sc-if>
+                  <sc-if value="{{b.isVideo}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; aspect-ratio: 16 / 9; border-radius: 10px; background: {{T.ph}}; color: {{T.fg}}; font-size: 13px">
+                      <span style="width: 48px; height: 48px; border-radius: 50%; background: {{T.accent}}; color: {{T.btnFg}}; display: flex; align-items: center; justify-content: center">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+                      </span>
+                      {{b.label}}
+                    </span>
+                  </sc-if>
+                  <sc-if value="{{b.isTitulo}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: block; font-family: {{T.font}}; font-size: {{T.titleSize}}; line-height: 1.05; font-weight: {{T.weight}}; font-style: {{T.fstyle}}">{{b.text}}</span>
+                  </sc-if>
+                  <sc-if value="{{b.isTexto}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: block; font-size: 14px; opacity: 0.88; white-space: pre-line">{{b.text}}</span>
+                  </sc-if>
+                  <sc-if value="{{b.isOrient}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: block; text-align: left; padding: 12px 14px; border-radius: 10px; border: 1px solid {{T.line}}; font-size: 13px; white-space: pre-line">{{b.text}}</span>
+                  </sc-if>
+                  <sc-if value="{{b.isContagem}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; text-align: center">
+                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">179</span><span style="font-size: 10px; opacity: 0.8">dias</span></span>
+                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">07</span><span style="font-size: 10px; opacity: 0.8">horas</span></span>
+                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">14</span><span style="font-size: 10px; opacity: 0.8">min</span></span>
+                      <span style="padding: 8px 0; border-radius: 8px; border: 1px solid {{T.line}}; display: flex; flex-direction: column"><span style="font-family: {{T.font}}; font-size: 26px; line-height: 1">32</span><span style="font-size: 10px; opacity: 0.8">seg</span></span>
+                    </span>
+                  </sc-if>
+                  <sc-if value="{{b.isMapa}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: flex; flex-direction: column; border-radius: 10px; overflow: hidden; border: 1px solid {{T.line}}">
+                      <span style="height: 120px; background: {{T.ph}}; display: flex; align-items: center; justify-content: center; color: {{T.accent}}">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
+                      </span>
+                      <span style="padding: 8px 10px; font-size: 13px; text-align: left">{{b.text}}</span>
+                    </span>
+                  </sc-if>
+                  <sc-if value="{{b.isBotao}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 22px; border-radius: {{T.radius}}; background: {{T.accent}}; color: {{T.btnFg}}; font-weight: 700; font-size: 14px">{{b.text}}</span>
+                  </sc-if>
+                  <sc-if value="{{b.isRsvp}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 10px; border: 1px solid {{T.line}}; text-align: left; font-size: 12px">
+                      <span style="opacity: 0.85">Nome completo</span><span style="height: 34px; border-radius: 8px; background: {{T.surface}}"></span>
+                      <span style="opacity: 0.85">Você vai?</span><span style="display: flex; gap: 6px"><span style="flex: 1; height: 34px; border-radius: 8px; background: {{T.surface}}"></span><span style="flex: 1; height: 34px; border-radius: 8px; background: {{T.surface}}"></span></span>
+                      <span style="margin-top: 4px; height: 40px; border-radius: {{T.radius}}; background: {{T.accent}}; color: {{T.btnFg}}; font-weight: 700; display: flex; align-items: center; justify-content: center; font-size: 13px">Enviar resposta</span>
+                    </span>
+                  </sc-if>
+                  <sc-if value="{{b.hasAnim}}" hint-placeholder-val="{{ false }}">
+                    <span style="position: absolute; top: -8px; right: 8px; padding: 1px 8px; border-radius: 999px; background: #5B3FD6; color: #FFFFFF; font-size: 10px; font-weight: 700; font-family: 'Plus Jakarta Sans', sans-serif">{{b.animLabel}}</span>
+                  </sc-if>
+                </button>
+              </sc-for>
+              <sc-if value="{{noBlocks}}" hint-placeholder-val="{{ false }}">
+                <p style="margin: 40px 12px; text-align: center; opacity: 0.8; font-size: 14px">Página vazia. Adicione blocos pelo painel à esquerda.</p>
+              </sc-if>
+            </div>
+          </div>
+          <nav aria-label="Páginas do convite" style="display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}; font-family: 'Plus Jakarta Sans', sans-serif">
+            <sc-for list="{{pageList}}" as="p" hint-placeholder-count="4">
+              <button onClick="{{p.pick}}" style="flex: 1 1 0; min-width: 0; min-height: 52px; border: 0; background: transparent; color: {{p.tabFg}}; font-size: 11px; font-weight: 700; cursor: pointer; border-top: 2px solid {{p.tabLine}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px">{{p.name}}</button>
+            </sc-for>
+          </nav>
+        </sc-if>
+        <sc-if value="{{isOpeningView}}" hint-placeholder-val="{{ false }}">
+          <div style="width: 340px; height: 720px; overflow: hidden">
+            <div style="width: 390px; height: 844px; transform: scale(0.8718); transform-origin: top left">
+              <dc-import name="Abertura" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{coverKicker}}" titulo="{{coverTitle}}" data="{{coverDate}}" btn-radius="{{T.radius}}" show-link="{{noLink}}" music="{{musicCfg}}" hint-size="390px,844px"></dc-import>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </main>
+
+    <aside aria-label="Propriedades" style="flex: 1 1 320px; background: #FFFFFF; border-left: 1px solid #E3E1EA; padding: 16px 20px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+      <div role="tablist" aria-label="Painel" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #F1EFF6">
+        <button role="tab" onClick="{{panelBlock}}" aria-selected="{{blockSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{blockTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Bloco</button>
+        <button role="tab" onClick="{{panelTheme}}" aria-selected="{{themeSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{themeTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
+          Tema
+          <sc-if value="{{T.modified}}" hint-placeholder-val="{{ false }}"><span aria-label="personalizado" style="width: 8px; height: 8px; border-radius: 50%; background: #5B3FD6"></span></sc-if>
+        </button>
+        <button role="tab" onClick="{{panelMusic}}" aria-selected="{{musicSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{musicTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
+          Música
+          <sc-if value="{{mus.active}}" hint-placeholder-val="{{ true }}"><span aria-label="ativada" style="width: 8px; height: 8px; border-radius: 50%; background: #1E7A4C"></span></sc-if>
+        </button>
+      </div>
+
+      <sc-if value="{{isMusicPanel}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <div>
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">Música do convite</h2>
+            <p style="margin: 4px 0 0; font-size: 13px; color: #5E5A6B">Começa a tocar quando o convidado abre o convite. Ele pode pausar a qualquer momento pelo botão de som.</p>
+          </div>
+
+          <div role="radiogroup" aria-label="Origem da música" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+            <sc-for list="{{musicKinds}}" as="k" hint-placeholder-count="4">
+              <button role="radio" aria-checked="{{k.checked}}" onClick="{{k.pick}}" style="min-height: 48px; padding: 6px 10px; border-radius: 10px; border: 2px solid {{k.ring}}; background: {{k.bg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">{{k.label}}</button>
+            </sc-for>
+          </div>
+
+          <sc-if value="{{mus.isBiblioteca}}" hint-placeholder-val="{{ true }}">
+            <div role="radiogroup" aria-label="Músicas da biblioteca" style="display: flex; flex-direction: column; gap: 8px">
+              <sc-for list="{{presets}}" as="p" hint-placeholder-count="3">
+                <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border-radius: 12px; border: 2px solid {{p.ring}}; background: {{p.bg}}">
+                  <button role="radio" aria-checked="{{p.checked}}" onClick="{{p.pick}}" style="flex: 1 1 auto; min-height: 44px; padding: 0; border: 0; background: transparent; color: #17151F; cursor: pointer; text-align: left; display: flex; flex-direction: column; justify-content: center">
+                    <span style="font-weight: 700; font-size: 14px">{{p.label}}</span>
+                    <span style="font-size: 12px; color: #5E5A6B">{{p.desc}}</span>
+                  </button>
+                  <button onClick="{{p.listen}}" aria-label="{{p.listenAria}}" style="width: 44px; height: 44px; flex: none; border-radius: 50%; border: 1px solid #D6D3E0; background: #FFFFFF; color: #3B26A8; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                    <sc-if value="{{p.isPlaying}}" hint-placeholder-val="{{ false }}">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1"></rect></svg>
+                    </sc-if>
+                    <sc-if value="{{p.isStopped}}" hint-placeholder-val="{{ true }}">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+                    </sc-if>
+                  </button>
+                </div>
+              </sc-for>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{mus.isArquivo}}" hint-placeholder-val="{{ false }}">
+            <div>
+              <label class="lbl" for="mus-file">Arquivo de áudio</label>
+              <input class="fld" id="mus-file" type="file" accept="audio/*" onChange="{{onFile}}" style="padding: 9px 10px">
+              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{mus.fileLine}}</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{mus.isLink}}" hint-placeholder-val="{{ false }}">
+            <div>
+              <label class="lbl" for="mus-link">Link direto do áudio</label>
+              <input class="fld" id="mus-link" type="url" placeholder="https://…/musica.mp3" value="{{mus.link}}" onChange="{{onLink}}">
+              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Use o endereço de um arquivo .mp3, .m4a, .ogg ou .wav.</span>
+              <sc-if value="{{mus.streamWarning}}" hint-placeholder-val="{{ false }}">
+                <p role="alert" style="margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: #FBEFD9; color: #6B3A00; font-size: 13px">Links de páginas do YouTube ou Spotify não tocam dentro do convite. Envie o arquivo de áudio ou use um link direto para ele.</p>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{mus.hasCustomPreview}}" hint-placeholder-val="{{ false }}">
+            <button onClick="{{listenCustom}}" disabled="{{mus.cannotPreview}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="{{mus.customIcon}}"></path></svg>
+              {{mus.customLabel}}
+            </button>
+          </sc-if>
+
+          <sc-if value="{{mus.previewError}}" hint-placeholder-val="{{ false }}">
+            <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 13px">Não foi possível tocar este áudio. Confira se o arquivo é de áudio ou se o link aponta direto para ele.</p>
+          </sc-if>
+
+          <sc-if value="{{mus.active}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 16px">
+              <div>
+                <label class="lbl" for="mus-vol">Volume · {{mus.volume}}%</label>
+                <input id="mus-vol" type="range" min="0" max="100" step="5" value="{{mus.volume}}" onChange="{{onVolume}}" style="width: 100%; min-height: 40px; accent-color: #5B3FD6">
+              </div>
+              <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked="{{mus.loop}}" onChange="{{toggleLoop}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Repetir a música enquanto o convite estiver aberto</label>
+              <button onClick="{{testInInvite}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Testar no convite</button>
+              <span style="font-size: 12px; color: #5E5A6B; text-align: center">Abre a prévia fechada: toque no celular para abrir e ouvir.</span>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isBlockPanel}}" hint-placeholder-val="{{ true }}">
+        <div style="display: flex; flex-direction: column; gap: 20px">
+          <sc-if value="{{hasSel}}" hint-placeholder-val="{{ true }}">
+            <section style="display: flex; flex-direction: column; gap: 16px">
+              <div style="display: flex; align-items: center; gap: 10px">
+                <span style="width: 36px; height: 36px; border-radius: 10px; background: #EFECFB; color: #3B26A8; display: flex; align-items: center; justify-content: center">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{sel.icon}}"></path></svg>
+                </span>
+                <div style="display: flex; flex-direction: column; line-height: 1.25">
+                  <span style="font-size: 12px; color: #5E5A6B; font-weight: 600">Bloco selecionado</span>
+                  <span style="font-size: 17px; font-weight: 700">{{sel.typeLabel}}</span>
+                </div>
+              </div>
+
+              <sc-if value="{{sel.isMedia}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 12px">
+                  <div>
+                    <span class="lbl">Origem do arquivo</span>
+                    <div role="group" aria-label="Origem do arquivo" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #F1EFF6">
+                      <button onClick="{{setUpload}}" aria-pressed="{{sel.upPressed}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{sel.upBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Enviar arquivo</button>
+                      <button onClick="{{setLink}}" aria-pressed="{{sel.linkPressed}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{sel.linkBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Link externo</button>
+                    </div>
+                  </div>
+                  <sc-if value="{{sel.isUpload}}" hint-placeholder-val="{{ true }}">
+                    <button style="width: 100%; padding: 22px 16px; border-radius: 12px; border: 1.5px dashed #B9B4CC; background: #FAFAFC; color: #3D3A4A; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 14px">
+                      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M7 9l5-5 5 5M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"></path></svg>
+                      <strong>Arraste ou escolha um arquivo</strong>
+                      <span style="font-size: 12px; color: #5E5A6B">{{sel.formats}}</span>
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{sel.isLink}}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <label class="lbl" for="media-url">Endereço do arquivo</label>
+                      <input class="fld" id="media-url" type="url" placeholder="https://">
+                      <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{sel.linkHint}}</span>
+                    </div>
+                  </sc-if>
+                  <div>
+                    <label class="lbl" for="media-label">Legenda</label>
+                    <input class="fld" id="media-label" value="{{sel.label}}" onChange="{{onLabel}}">
+                  </div>
+                  <sc-if value="{{sel.isVideo}}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; flex-direction: column; gap: 8px; font-size: 14px">
+                      <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Reproduzir automaticamente, sem som</label>
+                      <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Repetir ao terminar</label>
+                    </div>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{sel.isTextual}}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <label class="lbl" for="blk-text">{{sel.textLabel}}</label>
+                  <textarea class="fld" id="blk-text" rows="4" value="{{sel.text}}" onChange="{{onText}}" style="resize: vertical; line-height: 1.5"></textarea>
+                  <sc-if value="{{sel.isOrient}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Uma orientação por linha: traje, estacionamento, horários, crianças.</span>
+                  </sc-if>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{sel.isMapa}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px">
+                  <div>
+                    <label class="lbl" for="map-name">Nome do local</label>
+                    <input class="fld" id="map-name" value="{{sel.text}}" onChange="{{onText}}">
+                  </div>
+                  <div>
+                    <label class="lbl" for="map-addr">Endereço</label>
+                    <input class="fld" id="map-addr" placeholder="Rua, número, bairro, cidade">
+                  </div>
+                  <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #5B3FD6"> Mostrar botões “Google Maps” e “Waze”</label>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{sel.isContagem}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px">
+                  <div>
+                    <label class="lbl" for="cd-date">Contar até</label>
+                    <input class="fld" id="cd-date" type="datetime-local" value="2027-04-17T16:00">
+                  </div>
+                  <div>
+                    <label class="lbl" for="cd-end">Quando o evento começar, mostrar</label>
+                    <input class="fld" id="cd-end" value="O grande dia chegou!">
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{sel.isBotao}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px">
+                  <div>
+                    <label class="lbl" for="btn-text">Texto do botão</label>
+                    <input class="fld" id="btn-text" value="{{sel.text}}" onChange="{{onText}}">
+                  </div>
+                  <div>
+                    <label class="lbl" for="btn-action">Ao tocar</label>
+                    <select class="fld" id="btn-action">
+                      <option>Ir para outra página do convite</option>
+                      <option>Abrir link externo</option>
+                      <option>Abrir WhatsApp</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="lbl" for="btn-url">Destino</label>
+                    <input class="fld" id="btn-url" placeholder="Página ou endereço https://">
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{sel.isRsvp}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 12px">
+                  <span class="lbl" style="margin: 0">Perguntas do formulário</span>
+                  <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px">
+                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked disabled style="width: 18px; height: 18px; accent-color: #5B3FD6"> Nome e resposta (obrigatórias)</label>
+                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #5B3FD6"> Número de acompanhantes</label>
+                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #5B3FD6"> Restrição alimentar</label>
+                    <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked style="width: 18px; height: 18px; accent-color: #5B3FD6"> Mensagem para os anfitriões</label>
+                  </div>
+                  <div>
+                    <label class="lbl" for="rsvp-deadline">Prazo para responder</label>
+                    <input class="fld" id="rsvp-deadline" type="date" value="2027-03-17">
+                  </div>
+                </div>
+              </sc-if>
+
+              <div>
+                <label class="lbl" for="blk-anim">Animação de entrada do bloco</label>
+                <select class="fld" id="blk-anim" value="{{sel.anim}}" onChange="{{onAnim}}">
+                  <option value="nenhuma">Nenhuma</option>
+                  <option value="surgir">Surgir suavemente</option>
+                  <option value="deslizar">Deslizar de baixo</option>
+                  <option value="zoom">Aproximar (zoom)</option>
+                </select>
+              </div>
+
+              <div style="display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid #EEECF3; padding-top: 16px">
+                <button onClick="{{moveUp}}" aria-label="Mover bloco para cima" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>
+                </button>
+                <button onClick="{{moveDown}}" aria-label="Mover bloco para baixo" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
+                </button>
+                <button onClick="{{removeBlock}}" style="margin-left: auto; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>
+                  Excluir bloco
+                </button>
+              </div>
+            </section>
+          </sc-if>
+
+          <sc-if value="{{noSel}}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0; padding: 20px; border-radius: 12px; background: #F5F4F8; color: #5E5A6B; font-size: 14px">Selecione um bloco na prévia para editar o conteúdo, a mídia e a animação.</p>
+          </sc-if>
+
+          <section style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 18px">
+            <h2 class="sec">Página</h2>
+            <div>
+              <label class="lbl" for="pg-name">Nome no menu do convite</label>
+              <input class="fld" id="pg-name" value="{{pageName}}" onChange="{{onPageName}}">
+            </div>
+            <div>
+              <label class="lbl" for="pg-trans">Transição ao entrar</label>
+              <select class="fld" id="pg-trans">
+                <option>Deslizar para o lado</option>
+                <option>Esmaecer</option>
+                <option>Sem transição</option>
+              </select>
+            </div>
+            <button onClick="{{removePage}}" style="align-self: flex-start; min-height: 40px; padding: 0; border: 0; background: transparent; color: #B42318; font-weight: 600; font-size: 14px; cursor: pointer">Excluir esta página</button>
+          </section>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{isThemePanel}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <div style="display: flex; align-items: center; gap: 12px">
+            <span aria-hidden="true" style="display: flex; width: 44px; height: 44px; border-radius: 10px; overflow: hidden; border: 1px solid #E3E1EA; flex: none">
+              <span style="flex: 2; background: {{T.bg}}"></span><span style="flex: 1; background: {{T.accent}}"></span>
+            </span>
+            <span style="flex: 1 1 auto; display: flex; flex-direction: column; line-height: 1.3">
+              <span style="font-size: 12px; color: #5E5A6B; font-weight: 600">Baseado no tema</span>
+              <strong>{{T.baseName}}</strong>
+            </span>
+            <sc-if value="{{T.modified}}" hint-placeholder-val="{{ false }}">
+              <span style="padding: 2px 10px; border-radius: 999px; background: #EFECFB; color: #3B26A8; font-size: 12px; font-weight: 700">Personalizado</span>
+            </sc-if>
+          </div>
+          <p style="margin: 0; font-size: 13px; color: #5E5A6B">As mudanças valem só para este convite. O tema original continua igual na galeria.</p>
+
+          <section style="display: flex; flex-direction: column; gap: 10px">
+            <h2 class="sec">Paletas</h2>
+            <div role="group" aria-label="Paletas de cores" style="display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px">
+              <sc-for list="{{paletteSwatches}}" as="pl" hint-placeholder-count="24">
+                <button onClick="{{pl.apply}}" aria-label="Paleta {{pl.label}}" title="{{pl.label}}" style="height: 40px; padding: 0; border-radius: 8px; border: 2px solid {{pl.ring}}; overflow: hidden; cursor: pointer; display: flex; background: {{pl.bg}}">
+                  <span aria-hidden="true" style="flex: 2; background: {{pl.bg}}"></span><span aria-hidden="true" style="flex: 1; background: {{pl.accent}}"></span>
+                </button>
+              </sc-for>
+            </div>
+            <span style="font-size: 12px; color: #5E5A6B">{{paletteHint}}</span>
+          </section>
+
+          <section style="display: flex; flex-direction: column; gap: 10px">
+            <h2 class="sec">Cores</h2>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+              <sc-for list="{{colorFields}}" as="c" hint-placeholder-count="6">
+                <div style="display: flex; align-items: center; gap: 8px; padding: 6px 8px; border: 1px solid #E3E1EA; border-radius: 10px; min-width: 0">
+                  <input type="color" id="{{c.id}}" value="{{c.value}}" onChange="{{c.change}}" style="width: 36px; height: 36px; padding: 0; border: 0; background: transparent; cursor: pointer; flex: none">
+                  <label for="{{c.id}}" style="font-size: 13px; font-weight: 600; line-height: 1.25; cursor: pointer; min-width: 0">{{c.label}}</label>
+                </div>
+              </sc-for>
+            </div>
+          </section>
+
+          <section style="display: flex; flex-direction: column; gap: 12px">
+            <h2 class="sec">Tipografia e estilo</h2>
+            <div>
+              <label class="lbl" for="th-font">Fonte dos títulos</label>
+              <select class="fld" id="th-font" value="{{T.fontKey}}" onChange="{{onFont}}">
+                <option value="cormorant">Cormorant Garamond</option>
+                <option value="playfair">Playfair Display</option>
+                <option value="bodoni">Bodoni Moda</option>
+                <option value="dmserif">DM Serif Display</option>
+                <option value="italiana">Italiana</option>
+                <option value="greatvibes">Great Vibes</option>
+                <option value="caveat">Caveat</option>
+                <option value="bricolage">Bricolage Grotesque</option>
+                <option value="syne">Syne</option>
+                <option value="josefin">Josefin Sans</option>
+                <option value="jakarta">Plus Jakarta Sans</option>
+              </select>
+            </div>
+            <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked="{{T.italic}}" onChange="{{toggleItalic}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Títulos em itálico</label>
+            <div>
+              <label class="lbl" for="th-layout">Layout das páginas</label>
+              <select class="fld" id="th-layout" value="{{T.layout}}" onChange="{{onLayout}}">
+                <option value="centro">Centralizado</option>
+                <option value="foto-topo">Foto no topo</option>
+                <option value="foto-fundo">Foto de fundo</option>
+                <option value="moldura">Moldura</option>
+                <option value="dividido">Dividido</option>
+                <option value="editorial">Editorial</option>
+                <option value="arco">Arco</option>
+                <option value="polaroid">Polaroid</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl" for="th-radius">Formato dos botões</label>
+              <select class="fld" id="th-radius" value="{{T.radiusKey}}" onChange="{{onRadius}}">
+                <option value="pilula">Pílula</option>
+                <option value="arredondado">Arredondado</option>
+                <option value="reto">Reto</option>
+              </select>
+            </div>
+          </section>
+
+          <section style="display: flex; flex-direction: column; gap: 12px">
+            <h2 class="sec">Abertura do convite</h2>
+            <div>
+              <label class="lbl" for="th-anim">Animação de abertura</label>
+              <select class="fld" id="th-anim" value="{{T.anim}}" onChange="{{onOpenAnim}}">
+                <option value="envelope">Carta se abrindo</option>
+                <option value="cortina">Cortina</option>
+                <option value="portas">Portas duplas</option>
+                <option value="lacre">Lacre de cera</option>
+                <option value="presente">Caixa de presente</option>
+                <option value="livro">Capa de livro</option>
+                <option value="iris">Íris</option>
+                <option value="neblina">Neblina</option>
+                <option value="nenhuma">Sem abertura</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl" for="th-trigger">Como o convidado abre</label>
+              <select class="fld" id="th-trigger">
+                <option>Toque em qualquer lugar</option>
+                <option>Botão “Abrir convite”</option>
+                <option>Deslizar para cima</option>
+              </select>
+            </div>
+            <button onClick="{{viewOpening}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+              Ver abertura na prévia
+            </button>
+          </section>
+
+          <section style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #EEECF3; padding-top: 16px">
+            <button onClick="{{saveAsTheme}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Salvar como novo tema</button>
+            <button onClick="{{resetTheme}}" disabled="{{T.unmodified}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Restaurar tema {{T.baseName}}</button>
+            <sc-if value="{{inFlow}}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{changeTheme}}" style="align-self: center; min-height: 40px; padding: 0 8px; border: 0; background: transparent; color: #4A32C4; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: underline">Trocar tema base</button>
+            </sc-if>
+            <sc-if value="{{notInFlow}}" hint-placeholder-val="{{ true }}">
+              <a href="Temas.dc.html" style="align-self: center; min-height: 40px; display: inline-flex; align-items: center; font-weight: 600; font-size: 14px">Trocar tema base</a>
+            </sc-if>
+          </section>
+        </div>
+      </sc-if>
+    </aside>
+  </div>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #17151F; color: #FFFFFF; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 16px">
+      {{toast}}
+      <button onClick="{{closeToast}}" aria-label="Fechar aviso" style="border: 0; background: transparent; color: #C9BEFF; font-weight: 700; font-size: 14px; cursor: pointer; min-height: 32px">OK</button>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"initialTheme":{"editor":null},"onBack":{"editor":null},"onChangeTheme":{"editor":null},"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const b = (id, type, extra) => Object.assign({ id: id, type: type, text: '', label: '', src: 'upload', anim: 'nenhuma' }, extra);
+    const it = props.initialTheme;
+    this.state = {
+      title: it ? 'Novo convite · ' + (it.name || it.baseName) : 'Casamento Ana & Pedro',
+      kicker: it ? (it.kicker || 'Convite') : 'Casamento',
+      date: it ? (it.date || 'Data do evento') : '17 · 04 · 2027',
+      published: false,
+      page: 'capa',
+      sel: 'c1',
+      next: 100,
+      panel: 'bloco',
+      view: 'pages',
+      toast: '',
+      theme: this.baseTheme(),
+      music: { kind: 'biblioteca', preset: 'valsa', fileUrl: '', fileName: '', link: '', volume: 70, loop: true },
+      previewing: '',
+      previewError: false,
+      pages: it ? this.newPages(b, it) : [
+        { id: 'capa', name: 'Capa', blocks: [
+          b('c1', 'foto', { label: 'Foto do casal', anim: 'surgir' }),
+          b('c2', 'titulo', { text: 'Ana & Pedro', anim: 'deslizar' }),
+          b('c3', 'texto', { text: 'convidam para a celebração do seu casamento' }),
+          b('c4', 'contagem', {}),
+          b('c5', 'botao', { text: 'Ver detalhes' })
+        ] },
+        { id: 'detalhes', name: 'Detalhes', blocks: [
+          b('d1', 'titulo', { text: 'Quando e onde' }),
+          b('d2', 'texto', { text: 'Sábado, 17 de abril de 2027\nCerimônia às 16h, recepção em seguida' }),
+          b('d3', 'mapa', { text: 'Espaço Villa Jardim' }),
+          b('d4', 'orientacoes', { text: 'Traje: esporte fino\nEstacionamento no local\nCrianças são bem-vindas' }),
+          b('d5', 'botao', { text: 'Lista de presentes' })
+        ] },
+        { id: 'galeria', name: 'Galeria', blocks: [
+          b('g1', 'titulo', { text: 'Nossa história' }),
+          b('g2', 'video', { label: 'Vídeo do pedido', src: 'link' }),
+          b('g3', 'foto', { label: 'Primeira viagem juntos' }),
+          b('g4', 'foto', { label: 'Noivado' })
+        ] },
+        { id: 'presenca', name: 'Presença', blocks: [
+          b('p1', 'titulo', { text: 'Confirme sua presença' }),
+          b('p2', 'texto', { text: 'Responda até 17 de março de 2027' }),
+          b('p3', 'rsvp', {})
+        ] }
+      ]
+    };
+  }
+
+  baseTheme() {
+    const it = this.props.initialTheme;
+    if (it) {
+      return {
+        baseName: it.baseName || it.name, bg: it.bg, fg: it.fg, accent: it.accent, btnFg: it.btnFg, paper: it.paper, ph: it.ph,
+        fontKey: it.fontKey || 'cormorant', italic: !!it.italic, layout: it.layout || 'centro', radiusKey: it.radiusKey || 'pilula', anim: it.anim || 'envelope'
+      };
+    }
+    return { baseName: 'Jardim', bg: '#1F3329', fg: '#F3EEE4', accent: '#CDAE6B', btnFg: '#1F3329', paper: '#E9E1D0', ph: '#2B4538', fontKey: 'cormorant', italic: false, layout: 'arco', radiusKey: 'pilula', anim: 'envelope' };
+  }
+
+  newPages(b, it) {
+    return [
+      { id: 'capa', name: 'Capa', blocks: [
+        b('c1', 'foto', { label: 'Foto principal', anim: 'surgir' }),
+        b('c2', 'titulo', { text: it.sample || 'Título do evento', anim: 'deslizar' }),
+        b('c3', 'texto', { text: 'Escreva aqui a frase do convite' }),
+        b('c4', 'contagem', {}),
+        b('c5', 'botao', { text: 'Ver detalhes' })
+      ] },
+      { id: 'detalhes', name: 'Detalhes', blocks: [
+        b('d1', 'titulo', { text: 'Quando e onde' }),
+        b('d2', 'texto', { text: 'Data e horário do evento' }),
+        b('d3', 'mapa', { text: 'Nome do local' }),
+        b('d4', 'orientacoes', { text: 'Traje\nEstacionamento\nOutras orientações' }),
+        b('d5', 'botao', { text: 'Saiba mais' })
+      ] },
+      { id: 'galeria', name: 'Galeria', blocks: [
+        b('g1', 'titulo', { text: 'Galeria' }),
+        b('g2', 'foto', { label: 'Foto 1' }),
+        b('g3', 'foto', { label: 'Foto 2' })
+      ] },
+      { id: 'presenca', name: 'Presença', blocks: [
+        b('p1', 'titulo', { text: 'Confirme sua presença' }),
+        b('p2', 'texto', { text: 'Responda até [data limite]' }),
+        b('p3', 'rsvp', {})
+      ] }
+    ];
+  }
+
+  palettes() {
+    const p = (group, label, bg, fg, accent, btnFg, paper, ph) => ({ group, label, bg, fg, accent, btnFg, paper, ph });
+    return [
+      p('Clássicas', 'Floresta', '#1F3329', '#F3EEE4', '#CDAE6B', '#1F3329', '#E9E1D0', '#2B4538'),
+      p('Clássicas', 'Noite', '#0F1A3A', '#EDE6D6', '#D8B868', '#0F1A3A', '#16244F', '#1C2B55'),
+      p('Clássicas', 'Preto e ouro', '#17161A', '#EFE8D8', '#C9A961', '#17161A', '#2A282E', '#2A282E'),
+      p('Clássicas', 'Bordô', '#3A0F1C', '#F5E6D8', '#D9A35B', '#3A0F1C', '#5A1A2B', '#521728'),
+      p('Românticas', 'Rosa seco', '#F3E3E1', '#5B2E3A', '#9E4A60', '#FFFFFF', '#E8C9C6', '#E6CBC8'),
+      p('Românticas', 'Pêssego', '#FCE8DD', '#4D2C24', '#B04A31', '#FFFFFF', '#E9A68A', '#F2D3C2'),
+      p('Românticas', 'Lavanda', '#EDE8F5', '#3B2C5A', '#6E51A0', '#FFFFFF', '#DCD1EE', '#DED5EE'),
+      p('Românticas', 'Marfim', '#FAF6EE', '#3A3328', '#8A6D3B', '#FFFFFF', '#E8DCC4', '#EDE5D5'),
+      p('Vibrantes', 'Festa', '#C2361F', '#FFF4EE', '#FFD166', '#3A1208', '#FFD166', '#A82C18'),
+      p('Vibrantes', 'Tropical', '#0E4D3A', '#FFF7E6', '#FF8A3D', '#2B1406', '#FF8A3D', '#146149'),
+      p('Vibrantes', 'Neon', '#14082B', '#F5F0FF', '#2FE6C8', '#14082B', '#2A1260', '#22124A'),
+      p('Vibrantes', 'Pop', '#FFFFFF', '#1D1A2E', '#7A3CF0', '#FFFFFF', '#7A3CF0', '#F1EAFE'),
+      p('Suaves', 'Menta', '#E3F4EE', '#1D3F35', '#23735A', '#FFFFFF', '#2E8B6E', '#CBE9DE'),
+      p('Suaves', 'Nuvem', '#EEF3FA', '#2C3E5C', '#4F6FA5', '#FFFFFF', '#DCE6F4', '#D3DFF0'),
+      p('Suaves', 'Baunilha', '#FFF6E0', '#4A3A1A', '#9A6210', '#FFFFFF', '#F2DDA8', '#F5E6C0'),
+      p('Suaves', 'Algodão-doce', '#FDEFF4', '#4A2238', '#B33A6B', '#FFFFFF', '#F6CFDD', '#F7DCE6'),
+      p('Terrosas', 'Terracota', '#F4E7DC', '#5A2E1F', '#A8482A', '#FFF6EF', '#C9673F', '#E3CBB8'),
+      p('Terrosas', 'Oliveira', '#E9E8DA', '#2F3A22', '#5A6532', '#F5F4EA', '#5F6A35', '#D6D4C0'),
+      p('Terrosas', 'Café', '#3B2A20', '#F2E6D8', '#D9A066', '#3B2A20', '#5A4030', '#4D372A'),
+      p('Terrosas', 'Areia', '#EFE4D2', '#3D3123', '#8B5E34', '#FFFFFF', '#D8C4A4', '#E2D3BB'),
+      p('Modernas', 'Monocromo', '#F2F2F0', '#111111', '#111111', '#F2F2F0', '#111111', '#DADAD6'),
+      p('Modernas', 'Grafite', '#2A2D34', '#F2F1EE', '#E8B04B', '#2A2D34', '#3A3E47', '#3A3E47'),
+      p('Modernas', 'Tech', '#0B0F14', '#E6EDF3', '#4F8CFF', '#0B0F14', '#111925', '#18202B'),
+      p('Modernas', 'Oceano', '#0B3C5D', '#F1F6F9', '#F2B134', '#0B3C5D', '#F1F6F9', '#164E73')
+    ];
+  }
+
+  synthStart(preset, volume, loop) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return null;
+    const songs = {
+      caixinha: { bpm: 112, wave: 'sine', gain: 0.5, notes: [[84, .5], [88, .5], [91, .5], [96, 1], [91, .5], [88, .5], [89, .5], [93, .5], [96, .5], [98, 1], [96, .5], [93, .5], [91, .5], [88, .5], [84, .5], [86, 1], [88, .5], [84, 1.5]] },
+      valsa: { bpm: 132, wave: 'triangle', gain: 0.6, notes: [[67, 1], [72, 1], [76, 1], [74, 2], [72, 1], [71, 1], [72, 1], [74, 1], [67, 3], [69, 1], [72, 1], [77, 1], [76, 2], [74, 1], [72, 3]] },
+      festa: { bpm: 150, wave: 'square', gain: 0.16, notes: [[72, .5], [72, .5], [79, .5], [79, .5], [81, .5], [81, .5], [79, 1], [77, .5], [77, .5], [76, .5], [76, .5], [74, .5], [74, .5], [72, 1]] }
+    };
+    const song = songs[preset] || songs.valsa;
+    const ctx = new AC();
+    const master = ctx.createGain();
+    master.gain.value = Math.max(0, Math.min(1, volume)) * song.gain;
+    master.connect(ctx.destination);
+    const beat = 60 / song.bpm;
+    const total = song.notes.reduce((s, n) => s + n[1], 0) * beat;
+    const playLoop = (t0) => {
+      let t = t0;
+      song.notes.forEach((n) => {
+        const d = n[1] * beat;
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = song.wave;
+        o.frequency.value = 440 * Math.pow(2, (n[0] - 69) / 12);
+        g.gain.setValueAtTime(0.0001, t);
+        g.gain.exponentialRampToValueAtTime(1, t + 0.02);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + d * 0.95);
+        o.connect(g); g.connect(master);
+        o.start(t); o.stop(t + d);
+        t += d;
+      });
+    };
+    let next = ctx.currentTime + 0.05;
+    playLoop(next); next += total;
+    const timer = setInterval(() => {
+      if (loop && next - ctx.currentTime < 1) { playLoop(next); next += total; }
+    }, 250);
+    if (ctx.state === 'suspended') ctx.resume();
+    return { stop: () => { clearInterval(timer); try { ctx.close(); } catch (e) {} } };
+  }
+
+  musicCfg() {
+    const m = this.state.music;
+    const base = { volume: m.volume / 100, loop: m.loop };
+    if (m.kind === 'biblioteca') return Object.assign({ kind: 'biblioteca', preset: m.preset }, base);
+    if (m.kind === 'arquivo') return m.fileUrl ? Object.assign({ kind: 'arquivo', url: m.fileUrl }, base) : { kind: 'nenhuma' };
+    if (m.kind === 'link') return /^https?:\/\//.test(m.link.trim()) ? Object.assign({ kind: 'link', url: m.link.trim() }, base) : { kind: 'nenhuma' };
+    return { kind: 'nenhuma' };
+  }
+
+  previewStop() {
+    if (this.player) { this.player.stop(); this.player = null; }
+  }
+
+  previewToggle(key, cfg) {
+    if (this.state.previewing === key) {
+      this.previewStop();
+      this.setState({ previewing: '' });
+      return;
+    }
+    this.previewStop();
+    if (!cfg || cfg.kind === 'nenhuma') return;
+    if (cfg.kind === 'biblioteca') {
+      this.player = this.synthStart(cfg.preset, cfg.volume, true);
+      this.setState({ previewing: this.player ? key : '', previewError: false });
+      return;
+    }
+    try {
+      const a = new Audio(cfg.url);
+      a.volume = cfg.volume;
+      a.loop = true;
+      const fail = () => { this.previewStop(); this.setState({ previewing: '', previewError: true }); };
+      a.onerror = fail;
+      const pr = a.play();
+      if (pr && pr.catch) pr.catch(fail);
+      this.player = { stop: () => { a.onerror = null; a.pause(); a.removeAttribute('src'); } };
+      this.setState({ previewing: key, previewError: false });
+    } catch (e) {
+      this.setState({ previewing: '', previewError: true });
+    }
+  }
+
+  setMusic(patch) {
+    this.previewStop();
+    this.setState({ music: Object.assign({}, this.state.music, patch), previewing: '', previewError: false });
+  }
+
+  componentWillUnmount() {
+    this.previewStop();
+    if (this.state.music.fileUrl) { try { URL.revokeObjectURL(this.state.music.fileUrl); } catch (e) {} }
+  }
+
+  meta() {
+    return {
+      titulo: { label: 'Título', icon: 'M6 4v16M18 4v16M6 12h12' },
+      texto: { label: 'Texto', icon: 'M4 6h16M4 12h16M4 18h10' },
+      foto: { label: 'Foto', icon: 'M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01' },
+      video: { label: 'Vídeo', icon: 'M3 6h12v12H3zM15 10l6-3v10l-6-3' },
+      mapa: { label: 'Mapa', icon: 'M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z' },
+      contagem: { label: 'Contagem', icon: 'M12 9v4l3 2M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM9 2h6' },
+      botao: { label: 'Botão', icon: 'M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7' },
+      orientacoes: { label: 'Orientações', icon: 'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01' },
+      rsvp: { label: 'Confirmação', icon: 'M9 11l3 3 8-8M20 12v7H4V5h11' }
+    };
+  }
+
+  curPage() {
+    return this.state.pages.find((p) => p.id === this.state.page) || this.state.pages[0];
+  }
+
+  setBlocks(fn) {
+    const pid = this.curPage().id;
+    this.setState({ pages: this.state.pages.map((p) => (p.id === pid ? Object.assign({}, p, { blocks: fn(p.blocks) }) : p)) });
+  }
+
+  patchSel(patch) {
+    const sid = this.state.sel;
+    this.setBlocks((bs) => bs.map((x) => (x.id === sid ? Object.assign({}, x, patch) : x)));
+  }
+
+  patchTheme(patch) {
+    this.setState({ theme: Object.assign({}, this.state.theme, patch) });
+  }
+
+  move(dir) {
+    const sid = this.state.sel;
+    this.setBlocks((bs) => {
+      const i = bs.findIndex((x) => x.id === sid);
+      const j = i + dir;
+      if (i < 0 || j < 0 || j >= bs.length) return bs;
+      const out = bs.slice();
+      const t = out[i]; out[i] = out[j]; out[j] = t;
+      return out;
+    });
+  }
+
+  themeVals() {
+    const th = this.state.theme;
+    const base = this.baseTheme();
+    const fonts = {
+      cormorant: ["'Cormorant Garamond', Georgia, serif", '500', 40], playfair: ["'Playfair Display', Georgia, serif", '600', 36],
+      bodoni: ["'Bodoni Moda', Georgia, serif", '500', 36], dmserif: ["'DM Serif Display', Georgia, serif", '400', 36],
+      italiana: ["'Italiana', serif", '400', 38], greatvibes: ["'Great Vibes', cursive", '400', 46], caveat: ["'Caveat', cursive", '700', 44],
+      bricolage: ["'Bricolage Grotesque', sans-serif", '800', 34], syne: ["'Syne', sans-serif", '800', 30],
+      josefin: ["'Josefin Sans', sans-serif", '700', 34], jakarta: ["'Plus Jakarta Sans', sans-serif", '800', 32]
+    };
+    const f = fonts[th.fontKey] || fonts.cormorant;
+    const radii = { pilula: '999px', arredondado: '10px', reto: '0px' };
+    const L = th.layout;
+    const photo = {
+      centro: ['200px', '100%', '0', '10px', 'none', '0'],
+      'foto-topo': ['240px', 'calc(100% + 40px)', '-24px -20px 0', '0', 'none', '0'],
+      'foto-fundo': ['320px', 'calc(100% + 40px)', '-24px -20px 0', '0', 'none', '0'],
+      moldura: ['190px', '100%', '0', '0', 'none', '0'],
+      dividido: ['200px', '100%', '0', '4px', 'none', '0'],
+      editorial: ['190px', '100%', '0', '0', 'none', '0'],
+      arco: ['230px', '72%', '0 auto', '999px 999px 0 0', 'none', '0'],
+      polaroid: ['210px', '78%', '6px auto 10px', '2px', 'rotate(-3deg)', '8px solid #FFFFFF']
+    }[L] || ['200px', '100%', '0', '10px', 'none', '0'];
+    const modified = Object.keys(base).some((k) => base[k] !== th[k]);
+    return {
+      baseName: th.baseName,
+      bg: th.bg, fg: th.fg, accent: th.accent, btnFg: th.btnFg, paper: th.paper, ph: th.ph,
+      fontKey: th.fontKey, italic: th.italic, layout: L, radiusKey: th.radiusKey, anim: th.anim,
+      font: f[0], weight: f[1],
+      titleSize: (L === 'editorial' ? f[2] + 8 : f[2]) + 'px',
+      fstyle: th.italic ? 'italic' : 'normal',
+      body: "'Plus Jakarta Sans', system-ui, sans-serif",
+      radius: radii[th.radiusKey],
+      line: 'color-mix(in srgb, ' + th.fg + ' 24%, ' + th.bg + ')',
+      surface: 'color-mix(in srgb, ' + th.fg + ' 9%, ' + th.bg + ')',
+      align: (L === 'editorial' || L === 'dividido') ? 'left' : 'center',
+      frame: L === 'moldura' ? '5px double ' + th.accent : '0',
+      band: L === 'dividido' ? '10px solid ' + th.accent : (L === 'moldura' ? '5px double ' + th.accent : '0'),
+      framePad: L === 'moldura' ? '14px' : (L === 'dividido' ? '0 0 0 12px' : '0'),
+      photoH: photo[0], photoW: photo[1], photoM: photo[2], photoR: photo[3], photoRot: photo[4], photoBorder: photo[5],
+      modified, unmodified: !modified
+    };
+  }
+
+  renderVals() {
+    const M = this.meta();
+    const st = this.state;
+    const cur = this.curPage();
+    const T = this.themeVals();
+    const animNames = { surgir: 'Surgir', deslizar: 'Deslizar', zoom: 'Zoom' };
+
+    const blocks = cur.blocks.map((x) => {
+      const on = x.id === st.sel && st.panel === 'bloco';
+      return Object.assign({}, x, {
+        typeLabel: M[x.type].label,
+        isFoto: x.type === 'foto', isVideo: x.type === 'video', isTitulo: x.type === 'titulo',
+        isTexto: x.type === 'texto', isOrient: x.type === 'orientacoes', isContagem: x.type === 'contagem',
+        isMapa: x.type === 'mapa', isBotao: x.type === 'botao', isRsvp: x.type === 'rsvp',
+        hasAnim: x.anim && x.anim !== 'nenhuma',
+        animLabel: animNames[x.anim] || '',
+        outline: on ? T.accent : 'transparent',
+        pressed: on ? 'true' : 'false',
+        pick: () => this.setState({ sel: x.id, panel: 'bloco' })
+      });
+    });
+
+    const pageList = st.pages.map((p, i) => {
+      const on = p.id === cur.id;
+      const n = p.blocks.length;
+      return {
+        name: p.name, n: i + 1,
+        count: n === 1 ? '1 bloco' : n + ' blocos',
+        current: on ? 'page' : 'false',
+        bg: on ? '#F1EFF8' : '#FFFFFF',
+        border: on ? '#C9C4DB' : 'transparent',
+        numBg: on ? '#5B3FD6' : '#ECEAF3',
+        numFg: on ? '#FFFFFF' : '#3D3A4A',
+        tabFg: on ? T.accent : T.fg,
+        tabLine: on ? T.accent : 'transparent',
+        pick: () => this.setState({ page: p.id, view: 'pages', sel: p.blocks.length ? p.blocks[0].id : null })
+      };
+    });
+
+    const defaults = {
+      titulo: { text: 'Novo título' }, texto: { text: 'Escreva aqui.' }, foto: { label: 'Nova foto' },
+      video: { label: 'Novo vídeo' }, mapa: { text: 'Nome do local' }, contagem: {},
+      botao: { text: 'Saiba mais' }, orientacoes: { text: 'Primeira orientação\nSegunda orientação' }, rsvp: {}
+    };
+    const palette = Object.keys(M).map((type) => ({
+      label: M[type].label, icon: M[type].icon,
+      add: () => {
+        const id = 'n' + st.next;
+        const nb = Object.assign({ id: id, type: type, text: '', label: '', src: 'upload', anim: 'nenhuma' }, defaults[type]);
+        this.setBlocks((bs) => bs.concat([nb]));
+        this.setState({ sel: id, next: st.next + 1, panel: 'bloco', view: 'pages' });
+      }
+    }));
+
+    const s = cur.blocks.find((x) => x.id === st.sel);
+    let sel = { icon: '', typeLabel: '' };
+    if (s) {
+      const media = s.type === 'foto' || s.type === 'video';
+      sel = Object.assign({}, s, {
+        icon: M[s.type].icon, typeLabel: M[s.type].label,
+        isMedia: media, isVideo: s.type === 'video',
+        isUpload: media && s.src === 'upload', isLink: media && s.src === 'link',
+        upBg: s.src === 'upload' ? '#FFFFFF' : 'transparent',
+        linkBg: s.src === 'link' ? '#FFFFFF' : 'transparent',
+        upPressed: s.src === 'upload' ? 'true' : 'false',
+        linkPressed: s.src === 'link' ? 'true' : 'false',
+        formats: s.type === 'video' ? 'MP4 ou MOV' : 'JPG, PNG, WebP ou GIF animado',
+        linkHint: s.type === 'video' ? 'YouTube, Vimeo ou Google Drive' : 'Imagem hospedada, Google Drive ou Instagram',
+        isTextual: s.type === 'titulo' || s.type === 'texto' || s.type === 'orientacoes',
+        isOrient: s.type === 'orientacoes',
+        textLabel: s.type === 'orientacoes' ? 'Orientações' : (s.type === 'titulo' ? 'Título' : 'Texto'),
+        isMapa: s.type === 'mapa', isContagem: s.type === 'contagem', isBotao: s.type === 'botao', isRsvp: s.type === 'rsvp'
+      });
+    }
+
+    const colorDefs = [['bg', 'Fundo'], ['fg', 'Texto'], ['accent', 'Destaque'], ['btnFg', 'Texto do botão'], ['paper', 'Cor da abertura'], ['ph', 'Área de foto']];
+    const colorFields = colorDefs.map((d) => ({ id: 'tc-' + d[0], label: d[1], value: st.theme[d[0]], change: (e) => this.patchTheme({ [d[0]]: e.target.value }) }));
+
+    const idx = st.pages.findIndex((p) => p.id === cur.id);
+    const isPages = st.view === 'pages';
+    const isBlockPanel = st.panel === 'bloco';
+    const isThemePanel = st.panel === 'tema';
+    const isMusicPanel = st.panel === 'musica';
+    const tabBg = (on) => (on ? '#FFFFFF' : 'transparent');
+
+    const th = st.theme;
+    const paletteSwatches = this.palettes().map((p) => {
+      const on = p.bg === th.bg && p.accent === th.accent && p.fg === th.fg;
+      return Object.assign({}, p, {
+        ring: on ? '#5B3FD6' : '#E3E1EA',
+        apply: () => this.patchTheme({ bg: p.bg, fg: p.fg, accent: p.accent, btnFg: p.btnFg, paper: p.paper, ph: p.ph })
+      });
+    });
+    const curPal = paletteSwatches.find((p) => p.ring === '#5B3FD6');
+
+    const m = st.music;
+    const cfg = this.musicCfg();
+    const presetDefs = [
+      ['valsa', 'Valsa romântica', 'Suave, para casamentos e bodas'],
+      ['caixinha', 'Caixinha de música', 'Delicada, para chá de bebê e infantil'],
+      ['festa', 'Festa animada', 'Alegre, para aniversários e festas']
+    ];
+    const presets = presetDefs.map((d) => {
+      const on = m.preset === d[0];
+      const playing = st.previewing === 'preset-' + d[0];
+      return {
+        label: d[1], desc: d[2],
+        checked: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', bg: on ? '#F7F5FE' : '#FFFFFF',
+        isPlaying: playing, isStopped: !playing,
+        listenAria: (playing ? 'Parar ' : 'Ouvir ') + d[1],
+        pick: () => this.setMusic({ preset: d[0] }),
+        listen: () => this.previewToggle('preset-' + d[0], { kind: 'biblioteca', preset: d[0], volume: m.volume / 100 })
+      };
+    });
+    const kindDefs = [['nenhuma', 'Sem música'], ['biblioteca', 'Biblioteca'], ['arquivo', 'Enviar arquivo'], ['link', 'Link do áudio']];
+    const musicKinds = kindDefs.map((d) => {
+      const on = m.kind === d[0];
+      return { label: d[1], checked: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', bg: on ? '#F7F5FE' : '#FFFFFF', pick: () => this.setMusic({ kind: d[0] }) };
+    });
+    const customPlaying = st.previewing === 'custom';
+    const presetName = (presetDefs.find((d) => d[0] === m.preset) || presetDefs[0])[1];
+    const musicLabel = cfg.kind === 'nenhuma' ? 'sem música' : (m.kind === 'biblioteca' ? presetName : (m.kind === 'arquivo' ? m.fileName : 'link de áudio'));
+    const mus = {
+      active: cfg.kind !== 'nenhuma',
+      isBiblioteca: m.kind === 'biblioteca', isArquivo: m.kind === 'arquivo', isLink: m.kind === 'link',
+      fileLine: m.fileName ? 'Selecionado: ' + m.fileName : 'MP3, M4A, OGG ou WAV.',
+      link: m.link,
+      streamWarning: /youtube\.com|youtu\.be|spotify\.com|deezer\.com/i.test(m.link),
+      hasCustomPreview: m.kind === 'arquivo' || m.kind === 'link',
+      cannotPreview: cfg.kind === 'nenhuma',
+      customLabel: customPlaying ? 'Parar' : 'Ouvir',
+      customIcon: customPlaying ? 'M6 6h12v12H6z' : 'M8 5v14l11-7z',
+      previewError: st.previewError,
+      volume: String(m.volume),
+      loop: m.loop
+    };
+    const capa = st.pages.find((p) => p.id === 'capa') || st.pages[0];
+    const coverBlock = capa && capa.blocks.find((x) => x.type === 'titulo');
+
+    const inFlow = typeof this.props.onChangeTheme === 'function';
+    return {
+      T,
+      inFlow, notInFlow: !inFlow,
+      onBackClick: () => {
+        this.previewStop();
+        if (typeof this.props.onBack === 'function') this.props.onBack();
+      },
+      changeTheme: () => {
+        this.previewStop();
+        if (inFlow) this.props.onChangeTheme();
+      },
+      coverKicker: st.kicker,
+      coverTitle: coverBlock ? coverBlock.text : st.title,
+      coverDate: st.date,
+      musicCfg: cfg,
+      mus, presets, musicKinds,
+      onFile: (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        if (m.fileUrl) { try { URL.revokeObjectURL(m.fileUrl); } catch (err) {} }
+        this.setMusic({ kind: 'arquivo', fileUrl: URL.createObjectURL(f), fileName: f.name });
+      },
+      onLink: (e) => this.setMusic({ link: e.target.value }),
+      onVolume: (e) => this.setMusic({ volume: Number(e.target.value) }),
+      toggleLoop: () => this.setMusic({ loop: !m.loop }),
+      listenCustom: () => this.previewToggle('custom', cfg),
+      testInInvite: () => { this.previewStop(); this.setState({ previewing: '', view: 'opening' }); },
+      paletteSwatches,
+      paletteHint: curPal ? 'Paleta atual: ' + curPal.label + ' (' + curPal.group + ')' : 'Cores personalizadas · escolha uma paleta ou ajuste abaixo',
+      title: st.title,
+      onTitle: (e) => this.setState({ title: e.target.value }),
+      statusLine: (st.published ? 'Publicado' : 'Rascunho') + ' · tema ' + T.baseName + (T.modified ? ' (personalizado)' : '') + ' · música: ' + musicLabel,
+      published: st.published,
+      publishLabel: st.published ? 'Despublicar' : 'Publicar',
+      publishBg: st.published ? '#ECEAF3' : '#5B3FD6',
+      publishFg: st.published ? '#17151F' : '#FFFFFF',
+      togglePublish: () => this.setState({ published: !st.published }),
+      pageList, palette, blocks, colorFields,
+      noBlocks: blocks.length === 0,
+      pageName: cur.name,
+      onPageName: (e) => {
+        const v = e.target.value;
+        this.setState({ pages: st.pages.map((p) => (p.id === cur.id ? Object.assign({}, p, { name: v }) : p)) });
+      },
+      addPage: () => {
+        const id = 'pg' + st.next;
+        const bid = 'n' + st.next;
+        this.setState({
+          pages: st.pages.concat([{ id: id, name: 'Nova página', blocks: [{ id: bid, type: 'titulo', text: 'Nova página', label: '', src: 'upload', anim: 'nenhuma' }] }]),
+          page: id, sel: bid, next: st.next + 1, view: 'pages', panel: 'bloco'
+        });
+      },
+      removePage: () => {
+        if (st.pages.length <= 1) return;
+        const rest = st.pages.filter((p) => p.id !== cur.id);
+        const to = rest[Math.max(0, idx - 1)];
+        this.setState({ pages: rest, page: to.id, sel: to.blocks.length ? to.blocks[0].id : null });
+      },
+      isPagesView: isPages, isOpeningView: !isPages,
+      pagesPressed: isPages ? 'true' : 'false', openPressed: isPages ? 'false' : 'true',
+      pagesTabBg: isPages ? '#FFFFFF' : 'transparent', openTabBg: isPages ? 'transparent' : '#FFFFFF',
+      viewPages: () => this.setState({ view: 'pages' }),
+      viewOpening: () => { this.previewStop(); this.setState({ view: 'opening', previewing: '' }); },
+      previewCaption: isPages ? 'Página ' + (idx + 1) + ' de ' + st.pages.length + ' · ' + cur.name + ' · clique em um bloco para editar' : 'Convite fechado · toque no celular para ver a abertura',
+      noLink: false,
+      isBlockPanel, isThemePanel, isMusicPanel,
+      blockSelected: isBlockPanel ? 'true' : 'false', themeSelected: isThemePanel ? 'true' : 'false', musicSelected: isMusicPanel ? 'true' : 'false',
+      blockTabBg: tabBg(isBlockPanel), themeTabBg: tabBg(isThemePanel), musicTabBg: tabBg(isMusicPanel),
+      panelBlock: () => this.setState({ panel: 'bloco' }),
+      panelTheme: () => this.setState({ panel: 'tema' }),
+      panelMusic: () => this.setState({ panel: 'musica' }),
+      onFont: (e) => this.patchTheme({ fontKey: e.target.value }),
+      toggleItalic: () => this.patchTheme({ italic: !st.theme.italic }),
+      onLayout: (e) => this.patchTheme({ layout: e.target.value }),
+      onRadius: (e) => this.patchTheme({ radiusKey: e.target.value }),
+      onOpenAnim: (e) => { this.patchTheme({ anim: e.target.value }); this.setState({ view: 'opening' }); },
+      resetTheme: () => this.setState({ theme: this.baseTheme(), toast: 'Tema ' + T.baseName + ' restaurado neste convite.' }),
+      saveAsTheme: () => this.setState({ toast: 'Tema salvo em Meus temas como “' + T.baseName + ' personalizado”.' }),
+      hasToast: !!st.toast,
+      toast: st.toast,
+      closeToast: () => this.setState({ toast: '' }),
+      hasSel: !!s,
+      noSel: !s,
+      sel,
+      setUpload: () => this.patchSel({ src: 'upload' }),
+      setLink: () => this.patchSel({ src: 'link' }),
+      onText: (e) => this.patchSel({ text: e.target.value }),
+      onLabel: (e) => this.patchSel({ label: e.target.value }),
+      onAnim: (e) => this.patchSel({ anim: e.target.value }),
+      moveUp: () => this.move(-1),
+      moveDown: () => this.move(1),
+      removeBlock: () => {
+        const i = cur.blocks.findIndex((x) => x.id === st.sel);
+        const rest = cur.blocks.filter((x) => x.id !== st.sel);
+        this.setBlocks(() => rest);
+        const nxt = rest[Math.min(i, rest.length - 1)];
+        this.setState({ sel: nxt ? nxt.id : null });
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>
