@@ -90,13 +90,117 @@ export function themeTokens(th) {
     frame: L === 'moldura' ? '5px double ' + accent : '0',
     band: L === 'dividido' ? '10px solid ' + accent : (L === 'moldura' ? '5px double ' + accent : '0'),
     framePad: L === 'moldura' ? '14px' : (L === 'dividido' ? '0 0 0 12px' : '0'),
+    photoRatio: LAYOUT_RATIOS[L] || LAYOUT_RATIOS.centro,
     photoH: photo[0], photoW: photo[1], photoM: photo[2], photoR: photo[3], photoRot: photo[4], photoBorder: photo[5]
   };
 }
 
+// ---------- Fotos: enquadramento, giro e filtros (não destrutivo) ----------
+// A foto original nunca é alterada: as edições ficam salvas junto do bloco e
+// são aplicadas na exibição. Proporção do quadro = largura / altura.
+const LAYOUT_RATIOS = {
+  centro: 350 / 200, 'foto-topo': 390 / 240, 'foto-fundo': 390 / 320, moldura: 312 / 190,
+  dividido: 328 / 200, editorial: 350 / 190, arco: 252 / 230, polaroid: 257 / 194
+};
+const FORMATS = [
+  ['tema', 'Padrão do layout', 0], ['1:1', 'Quadrado (1:1)', 1], ['4:5', 'Retrato (4:5)', 4 / 5],
+  ['3:4', 'Retrato alto (3:4)', 3 / 4], ['3:2', 'Paisagem (3:2)', 3 / 2], ['16:9', 'Panorâmica (16:9)', 16 / 9],
+  ['9:16', 'Vertical (9:16)', 9 / 16]
+];
+const FILTERS = [
+  ['nenhum', 'Original', ''],
+  ['pb', 'P&B', 'grayscale(1)'],
+  ['noir', 'Noir', 'grayscale(1) contrast(1.35) brightness(0.95)'],
+  ['sepia', 'Sépia', 'sepia(0.8)'],
+  ['vintage', 'Vintage', 'sepia(0.35) contrast(1.1) saturate(0.8) brightness(1.05)'],
+  ['quente', 'Quente', 'sepia(0.28) saturate(1.3) hue-rotate(-8deg)'],
+  ['frio', 'Frio', 'saturate(0.9) hue-rotate(14deg) brightness(1.03)'],
+  ['vivido', 'Vívido', 'saturate(1.6) contrast(1.1)'],
+  ['suave', 'Suave', 'contrast(0.85) brightness(1.1) saturate(0.85)'],
+  ['dramatico', 'Dramático', 'contrast(1.4) saturate(1.2) brightness(0.9)'],
+  ['desbotado', 'Desbotado', 'contrast(0.75) saturate(0.6) brightness(1.1)'],
+  ['rosado', 'Rosado', 'sepia(0.2) saturate(1.2) hue-rotate(-20deg) brightness(1.05)']
+];
+export const PAGE_RATIO = 390 / 844;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const num = (v, d) => (typeof v === 'number' && isFinite(v) ? v : d);
+
+function filterCss(e) {
+  e = e || {};
+  const f = FILTERS.find((x) => x[0] === e.filter);
+  const parts = [];
+  if (f && f[2]) parts.push(f[2]);
+  const b = num(e.brightness, 100), c = num(e.contrast, 100), s = num(e.saturate, 100), bl = num(e.blur, 0);
+  if (b !== 100) parts.push('brightness(' + b / 100 + ')');
+  if (c !== 100) parts.push('contrast(' + c / 100 + ')');
+  if (s !== 100) parts.push('saturate(' + s / 100 + ')');
+  if (bl > 0) parts.push('blur(' + bl + 'px)');
+  return parts.join(' ');
+}
+
+// Geometria em "unidades de quadro": largura 1, altura 1/r.
+function photoGeom(e, r) {
+  const a = num(e.ar, 0);
+  const W = 1, H = 1 / r;
+  const deg = num(e.rot, 0) + 90 * (num(e.quarter, 0) % 4);
+  const th = deg * Math.PI / 180;
+  const ct = Math.cos(th), st = Math.sin(th);
+  const c = Math.abs(ct), s = Math.abs(st);
+  const Wp = W * c + H * s, Hp = W * s + H * c; // quadro visto no eixo da foto
+  const k = Math.max(Wp / a, Hp) * (1.02 + num(e.blur, 0) * 0.01) * Math.max(1, num(e.zoom, 1));
+  const iw = k * a, ih = k;
+  return { a, W, H, deg, ct, st, Wp, Hp, iw, ih, slackX: (iw - Wp) / 2, slackY: (ih - Hp) / 2 };
+}
+
+function photoStyle(e, r) {
+  e = e || {};
+  const f = filterCss(e);
+  const fil = f ? 'filter:' + f + ';' : '';
+  if (!num(e.ar, 0) || !r) return 'position:absolute;left:0;top:0;width:100%;height:100%;object-fit:cover;display:block;' + fil;
+  const g = photoGeom(e, r);
+  const dlx = clamp(num(e.px, 0), -1, 1) * g.slackX, dly = clamp(num(e.py, 0), -1, 1) * g.slackY;
+  const dx = dlx * g.ct - dly * g.st, dy = dlx * g.st + dly * g.ct;
+  const pct = (v) => (Math.round(v * 10000) / 100) + '%';
+  return 'position:absolute;display:block;max-width:none;max-height:none;object-fit:fill;' +
+    'left:' + pct((g.W / 2 + dx - g.iw / 2) / g.W) + ';top:' + pct((g.H / 2 + dy - g.ih / 2) / g.H) + ';' +
+    'width:' + pct(g.iw / g.W) + ';height:' + pct(g.ih / g.H) + ';' +
+    'transform:rotate(' + g.deg + 'deg) scale(' + (e.flipH ? -1 : 1) + ',' + (e.flipV ? -1 : 1) + ');' + fil;
+}
+
+export const photo = {
+  formats: FORMATS.map((f) => ({ key: f[0], label: f[1] })),
+  filters: FILTERS.map((f) => ({ key: f[0], label: f[1], css: f[2] })),
+  pageRatio: PAGE_RATIO,
+  // proporção do quadro de um bloco de foto, conforme o formato escolhido e o layout do tema
+  ratio(edit, layout) {
+    const fmtKey = edit && edit.frame;
+    const f = FORMATS.find((x) => x[0] === fmtKey);
+    return f && f[2] ? f[2] : (LAYOUT_RATIOS[layout] || LAYOUT_RATIOS.centro);
+  },
+  filterCss,
+  style: photoStyle,
+  // desloca a foto ao arrastar (dx, dy em frações da largura do quadro)
+  pan(e, r, dx, dy) {
+    if (!num(e.ar, 0)) return e;
+    const g = photoGeom(e, r);
+    const lx = dx * g.ct + dy * g.st, ly = -dx * g.st + dy * g.ct;
+    const out = Object.assign({}, e);
+    if (g.slackX > 1e-6) out.px = clamp(num(e.px, 0) + lx / g.slackX, -1, 1);
+    if (g.slackY > 1e-6) out.py = clamp(num(e.py, 0) + ly / g.slackY, -1, 1);
+    return out;
+  },
+  isEdited(e) {
+    if (!e) return false;
+    return !!(e.filter && e.filter !== 'nenhum') || num(e.zoom, 1) !== 1 || num(e.rot, 0) !== 0 || num(e.quarter, 0) % 4 !== 0 ||
+      !!e.flipH || !!e.flipV || num(e.px, 0) !== 0 || num(e.py, 0) !== 0 || num(e.brightness, 100) !== 100 ||
+      num(e.contrast, 100) !== 100 || num(e.saturate, 100) !== 100 || num(e.blur, 0) !== 0 || (!!e.frame && e.frame !== 'tema');
+  }
+};
+
 export const api = {
   fmt,
   themeTokens,
+  photo,
   async me() {
     config = await call('GET', '/api/auth?action=me');
     return config;

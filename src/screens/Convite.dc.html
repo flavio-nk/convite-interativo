@@ -39,15 +39,21 @@ body{margin:0}
 
   <sc-if value="{{isPages}}" hint-placeholder-val="{{ false }}">
     <div style="position: absolute; inset: 0; display: flex; flex-direction: column">
-      <main key="{{pageKey}}" class="pg-in" style="flex: 1 1 auto; overflow-y: auto; padding: 22px 20px 28px; display: flex; flex-direction: column; font-family: {{T.body}}">
+      <sc-if value="{{pageBg.has}}" hint-placeholder-val="{{ false }}">
+        <div key="{{pageBg.key}}" class="pg-in" aria-hidden="true" data-testid="page-bg" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none">
+          <img src="{{pageBg.url}}" alt="" style="{{pageBg.imgStyle}}">
+          <div style="position: absolute; inset: 0; background: {{T.bg}}; opacity: {{pageBg.dimOpacity}}"></div>
+        </div>
+      </sc-if>
+      <main key="{{pageKey}}" class="pg-in" style="position: relative; flex: 1 1 auto; overflow-y: auto; padding: 22px 20px 28px; display: flex; flex-direction: column; font-family: {{T.body}}">
         <div style="flex: 1 0 auto; display: flex; flex-direction: column; gap: 14px; padding: {{T.framePad}}; border: {{T.frame}}; border-left: {{T.band}}; text-align: {{T.align}}">
           <sc-for list="{{blocks}}" as="b" hint-placeholder-count="5">
             <div key="{{b.key}}" class="{{b.animClass}}" style="animation-delay: {{b.delay}}">
 
               <sc-if value="{{b.showFoto}}" hint-placeholder-val="{{ false }}">
-                <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; overflow: hidden; height: {{T.photoH}}; width: {{T.photoW}}; margin: {{T.photoM}}; border-radius: {{T.photoR}}; transform: {{T.photoRot}}; border: {{T.photoBorder}}; background: {{T.ph}}; font-size: 13px">
+                <div style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; overflow: hidden; aspect-ratio: {{b.ratio}}; width: {{T.photoW}}; margin: {{T.photoM}}; border-radius: {{T.photoR}}; transform: {{T.photoRot}}; border: {{T.photoBorder}}; background: {{T.ph}}; font-size: 13px">
                   <sc-if value="{{b.hasMedia}}" hint-placeholder-val="{{ false }}">
-                    <img src="{{b.mediaUrl}}" alt="{{b.label}}" style="width: 100%; height: 100%; object-fit: cover; display: block">
+                    <img src="{{b.mediaUrl}}" alt="{{b.label}}" style="{{b.imgStyle}}">
                   </sc-if>
                   <sc-if value="{{b.noMedia}}" hint-placeholder-val="{{ true }}">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.6"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
@@ -200,7 +206,7 @@ body{margin:0}
       </main>
 
       <sc-if value="{{hasNav}}" hint-placeholder-val="{{ true }}">
-        <nav aria-label="Páginas do convite" style="flex: none; display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}">
+        <nav aria-label="Páginas do convite" style="position: relative; flex: none; display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}">
           <sc-for list="{{nav}}" as="n" hint-placeholder-count="4">
             <button onClick="{{n.go}}" aria-current="{{n.current}}" style="flex: 1 1 0; min-width: 0; min-height: 60px; border: 0; border-top: 2px solid {{n.line}}; background: transparent; color: {{n.color}}; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px">{{n.name}}</button>
           </sc-for>
@@ -394,7 +400,7 @@ class Component extends DCLogic {
     const base = { T, isLoading: st.phase === 'loading', isError: st.phase === 'error', error: st.error, isClosed: false, isPages: false, noMusic: { kind: 'nenhuma' } };
     if (!inv) return base;
 
-    const pages = (inv.pages || []).filter((p) => p.blocks && p.blocks.length);
+    const pages = (inv.pages || []).filter((p) => p.blocks && (p.blocks.length || (p.bg && p.bg.url)));
     const cur = pages.find((p) => p.id === st.page) || pages[0] || { id: 'vazio', blocks: [] };
     const goPage = (id) => this.setState({ page: id });
     const preview = !!this.props.preview;
@@ -408,6 +414,8 @@ class Component extends DCLogic {
         delay: (i * 0.08).toFixed(2) + 's',
         text: x.text || '', label: x.label || '', url: x.url || '', address: x.address || '',
         mediaUrl: url, hasMedia: !!url, noMedia: !url,
+        ratio: x.type === 'foto' ? String(api.photo.ratio(x.edit, T.layout)) : '',
+        imgStyle: x.type === 'foto' ? api.photo.style(x.edit, api.photo.ratio(x.edit, T.layout)) : '',
         showFoto: x.type === 'foto' && (!!url || preview),
         showVideoPlayer: x.type === 'video' && !!url,
         showVideoLink: x.type === 'video' && !url && /^https?:\/\//.test(x.url || '') && x.src === 'link',
@@ -520,6 +528,15 @@ class Component extends DCLogic {
         };
       })(),
       blocks, nav, hasNav: pages.length > 1,
+      pageBg: (() => {
+        const bg = cur.bg && cur.bg.url ? cur.bg : null;
+        const dim = bg && typeof bg.dim === 'number' ? bg.dim : 35;
+        return {
+          has: !!bg, key: 'bg-' + cur.id, url: bg ? bg.url : '',
+          imgStyle: bg ? api.photo.style(bg.edit, api.photo.pageRatio) : '',
+          dimOpacity: String(dim / 100)
+        };
+      })(),
       pageKey: cur.id,
       onOpen: () => { const ok = this.musicStart(); this.setState({ musicPlaying: ok, phase: 'opening' }); },
       onOpened: () => this.setState({ phase: 'pages' }),

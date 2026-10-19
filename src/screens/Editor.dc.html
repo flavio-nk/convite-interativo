@@ -19,6 +19,7 @@ button,input,select,textarea{font-family:inherit}
 .addb:hover{background:#F1EFF8;border-color:#C9C4DB}
 .pg:hover{background:#F1EFF8}
 .blk:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
+button:disabled{opacity:.5;cursor:not-allowed}
 .sec{margin:0;font-size:12px;letter-spacing:0.1em;text-transform:uppercase;color:#5E5A6B;font-weight:700}
 </style>
 </helmet>
@@ -105,16 +106,22 @@ button,input,select,textarea{font-family:inherit}
       </div>
       <div style="font-size: 14px; color: #5E5A6B; text-align: center">{{previewCaption}}</div>
 
-      <div style="width: 360px; max-width: 100%; height: 740px; border: 10px solid #17151F; border-radius: 44px; background: {{T.bg}}; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box">
+      <div style="position: relative; width: 360px; max-width: 100%; height: 740px; border: 10px solid #17151F; border-radius: 44px; background: {{T.bg}}; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box">
         <sc-if value="{{isPagesView}}" hint-placeholder-val="{{ true }}">
-          <div style="flex: 1 1 auto; overflow-y: auto; padding: 18px 14px; display: flex; flex-direction: column; color: {{T.fg}}; font-family: {{T.body}}">
+          <sc-if value="{{pageBg.has}}" hint-placeholder-val="{{ false }}">
+            <div aria-hidden="true" data-testid="page-bg" style="position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); aspect-ratio: {{pageBg.ratio}}; overflow: hidden; pointer-events: none">
+              <img src="{{pageBg.url}}" alt="" style="{{pageBg.imgStyle}}">
+              <div style="position: absolute; inset: 0; background: {{T.bg}}; opacity: {{pageBg.dimOpacity}}"></div>
+            </div>
+          </sc-if>
+          <div style="position: relative; flex: 1 1 auto; overflow-y: auto; padding: 18px 14px; display: flex; flex-direction: column; color: {{T.fg}}; font-family: {{T.body}}">
             <div style="flex: 1 0 auto; display: flex; flex-direction: column; gap: 10px; padding: {{T.framePad}}; border: {{T.frame}}; border-left: {{T.band}}; text-align: {{T.align}}">
               <sc-for list="{{blocks}}" as="b" hint-placeholder-count="5">
                 <button class="blk" onClick="{{b.pick}}" aria-pressed="{{b.pressed}}" aria-label="Bloco {{b.typeLabel}}" style="display: block; width: 100%; padding: 6px; border-radius: 12px; border: 2px dashed {{b.outline}}; background: transparent; color: inherit; cursor: pointer; text-align: inherit; position: relative; font-family: inherit">
                   <sc-if value="{{b.isFoto}}" hint-placeholder-val="{{ false }}">
-                    <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; overflow: hidden; height: {{T.photoH}}; width: {{T.photoW}}; margin: {{T.photoM}}; border-radius: {{T.photoR}}; transform: {{T.photoRot}}; border: {{T.photoBorder}}; background: {{T.ph}}; color: {{T.fg}}; font-size: 13px">
+                    <span style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; overflow: hidden; aspect-ratio: {{b.ratio}}; width: {{T.photoW}}; margin: {{T.photoM}}; border-radius: {{T.photoR}}; transform: {{T.photoRot}}; border: {{T.photoBorder}}; background: {{T.ph}}; color: {{T.fg}}; font-size: 13px">
                       <sc-if value="{{b.hasMedia}}" hint-placeholder-val="{{ false }}">
-                        <img src="{{b.mediaUrl}}" alt="{{b.label}}" style="width: 100%; height: 100%; object-fit: cover; display: block">
+                        <img src="{{b.mediaUrl}}" alt="{{b.label}}" style="{{b.imgStyle}}">
                       </sc-if>
                       <sc-if value="{{b.noMedia}}" hint-placeholder-val="{{ true }}">
                         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.6"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
@@ -178,7 +185,7 @@ button,input,select,textarea{font-family:inherit}
               </sc-if>
             </div>
           </div>
-          <nav aria-label="Páginas do convite" style="display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}; font-family: 'Plus Jakarta Sans', sans-serif">
+          <nav aria-label="Páginas do convite" style="position: relative; display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}; font-family: 'Plus Jakarta Sans', sans-serif">
             <sc-for list="{{pageList}}" as="p" hint-placeholder-count="4">
               <button onClick="{{p.pick}}" style="flex: 1 1 0; min-width: 0; min-height: 52px; border: 0; background: transparent; color: {{p.tabFg}}; font-size: 11px; font-weight: 700; cursor: pointer; border-top: 2px solid {{p.tabLine}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px">{{p.name}}</button>
             </sc-for>
@@ -421,6 +428,28 @@ button,input,select,textarea{font-family:inherit}
                       </sc-if>
                     </div>
                   </sc-if>
+                  <sc-if value="{{sel.isFotoBlock}}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: #F7F6FB">
+                      <div>
+                        <label class="lbl" for="foto-format">Formato da foto</label>
+                        <select class="fld" id="foto-format" value="{{sel.frame}}" onChange="{{onFotoFormat}}">
+                          <sc-for list="{{photoFormats}}" as="pf" hint-placeholder-count="7">
+                            <option value="{{pf.key}}">{{pf.label}}</option>
+                          </sc-for>
+                        </select>
+                      </div>
+                      <sc-if value="{{sel.hasPhoto}}" hint-placeholder-val="{{ true }}">
+                        <div style="display: flex; flex-direction: column; gap: 8px">
+                          <button onClick="{{editSelPhoto}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14M18 22V8a2 2 0 0 0-2-2H2"></path></svg>
+                            Editar foto
+                          </button>
+                          <span style="font-size: 12px; color: #5E5A6B">{{sel.editLine}}</span>
+                          <button onClick="{{photoToBg}}" style="min-height: 40px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Usar como fundo da página</button>
+                        </div>
+                      </sc-if>
+                    </div>
+                  </sc-if>
                   <div>
                     <label class="lbl" for="media-label">Legenda</label>
                     <input class="fld" id="media-label" value="{{sel.label}}" onChange="{{onLabel}}">
@@ -570,6 +599,49 @@ button,input,select,textarea{font-family:inherit}
               <label class="lbl" for="pg-name">Nome no menu do convite</label>
               <input class="fld" id="pg-name" value="{{pageName}}" onChange="{{onPageName}}">
             </div>
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <span class="lbl" style="margin: 0">Foto de fundo da página</span>
+              <sc-if value="{{pageBg.has}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 10px">
+                  <div style="display: flex; align-items: center; gap: 12px">
+                    <span style="position: relative; width: 46px; aspect-ratio: {{pageBg.ratio}}; border-radius: 6px; overflow: hidden; background: #ECEAF3; flex: none">
+                      <img src="{{pageBg.url}}" alt="" style="{{pageBg.imgStyle}}">
+                    </span>
+                    <span style="display: flex; flex-direction: column; line-height: 1.35; min-width: 0; font-size: 13px">
+                      <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{pageBg.name}}</strong>
+                      <span style="color: #5E5A6B">{{pageBg.status}}</span>
+                    </span>
+                  </div>
+                  <button onClick="{{editBgPhoto}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Editar foto de fundo</button>
+                  <div>
+                    <label class="lbl" for="bg-dim">Véu sobre a foto · {{pageBg.dim}}%</label>
+                    <input id="bg-dim" type="range" min="0" max="90" step="5" value="{{pageBg.dim}}" onInput="{{onBgDim}}" style="width: 100%; min-height: 36px; accent-color: #5B3FD6">
+                    <span style="display: block; font-size: 12px; color: #5E5A6B">Uma camada na cor de fundo do tema, para o texto continuar legível.</span>
+                  </div>
+                  <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                    <label style="position: relative; flex: 1 1 auto; min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
+                      Trocar foto
+                      <input id="bg-file-swap" type="file" accept="image/*" onChange="{{onBgFile}}" aria-label="Trocar foto de fundo" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer">
+                    </label>
+                    <button onClick="{{removeBg}}" style="flex: 1 1 auto; min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; font-weight: 600; font-size: 14px; cursor: pointer">Remover fundo</button>
+                  </div>
+                  <sc-if value="{{multiPage}}" hint-placeholder-val="{{ true }}">
+                    <button onClick="{{bgToAll}}" style="min-height: 40px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Usar este fundo em todas as páginas</button>
+                  </sc-if>
+                </div>
+              </sc-if>
+              <sc-if value="{{pageBg.none}}" hint-placeholder-val="{{ true }}">
+                <div style="display: flex; flex-direction: column; gap: 8px">
+                  <label style="position: relative; width: 100%; box-sizing: border-box; padding: 16px; border-radius: 12px; border: 1.5px dashed #B9B4CC; background: #FAFAFC; color: #3D3A4A; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 14px; text-align: center">
+                    <strong>Escolher foto de fundo</strong>
+                    <span style="font-size: 12px; color: #5E5A6B">A foto ocupa a tela inteira, atrás dos blocos desta página.</span>
+                    <input id="bg-file" type="file" accept="image/*" onChange="{{onBgFile}}" aria-label="Escolher foto de fundo" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer">
+                  </label>
+                  <label class="lbl" for="bg-url" style="margin: 0">Ou cole o link direto de uma imagem</label>
+                  <input class="fld" id="bg-url" type="url" placeholder="https://…/foto.jpg" value="" onChange="{{onBgUrl}}">
+                </div>
+              </sc-if>
+            </div>
             <div>
               <label class="lbl" for="pg-trans">Transição ao entrar</label>
               <select class="fld" id="pg-trans">
@@ -680,6 +752,113 @@ button,input,select,textarea{font-family:inherit}
       </sc-if>
     </aside>
   </div>
+
+  <sc-if value="{{pe.open}}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-labelledby="pe-title" onKeyDown="{{pe.onKey}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(15, 14, 20, 0.72); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
+      <div style="width: min(1060px, 100%); max-height: calc(100vh - 32px); background: #FFFFFF; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4)">
+        <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 12px 14px 12px 18px; border-bottom: 1px solid #E3E1EA">
+          <h2 id="pe-title" style="margin: 0; flex: 1 1 90px; font-size: 17px; font-weight: 700">{{pe.title}}</h2>
+          <button onClick="{{pe.cancel}}" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Cancelar</button>
+          <button onClick="{{pe.apply}}" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">Aplicar</button>
+        </header>
+        <div style="flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-wrap: wrap">
+          <div style="flex: 999 1 380px; min-width: 0; background: #1D1B24; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 22px 16px; box-sizing: border-box">
+            <div data-testid="pe-frame" tabindex="0" role="img" aria-label="{{pe.frameAria}}" onPointerDown="{{pe.down}}" onPointerMove="{{pe.move}}" onPointerUp="{{pe.up}}" onPointerCancel="{{pe.up}}" onWheel="{{pe.wheel}}" onKeyDown="{{pe.arrows}}" style="position: relative; overflow: hidden; {{pe.frameSize}}; aspect-ratio: {{pe.ratio}}; max-width: 100%; background: {{pe.frameBg}}; border-radius: {{pe.frameRadius}}; cursor: {{pe.cursor}}; touch-action: none; user-select: none; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.18)">
+              <img src="{{pe.url}}" alt="" draggable="false" onLoad="{{pe.onLoad}}" style="{{pe.imgStyle}} pointer-events: none; user-select: none">
+              <sc-if value="{{pe.hasDim}}" hint-placeholder-val="{{ false }}">
+                <div style="position: absolute; inset: 0; background: {{pe.dimColor}}; opacity: {{pe.dimOpacity}}; pointer-events: none"></div>
+              </sc-if>
+              <div aria-hidden="true" style="position: absolute; inset: 0; pointer-events: none; opacity: {{pe.gridOpacity}}; transition: opacity .2s ease">
+                <span style="position: absolute; top: 0; bottom: 0; left: 33.33%; width: 1px; background: rgba(255, 255, 255, 0.55)"></span>
+                <span style="position: absolute; top: 0; bottom: 0; left: 66.66%; width: 1px; background: rgba(255, 255, 255, 0.55)"></span>
+                <span style="position: absolute; left: 0; right: 0; top: 33.33%; height: 1px; background: rgba(255, 255, 255, 0.55)"></span>
+                <span style="position: absolute; left: 0; right: 0; top: 66.66%; height: 1px; background: rgba(255, 255, 255, 0.55)"></span>
+              </div>
+            </div>
+            <p style="margin: 0; color: #CFCBDA; font-size: 13px; text-align: center">{{pe.help}}</p>
+          </div>
+
+          <div style="flex: 1 1 320px; min-width: 0; padding: 16px 18px 20px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+            <div role="tablist" aria-label="Ferramentas da foto" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #F1EFF6">
+              <sc-for list="{{pe.tabs}}" as="tb" hint-placeholder-count="3">
+                <button role="tab" aria-selected="{{tb.selected}}" onClick="{{tb.pick}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{tb.bg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">{{tb.label}}</button>
+              </sc-for>
+            </div>
+
+            <sc-if value="{{pe.isAjustar}}" hint-placeholder-val="{{ true }}">
+              <div style="display: flex; flex-direction: column; gap: 16px">
+                <sc-if value="{{pe.isBlock}}" hint-placeholder-val="{{ true }}">
+                  <div>
+                    <label class="lbl" for="pe-format">Formato (corte)</label>
+                    <select class="fld" id="pe-format" value="{{pe.frame}}" onChange="{{pe.onFormat}}">
+                      <sc-for list="{{photoFormats}}" as="pf" hint-placeholder-count="7">
+                        <option value="{{pf.key}}">{{pf.label}}</option>
+                      </sc-for>
+                    </select>
+                  </div>
+                </sc-if>
+                <div>
+                  <label class="lbl" for="pe-zoom">Ampliar · {{pe.zoomPct}}%</label>
+                  <input id="pe-zoom" type="range" min="100" max="400" step="5" value="{{pe.zoomPct}}" onInput="{{pe.onZoom}}" style="width: 100%; min-height: 36px; accent-color: #5B3FD6">
+                </div>
+                <div>
+                  <span class="lbl">Girar e espelhar</span>
+                  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+                    <button onClick="{{pe.rotLeft}}" aria-label="Girar 90° para a esquerda" title="Girar para a esquerda" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8M3 3v5h5"></path></svg>
+                    </button>
+                    <button onClick="{{pe.rotRight}}" aria-label="Girar 90° para a direita" title="Girar para a direita" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"></path></svg>
+                    </button>
+                    <button onClick="{{pe.flipH}}" aria-pressed="{{pe.flipHPressed}}" aria-label="Espelhar na horizontal" title="Espelhar na horizontal" style="min-height: 44px; border-radius: 10px; border: 1px solid {{pe.flipHRing}}; background: {{pe.flipHBg}}; color: #17151F; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v18M8 7l-5 5 5 5V7ZM16 7l5 5-5 5V7Z"></path></svg>
+                    </button>
+                    <button onClick="{{pe.flipV}}" aria-pressed="{{pe.flipVPressed}}" aria-label="Espelhar na vertical" title="Espelhar na vertical" style="min-height: 44px; border-radius: 10px; border: 1px solid {{pe.flipVRing}}; background: {{pe.flipVBg}}; color: #17151F; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12h18M7 8l5-5 5 5H7ZM7 16l5 5 5-5H7Z"></path></svg>
+                    </button>
+                  </div>
+                </div>
+                <div>
+                  <label class="lbl" for="pe-rot">Endireitar · {{pe.rot}}°</label>
+                  <input id="pe-rot" type="range" min="-45" max="45" step="1" value="{{pe.rot}}" onInput="{{pe.onRot}}" style="width: 100%; min-height: 36px; accent-color: #5B3FD6">
+                </div>
+                <button onClick="{{pe.center}}" style="align-self: flex-start; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Centralizar foto</button>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{pe.isFiltros}}" hint-placeholder-val="{{ false }}">
+              <div role="radiogroup" aria-label="Filtros" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+                <sc-for list="{{pe.filters}}" as="fl" hint-placeholder-count="12">
+                  <button role="radio" aria-checked="{{fl.checked}}" onClick="{{fl.pick}}" style="padding: 4px 4px 6px; border-radius: 12px; border: 2px solid {{fl.ring}}; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; flex-direction: column; gap: 6px; font-size: 12px; font-weight: 600">
+                    <span style="position: relative; display: block; width: 100%; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 8px; background: #ECEAF3">
+                      <img src="{{pe.url}}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: {{fl.css}}; transform: {{pe.thumbTransform}}">
+                    </span>
+                    {{fl.label}}
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <sc-if value="{{pe.isLuz}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 14px">
+                <sc-for list="{{pe.sliders}}" as="sl" hint-placeholder-count="4">
+                  <div>
+                    <label class="lbl" for="{{sl.id}}">{{sl.label}} · {{sl.display}}</label>
+                    <input id="{{sl.id}}" type="range" min="{{sl.min}}" max="{{sl.max}}" step="{{sl.step}}" value="{{sl.value}}" onInput="{{sl.change}}" style="width: 100%; min-height: 36px; accent-color: #5B3FD6">
+                  </div>
+                </sc-for>
+              </div>
+            </sc-if>
+
+            <div style="margin-top: auto; border-top: 1px solid #EEECF3; padding-top: 14px; display: flex; flex-direction: column; gap: 6px">
+              <button onClick="{{pe.reset}}" disabled="{{pe.unedited}}" style="align-self: flex-start; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Desfazer todas as edições</button>
+              <span style="font-size: 12px; color: #5E5A6B">A foto original fica guardada. Você pode voltar a editar quando quiser.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </sc-if>
 
   <sc-if value="{{fullPreview}}" hint-placeholder-val="{{ false }}">
     <div role="dialog" aria-modal="true" aria-label="Pré-visualização do convite" style="position: fixed; inset: 0; z-index: 50; background: rgba(15, 14, 20, 0.94); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 12px; box-sizing: border-box">
@@ -953,6 +1132,11 @@ class Component extends DCLogic {
     const st = this.state;
     const strip = (u) => (!keepLocal && u && /^blob:/.test(u) ? '' : u);
     const pages = st.pages.map((p) => Object.assign({}, p, {
+      bg: p.bg && p.bg.url ? (() => {
+        const bg = Object.assign({}, p.bg, { url: strip(p.bg.url) });
+        delete bg.uploading; delete bg.uploadPct;
+        return bg.url ? bg : null;
+      })() : null,
       blocks: p.blocks.map((x) => {
         const o = Object.assign({}, x, { fileUrl: strip(x.fileUrl || '') });
         if (!o.fileUrl && !keepLocal && x.fileUrl && /^blob:/.test(x.fileUrl)) o.fileName = '';
@@ -1091,6 +1275,165 @@ class Component extends DCLogic {
     });
   }
 
+  patchPage(pid, fn) {
+    this.setState((s) => ({ pages: s.pages.map((p) => (p.id === pid ? fn(p) : p)) }));
+  }
+
+  setPageBg(pid, bg) {
+    this.patchPage(pid, (p) => Object.assign({}, p, { bg: bg ? Object.assign({}, p.bg || {}, bg) : null }));
+  }
+
+  // ---------- editor de fotos ----------
+  openPhotoEditor(kind, id) {
+    const st = this.state;
+    let url = '', edit = {};
+    if (kind === 'block') {
+      const blk = st.pages.reduce((f, p) => f || p.blocks.find((x) => x.id === id), null);
+      if (!blk) return;
+      url = this.mediaUrl(blk); edit = blk.edit || {};
+    } else {
+      const pg = st.pages.find((p) => p.id === id);
+      if (!pg || !pg.bg || !pg.bg.url) return;
+      url = pg.bg.url; edit = pg.bg.edit || {};
+    }
+    if (!url) return;
+    this.peReturn = typeof document !== 'undefined' ? document.activeElement : null;
+    this.setState({ pe: { kind, id, url, draft: Object.assign({}, edit) }, peTab: 'ajustar' });
+    setTimeout(() => { try { const f = document.querySelector('[data-testid="pe-frame"]'); if (f) f.focus(); } catch (e) {} }, 30);
+  }
+
+  peRatio(pe) {
+    if (!pe) return 1;
+    return pe.kind === 'bg' ? api.photo.pageRatio : api.photo.ratio(pe.draft, this.state.theme.layout);
+  }
+
+  peSet(patch) {
+    this.setState((s) => (s.pe ? { pe: Object.assign({}, s.pe, { draft: Object.assign({}, s.pe.draft, patch) }) } : null));
+  }
+
+  peClose() {
+    this.peDrag = null;
+    this.setState({ pe: null });
+    const back = this.peReturn;
+    this.peReturn = null;
+    setTimeout(() => { try { if (back && back.focus) back.focus(); } catch (e) {} }, 30);
+  }
+
+  peApply() {
+    const pe = this.state.pe;
+    if (!pe) return;
+    const edit = Object.assign({}, pe.draft);
+    if (pe.kind === 'block') this.patchBlock(pe.id, { edit });
+    else this.patchPage(pe.id, (p) => Object.assign({}, p, { bg: Object.assign({}, p.bg, { edit }) }));
+    this.peClose();
+  }
+
+  peVals(T) {
+    const pe = this.state.pe;
+    if (!pe) return { open: false };
+    const d = pe.draft;
+    const r = this.peRatio(pe);
+    const isBg = pe.kind === 'bg';
+    const tab = this.state.peTab || 'ajustar';
+    const n = (v, def) => (typeof v === 'number' && isFinite(v) ? v : def);
+    const pan = (dx, dy) => this.setState((s) => (s.pe ? { pe: Object.assign({}, s.pe, { draft: api.photo.pan(s.pe.draft, this.peRatio(s.pe), dx, dy) }) } : null));
+    const bg = isBg ? (this.state.pages.find((p) => p.id === pe.id) || {}).bg || {} : {};
+    const quarter = n(d.quarter, 0) % 4;
+    const sliders = [
+      ['pe-bri', 'Brilho', 'brightness', 50, 150, 100],
+      ['pe-con', 'Contraste', 'contrast', 50, 150, 100],
+      ['pe-sat', 'Saturação', 'saturate', 0, 200, 100],
+      ['pe-blur', 'Desfoque', 'blur', 0, 10, 0]
+    ].map((x) => {
+      const v = n(d[x[2]], x[5]);
+      return {
+        id: x[0], label: x[1], min: String(x[3]), max: String(x[4]), step: '1', value: String(v),
+        display: x[2] === 'blur' ? v + ' px' : (v - 100 > 0 ? '+' : '') + (v - 100) + '%',
+        change: (e) => this.peSet({ [x[2]]: Number(e.target.value) })
+      };
+    });
+    const tabDefs = [['ajustar', 'Cortar'], ['filtros', 'Filtros'], ['luz', 'Luz e cor']];
+    return {
+      open: true,
+      title: isBg ? 'Editar foto de fundo' : 'Editar foto',
+      isBlock: !isBg, url: pe.url,
+      ratio: String(Math.round(r * 10000) / 10000),
+      imgStyle: api.photo.style(d, r),
+      frameSize: r >= 1 ? 'width: min(100%, 560px)' : 'height: min(60vh, 560px)',
+      frameRadius: isBg ? '18px' : (T.photoR === '999px 999px 0 0' ? '999px 999px 0 0' : '4px'),
+      frameBg: isBg ? T.bg : T.ph,
+      cursor: this.peDrag ? 'grabbing' : 'grab',
+      gridOpacity: this.peDrag ? '1' : '0.45',
+      hasDim: isBg && n(bg.dim, 35) > 0,
+      dimColor: T.bg, dimOpacity: String(n(bg.dim, 35) / 100),
+      frameAria: 'Área da foto. Arraste ou use as setas para posicionar; + e − para ampliar.',
+      help: d.ar ? 'Arraste a foto para posicionar · use Ampliar para aproximar' : 'Carregando foto…',
+      tabs: tabDefs.map((t) => ({ label: t[1], selected: tab === t[0] ? 'true' : 'false', bg: tab === t[0] ? '#FFFFFF' : 'transparent', pick: () => this.setState({ peTab: t[0] }) })),
+      isAjustar: tab === 'ajustar', isFiltros: tab === 'filtros', isLuz: tab === 'luz',
+      frame: d.frame || 'tema',
+      onFormat: (e) => this.peSet({ frame: e.target.value, px: 0, py: 0 }),
+      zoomPct: String(Math.round(n(d.zoom, 1) * 100)),
+      onZoom: (e) => this.peSet({ zoom: Number(e.target.value) / 100 }),
+      rot: String(n(d.rot, 0)),
+      onRot: (e) => this.peSet({ rot: Number(e.target.value) }),
+      rotLeft: () => this.peSet({ quarter: (quarter + 3) % 4 }),
+      rotRight: () => this.peSet({ quarter: (quarter + 1) % 4 }),
+      flipH: () => this.peSet({ flipH: !d.flipH }), flipV: () => this.peSet({ flipV: !d.flipV }),
+      flipHPressed: d.flipH ? 'true' : 'false', flipVPressed: d.flipV ? 'true' : 'false',
+      flipHBg: d.flipH ? '#EFECFB' : '#FFFFFF', flipVBg: d.flipV ? '#EFECFB' : '#FFFFFF',
+      flipHRing: d.flipH ? '#5B3FD6' : '#D6D3E0', flipVRing: d.flipV ? '#5B3FD6' : '#D6D3E0',
+      center: () => this.peSet({ px: 0, py: 0 }),
+      thumbTransform: 'rotate(' + quarter * 90 + 'deg) scale(' + (d.flipH ? -1 : 1) + ',' + (d.flipV ? -1 : 1) + ')',
+      filters: api.photo.filters.map((f) => {
+        const on = (d.filter || 'nenhum') === f.key;
+        return { label: f.label, css: f.css || 'none', checked: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', pick: () => this.peSet({ filter: f.key }) };
+      }),
+      sliders,
+      unedited: !api.photo.isEdited(d),
+      reset: () => this.peSet({ zoom: 1, rot: 0, quarter: 0, flipH: false, flipV: false, px: 0, py: 0, filter: 'nenhum', brightness: 100, contrast: 100, saturate: 100, blur: 0, frame: isBg ? undefined : 'tema' }),
+      onLoad: (e) => {
+        const im = e.currentTarget || e.target;
+        if (!im || !im.naturalWidth || !im.naturalHeight) return;
+        const ar = Math.round(im.naturalWidth / im.naturalHeight * 10000) / 10000;
+        if (ar !== d.ar) this.peSet({ ar });
+      },
+      cancel: () => this.peClose(),
+      apply: () => this.peApply(),
+      onKey: (e) => {
+        if (e.key === 'Escape') { e.stopPropagation(); this.peClose(); }
+      },
+      arrows: (e) => {
+        const st = 0.02;
+        const k = e.key;
+        if (k === 'ArrowLeft') pan(st, 0); else if (k === 'ArrowRight') pan(-st, 0);
+        else if (k === 'ArrowUp') pan(0, st); else if (k === 'ArrowDown') pan(0, -st);
+        else if (k === '+' || k === '=') this.peSet({ zoom: Math.min(4, n(d.zoom, 1) + 0.1) });
+        else if (k === '-') this.peSet({ zoom: Math.max(1, n(d.zoom, 1) - 0.1) });
+        else return;
+        e.preventDefault();
+      },
+      down: (e) => {
+        const el = e.currentTarget;
+        try { el.setPointerCapture(e.pointerId); } catch (err) {}
+        this.peDrag = { x: e.clientX, y: e.clientY, w: el.getBoundingClientRect().width || 1 };
+        this.forceUpdate();
+      },
+      move: (e) => {
+        const g = this.peDrag;
+        if (!g) return;
+        const dx = (e.clientX - g.x) / g.w, dy = (e.clientY - g.y) / g.w;
+        g.x = e.clientX; g.y = e.clientY;
+        if (dx || dy) pan(dx, dy);
+      },
+      up: () => { if (this.peDrag) { this.peDrag = null; this.forceUpdate(); } },
+      wheel: (e) => {
+        e.preventDefault();
+        const z = Math.max(1, Math.min(4, n(d.zoom, 1) * (e.deltaY < 0 ? 1.08 : 1 / 1.08)));
+        this.peSet({ zoom: Math.round(z * 100) / 100 });
+      }
+    };
+  }
+
   themeVals() {
     const th = this.state.theme;
     const base = this.baseTheme();
@@ -1151,6 +1494,8 @@ class Component extends DCLogic {
         isMapa: x.type === 'mapa', isBotao: x.type === 'botao', isRsvp: x.type === 'rsvp',
         hasAnim: x.anim && x.anim !== 'nenhuma',
         mediaUrl: this.mediaUrl(x),
+        ratio: String(api.photo.ratio(x.edit, st.theme.layout)),
+        imgStyle: api.photo.style(x.edit, api.photo.ratio(x.edit, st.theme.layout)),
         cd: this.countdown(x.target || st.eventDate),
         address: x.address || '',
         hasMedia: x.type === 'foto' && !!this.mediaUrl(x),
@@ -1218,6 +1563,10 @@ class Component extends DCLogic {
         linkWarnText: /youtube\.com|youtu\.be|vimeo\.com|drive\.google\.com|instagram\.com/i.test(s.url || '')
           ? 'Links de páginas (YouTube, Vimeo, Drive, Instagram) não podem ser exibidos dentro do convite. Envie o arquivo ou use um link direto para ele.'
           : 'Esse endereço não parece um link direto para o arquivo. Ele precisa começar com https:// e terminar com a extensão do arquivo.',
+        isFotoBlock: s.type === 'foto',
+        hasPhoto: s.type === 'foto' && !!this.mediaUrl(s),
+        frame: (s.edit && s.edit.frame) || 'tema',
+        editLine: api.photo.isEdited(s.edit) ? 'Foto editada. A original continua guardada.' : 'Corte, amplie, gire e aplique filtros.',
         isTextual: s.type === 'titulo' || s.type === 'texto' || s.type === 'orientacoes',
         isOrient: s.type === 'orientacoes',
         textLabel: s.type === 'orientacoes' ? 'Orientações' : (s.type === 'titulo' ? 'Título' : 'Texto'),
@@ -1301,8 +1650,66 @@ class Component extends DCLogic {
     let vw = 1280, vh = 900;
     try { vw = window.innerWidth; vh = window.innerHeight; } catch (e) {}
     const ps = Math.max(0.3, Math.min(1, (vh - 90) / 844, (vw - 24) / 390));
+    const bgObj = cur.bg && cur.bg.url ? cur.bg : null;
+    const bgDim = bgObj ? (typeof bgObj.dim === 'number' ? bgObj.dim : 35) : 35;
+    const pageBg = {
+      has: !!bgObj, none: !bgObj,
+      url: bgObj ? bgObj.url : '',
+      ratio: String(Math.round(api.photo.pageRatio * 10000) / 10000),
+      imgStyle: bgObj ? api.photo.style(bgObj.edit, api.photo.pageRatio) : '',
+      dim: String(bgDim), dimOpacity: String(bgDim / 100),
+      name: bgObj ? (bgObj.fileName || 'Imagem por link') : '',
+      status: bgObj && bgObj.uploading ? 'Enviando' + (bgObj.uploadPct ? ' · ' + bgObj.uploadPct + '%' : '…') : (bgObj && api.photo.isEdited(bgObj.edit) ? 'Foto editada' : 'Sem edições')
+    };
+    const pid = cur.id;
     return {
       T,
+      pe: this.peVals(T),
+      photoFormats: api.photo.formats,
+      pageBg,
+      multiPage: st.pages.length > 1,
+      onFotoFormat: (e) => this.patchSel({ edit: Object.assign({}, (s && s.edit) || {}, { frame: e.target.value, px: 0, py: 0 }) }),
+      editSelPhoto: () => { if (s) this.openPhotoEditor('block', s.id); },
+      editBgPhoto: () => this.openPhotoEditor('bg', pid),
+      photoToBg: () => {
+        if (!s) return;
+        const url = this.mediaUrl(s);
+        if (!url) return;
+        const e0 = s.edit || {};
+        const edit = { ar: e0.ar, quarter: e0.quarter, rot: e0.rot, flipH: e0.flipH, flipV: e0.flipV, filter: e0.filter, brightness: e0.brightness, contrast: e0.contrast, saturate: e0.saturate };
+        this.setPageBg(pid, { url, fileName: s.fileName || s.label || 'Foto', dim: bgObj && typeof bgObj.dim === 'number' ? bgObj.dim : 35, edit });
+        this.setState({ toast: 'A foto agora é o fundo desta página. O bloco continua na página; exclua-o se não quiser a foto repetida.' });
+      },
+      onBgFile: (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        const local = URL.createObjectURL(f);
+        this.setPageBg(pid, { url: local, fileName: f.name, dim: bgDim, edit: {}, uploading: true, uploadPct: 0 });
+        try { e.target.value = ''; } catch (err) {}
+        api.upload(f, (pct) => this.patchPage(pid, (p) => (p.bg && p.bg.url === local ? Object.assign({}, p, { bg: Object.assign({}, p.bg, { uploadPct: pct }) }) : p)))
+          .then((r) => this.patchPage(pid, (p) => (p.bg && p.bg.url === local ? Object.assign({}, p, { bg: Object.assign({}, p.bg, { url: r.url, uploading: false }) }) : p)))
+          .catch((err) => {
+            this.patchPage(pid, (p) => (p.bg && p.bg.url === local ? Object.assign({}, p, { bg: null }) : p));
+            this.setState({ toast: 'Não foi possível enviar a foto: ' + err.message });
+          });
+      },
+      onBgUrl: (e) => {
+        const u = String(e.target.value || '').trim();
+        if (!u) return;
+        if (!/^https?:\/\/\S+\.(jpe?g|png|webp|gif|avif)(\?\S*)?$/i.test(u)) {
+          this.setState({ toast: 'Use o link direto de uma imagem (terminando em .jpg, .png ou .webp).' });
+          return;
+        }
+        this.setPageBg(pid, { url: u, fileName: '', dim: bgDim, edit: {} });
+      },
+      onBgDim: (e) => { const v = Number(e.target.value); this.patchPage(pid, (p) => (p.bg ? Object.assign({}, p, { bg: Object.assign({}, p.bg, { dim: v }) }) : p)); },
+      removeBg: () => this.setPageBg(pid, null),
+      bgToAll: () => {
+        if (!bgObj) return;
+        if (bgObj.uploading) { this.setState({ toast: 'Aguarde o envio da foto terminar.' }); return; }
+        const copy = JSON.parse(JSON.stringify(Object.assign({}, bgObj, { uploading: false })));
+        this.setState({ pages: st.pages.map((p) => Object.assign({}, p, { bg: Object.assign({}, copy) })), toast: 'Fundo aplicado a todas as ' + st.pages.length + ' páginas.' });
+      },
       inFlow, notInFlow: !inFlow,
       fullPreview: !!st.fullPreview,
       pv: { s: ps.toFixed(4), w: Math.round(390 * ps) + 'px', h: Math.round(844 * ps) + 'px', r: Math.round(40 * ps) + 'px' },
@@ -1324,7 +1731,8 @@ class Component extends DCLogic {
         const cur = cur0.blocks.find((x) => x.id === bid);
         const local = URL.createObjectURL(f);
         const label = cur && cur.label && !/^(Nova foto|Novo vídeo|Foto \d|Foto principal)$/.test(cur.label) ? cur.label : f.name.replace(/\.[^.]+$/, '');
-        this.patchBlock(bid, { src: 'upload', fileUrl: local, fileName: f.name, label, uploading: true, uploadPct: 0 });
+        const keepFrame = cur && cur.edit && cur.edit.frame ? { frame: cur.edit.frame } : null;
+        this.patchBlock(bid, { src: 'upload', fileUrl: local, fileName: f.name, label, uploading: true, uploadPct: 0, edit: keepFrame });
         api.upload(f, (pct) => this.patchBlock(bid, { uploadPct: pct }))
           .then((r) => this.patchBlock(bid, { fileUrl: r.url, uploading: false }))
           .catch((err) => {
@@ -1332,7 +1740,7 @@ class Component extends DCLogic {
             this.setState({ toast: 'Não foi possível enviar o arquivo: ' + err.message });
           });
       },
-      onMediaUrl: (e) => this.patchSel({ url: e.target.value }),
+      onMediaUrl: (e) => this.patchSel({ url: e.target.value, edit: s && s.edit && s.edit.frame ? { frame: s.edit.frame } : null }),
       onBackClick: () => {
         this.previewStop();
         if (typeof this.props.onBack === 'function') this.props.onBack();

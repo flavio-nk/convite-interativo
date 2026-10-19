@@ -296,6 +296,79 @@ def t_opening(pg, browser):
     ctx.close()
 
 
+def set_range(pg, sel, v):
+    pg.locator(sel).evaluate("(el, v) => { el.value = v; el.dispatchEvent(new Event('input', {bubbles: true})); }", str(v))
+    pg.wait_for_timeout(150)
+
+
+def phone_img_style(pg):
+    return pg.locator('.blk img').first.get_attribute('style') or ''
+
+
+def t_photos(pg, browser):
+    go(pg, 'Temas', 1300)
+    pg.click('[aria-label="Tema Jardim"]'); pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(1800)
+    wait_saved(pg)
+    fid = pg.url.split('#/Editor/')[1]
+    pg.click('.blk >> nth=0'); pg.wait_for_timeout(200)
+    ok('Foto: sem foto, não há botão de editar', count(pg, 'button:has-text("Editar foto")') == 0)
+    pg.set_input_files('#media-file', FIX + 'paisagem.jpg'); pg.wait_for_timeout(1200)
+    wait_saved(pg)
+    pg.click('button:has-text("Editar foto")'); pg.wait_for_timeout(700)
+    ok('Foto: editor abre com a foto', count(pg, '[role=dialog] [data-testid="pe-frame"] img') == 1)
+    set_range(pg, '#pe-zoom', 160)
+    fr = pg.locator('[data-testid="pe-frame"]').bounding_box()
+    before = pg.locator('[data-testid="pe-frame"] img').get_attribute('style')
+    pg.mouse.move(fr['x'] + fr['width'] / 2, fr['y'] + fr['height'] / 2); pg.mouse.down()
+    pg.mouse.move(fr['x'] + fr['width'] / 2 + 60, fr['y'] + fr['height'] / 2 + 20, steps=5); pg.mouse.up()
+    ok('Foto: arrastar reposiciona', pg.locator('[data-testid="pe-frame"] img').get_attribute('style') != before)
+    pg.click('[aria-label="Girar 90° para a direita"]')
+    set_range(pg, '#pe-rot', 10)
+    pg.click('[aria-label="Espelhar na horizontal"]')
+    pg.click('button[role=tab]:has-text("Filtros")'); pg.click('button[role=radio]:has-text("P&B")')
+    pg.click('button[role=tab]:has-text("Luz e cor")'); set_range(pg, '#pe-bri', 120)
+    pg.click('button:has-text("Aplicar")'); pg.wait_for_timeout(300)
+    st = phone_img_style(pg)
+    ok('Foto: edição aplicada na prévia', 'grayscale(1)' in st and 'rotate(100deg)' in st and 'scale(-1' in st and 'brightness(1.2)' in st, st)
+    # cancelar não altera
+    pg.click('button:has-text("Editar foto")'); pg.wait_for_timeout(500)
+    pg.click('button[role=tab]:has-text("Filtros")'); pg.click('button[role=radio]:has-text("Sépia")')
+    pg.click('[role=dialog] button:has-text("Cancelar")'); pg.wait_for_timeout(300)
+    ok('Foto: cancelar descarta as mudanças', 'sepia' not in phone_img_style(pg) and 'grayscale(1)' in phone_img_style(pg))
+    pg.click('button:has-text("Editar foto")'); pg.wait_for_timeout(500)
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
+    ok('Foto: Esc fecha o editor', count(pg, '[data-testid="pe-frame"]') == 0)
+    pg.select_option('#foto-format', '1:1'); pg.wait_for_timeout(200)
+    ok('Foto: formato quadrado', 'aspect-ratio: 1' in (pg.locator('.blk >> nth=0').locator('span').first.get_attribute('style') or ''))
+    # fundo da página
+    pg.set_input_files('#bg-file', FIX + 'paisagem.jpg'); pg.wait_for_timeout(1200)
+    ok('Fundo: aparece na prévia', count(pg, 'main [data-testid="page-bg"] img') == 1)
+    set_range(pg, '#bg-dim', 60)
+    pg.click('button:has-text("Editar foto de fundo")'); pg.wait_for_timeout(600)
+    pg.click('button[role=tab]:has-text("Filtros")'); pg.click('button[role=radio]:has-text("Sépia")')
+    pg.click('button:has-text("Aplicar")'); pg.wait_for_timeout(300)
+    pg.click('button:has-text("Usar este fundo em todas as páginas")'); pg.wait_for_timeout(300)
+    wait_saved(pg)
+    pg.reload(); pg.wait_for_timeout(1800)
+    ok('Recarregar: edição da foto salva', 'grayscale(1)' in phone_img_style(pg) and 'rotate(100deg)' in phone_img_style(pg))
+    bgst = pg.locator('main [data-testid="page-bg"] img').get_attribute('style') or ''
+    ok('Recarregar: fundo e véu salvos', 'sepia(0.8)' in bgst and pg.input_value('#bg-dim') == '60', bgst)
+    pg.click('aside li >> nth=1'); pg.wait_for_timeout(300)
+    ok('Fundo: aplicado às outras páginas', count(pg, 'main [data-testid="page-bg"] img') == 1)
+    pg.click('button:has-text("Remover fundo")'); pg.wait_for_timeout(200)
+    ok('Fundo: remover', count(pg, 'main [data-testid="page-bg"]') == 0)
+    pg.click('header button:has-text("Publicar")'); wait_saved(pg)
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + fid); g.wait_for_timeout(1500)
+    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(2800)
+    gst = g.locator('main img').first.get_attribute('style') or ''
+    ok('Convidado: foto com as edições', 'grayscale(1)' in gst and 'rotate(100deg)' in gst, gst)
+    ok('Convidado: foto de fundo da página', count(g, '[data-testid="page-bg"] img') == 1)
+    g.click('nav button:has-text("Detalhes")'); g.wait_for_timeout(500)
+    ok('Convidado: página sem fundo fica sem foto', count(g, '[data-testid="page-bg"]') == 0)
+    ctx.close()
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -312,24 +385,29 @@ def t_mobile(pg):
     pg.set_viewport_size({'width': 1280, 'height': 900})
 
 
-with sync_playwright() as p:
-    b = p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
-    ctx = b.new_context(viewport={'width': 1280, 'height': 900}, accept_downloads=True)
-    pg = ctx.new_page()
-    pg.set_default_timeout(6000)
-    pg.on('pageerror', lambda e: errors.append(str(e)))
-    pg.on('console', lambda m: errors.append(m.text) if m.type == 'error' and 'Failed to load resource' not in m.text and 'ERR_' not in m.text else None)
-    for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
-                          ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
-                          ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                          ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
-        safe(name, fn, arg)
-    b.close()
+def main():
+  with sync_playwright() as p:
+      b = p.chromium.launch(args=['--autoplay-policy=no-user-gesture-required'])
+      ctx = b.new_context(viewport={'width': 1280, 'height': 900}, accept_downloads=True)
+      pg = ctx.new_page()
+      pg.set_default_timeout(6000)
+      pg.on('pageerror', lambda e: errors.append(str(e)))
+      pg.on('console', lambda m: errors.append(m.text) if m.type == 'error' and 'Failed to load resource' not in m.text and 'ERR_' not in m.text else None)
+      for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
+                            ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
+                            ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+          safe(name, fn, arg)
+      b.close()
 
-fails = [r for r in results if not r[0]]
-print('TOTAL', len(results), 'OK', len(results) - len(fails), 'FALHAS', len(fails))
-for r in fails:
-    print('FALHOU:', r[1], '|', r[2])
-print('ERROS JS:', len(errors))
-for e in sorted(set(errors))[:15]:
-    print('  ', e[:300])
+  fails = [r for r in results if not r[0]]
+  print('TOTAL', len(results), 'OK', len(results) - len(fails), 'FALHAS', len(fails))
+  for r in fails:
+      print('FALHOU:', r[1], '|', r[2])
+  print('ERROS JS:', len(errors))
+  for e in sorted(set(errors))[:15]:
+      print('  ', e[:300])
+
+
+if __name__ == '__main__':
+    main()
