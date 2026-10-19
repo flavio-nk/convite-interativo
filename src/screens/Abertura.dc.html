@@ -13,11 +13,13 @@
 body{margin:0}
 </style>
 </helmet>
-<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: {{bg}}; color: {{fg}}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+<div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: {{rootBg}}; color: {{fg}}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
 
+  <sc-if value="{{showCover}}" hint-placeholder-val="{{ true }}">
   <div style="position: absolute; inset: 0; filter: {{contentFilter}}; transform: {{contentScale}}; transition: filter 1.4s ease, transform 1.4s ease">
     <dc-import name="CapaPreview" layout="{{layout}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{kicker}}" titulo="{{titulo}}" data="{{data}}" btn-radius="{{btnRadius}}" aspect="390 / 844" hint-size="390px,844px"></dc-import>
   </div>
+  </sc-if>
 
   <sc-if value="{{isOpen}}" hint-placeholder-val="{{ false }}">
     <div style="position: absolute; top: 16px; left: 16px; right: 16px; display: flex; justify-content: space-between; gap: 8px">
@@ -173,7 +175,7 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"anim":{"editor":"enum","options":["envelope","cortina","portas","lacre","presente","livro","iris","neblina","nenhuma"],"default":"envelope"},"layout":{"editor":null},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"paper":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"showLink":{"editor":null},"music":{"editor":null},"onOpen":{"editor":null},"onOpened":{"editor":null},"headline":{"editor":null},"hint":{"editor":null},"trigger":{"editor":null},"initials":{"editor":null},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"anim":{"editor":"enum","options":["envelope","cortina","portas","lacre","presente","livro","iris","neblina","nenhuma"],"default":"envelope"},"layout":{"editor":null},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"paper":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"showLink":{"editor":null},"music":{"editor":null},"onOpen":{"editor":null},"onOpened":{"editor":null},"headline":{"editor":null},"hint":{"editor":null},"trigger":{"editor":null},"initials":{"editor":null},"reveal":{"editor":null},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -330,7 +332,9 @@ class Component extends DCLogic {
       cardInk: darker,
       cardAccent: this.contrast('#FFFDF8', accent) >= 3 ? accent : darker,
       paperInk,
-      isOpen: phase === 'open',
+      isOpen: phase === 'open' && !p.reveal,
+      showCover: !p.reveal,
+      rootBg: p.reveal && op ? 'transparent' : bg,
       showOverlay: phase !== 'open',
       isEnvelope: anim === 'envelope', isCortina: anim === 'cortina', isPortas: anim === 'portas',
       isLacre: anim === 'lacre', isPresente: anim === 'presente', isLivro: anim === 'livro',
@@ -375,7 +379,7 @@ class Component extends DCLogic {
         this.musicStop();
         this.setState({ phase: 'closed', musicPlaying: false, musicError: false, hasMusic: false });
       },
-      showMusicBtn: phase === 'open' && !!this.state.hasMusic && !this.state.musicError,
+      showMusicBtn: phase === 'open' && !p.reveal && !!this.state.hasMusic && !this.state.musicError,
       musicPlaying: !!this.state.musicPlaying,
       musicPaused: !this.state.musicPlaying,
       musicError: !!this.state.musicError,

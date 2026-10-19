@@ -36,9 +36,6 @@ body{margin:0}
     </div>
   </sc-if>
 
-  <sc-if value="{{isClosed}}" hint-placeholder-val="{{ true }}">
-    <dc-import name="Abertura" headline="{{opening.headline}}" hint="{{opening.hint}}" trigger="{{opening.trigger}}" initials="{{opening.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{opening.title}}" data="{{opening.subtitle}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
-  </sc-if>
 
   <sc-if value="{{isPages}}" hint-placeholder-val="{{ false }}">
     <div style="position: absolute; inset: 0; display: flex; flex-direction: column">
@@ -222,6 +219,12 @@ body{margin:0}
       </sc-if>
     </div>
   </sc-if>
+
+  <sc-if value="{{isClosed}}" hint-placeholder-val="{{ true }}">
+    <div style="position: absolute; inset: 0; z-index: 5">
+      <dc-import name="Abertura" reveal="{{ true }}" headline="{{opening.headline}}" hint="{{opening.hint}}" trigger="{{opening.trigger}}" initials="{{opening.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{opening.title}}" data="{{opening.subtitle}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"invite":{"editor":null},"preview":{"editor":null},"$preview":{"width":390,"height":844}}'>
@@ -237,7 +240,7 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
-    this.timer = setInterval(() => { if (this.state.phase === 'pages') this.setState({ now: Date.now() }); }, 1000);
+    this.timer = setInterval(() => { if (this.state.phase === 'pages' || this.state.phase === 'opening') this.setState({ now: Date.now() }); }, 1000);
     if (this.props.invite) { this.restoreRsvp(); return; }
     const id = this.props.route && this.props.route.params && this.props.route.params.id;
     if (!id) { this.setState({ phase: 'error', error: 'Link de convite incompleto.' }); return; }
@@ -502,8 +505,8 @@ class Component extends DCLogic {
     });
     const cfg = this.musicCfg();
     return Object.assign(base, {
-      isClosed: st.phase === 'closed',
-      isPages: st.phase === 'pages',
+      isClosed: st.phase === 'closed' || st.phase === 'opening',
+      isPages: st.phase === 'opening' || st.phase === 'pages',
       kicker: inv.kicker || '',
       coverTitle: inv.coverTitle || inv.title,
       dateDots: api.fmt.dots(inv.eventDate),
@@ -518,7 +521,7 @@ class Component extends DCLogic {
       })(),
       blocks, nav, hasNav: pages.length > 1,
       pageKey: cur.id,
-      onOpen: () => { const ok = this.musicStart(); this.setState({ musicPlaying: ok }); },
+      onOpen: () => { const ok = this.musicStart(); this.setState({ musicPlaying: ok, phase: 'opening' }); },
       onOpened: () => this.setState({ phase: 'pages' }),
       hasMusic: st.phase === 'pages' && cfg.kind !== 'nenhuma',
       musicPlaying: st.musicPlaying, musicPaused: !st.musicPlaying,
