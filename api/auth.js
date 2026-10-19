@@ -1,9 +1,7 @@
 import { handler, query, readBody, send, httpError } from './_lib/http.js';
 import { isAdmin, checkPassword, loginCookie, logoutCookie, passwordConfigured } from './_lib/auth.js';
 import { storageMode } from './_lib/store.js';
-import { blobToken } from './_lib/env.js';
-
-const uploadsMode = () => (blobToken() ? 'blob' : (process.env.VERCEL ? 'missing' : 'local'));
+import { uploadsMode } from './upload.js';
 
 export default handler(async (req, res) => {
   const action = query(req).get('action') || 'me';

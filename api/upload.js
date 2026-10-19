@@ -1,40 +1,94 @@
 // Envio de fotos, vídeos e músicas.
-// Produção: Vercel Blob com envio direto do navegador (aceita arquivos grandes).
+// Produção (Vercel Blob), envio direto do navegador para o Blob, em um destes modos:
+//   - token de leitura e escrita (BLOB_READ_WRITE_TOKEN)
+//   - identidade do deploy (OIDC) + BLOB_STORE_ID, padrão dos Blobs criados recentemente
+// Arquivos de um Blob privado são entregues por /api/upload?media=<url>, que redireciona
+// para um link assinado temporário.
 // Local: o arquivo é enviado para cá e guardado em .data/uploads.
 import fs from 'node:fs';
 import path from 'node:path';
-import { handleUpload } from '@vercel/blob/client';
+import { handleUpload, handleUploadPresigned } from '@vercel/blob/client';
+import { issueSignedToken, presignUrl } from '@vercel/blob';
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
 import { isAdmin, requireAdmin } from './_lib/auth.js';
-import { blobToken, relatedNames } from './_lib/env.js';
+import { blobToken, blobStoreId, relatedNames } from './_lib/env.js';
 
 const DIR = path.join(process.cwd(), '.data', 'uploads');
 const MAX = 100 * 1024 * 1024;
 const TYPES = ['image/*', 'video/*', 'audio/*'];
 
+function blobAuth(req) {
+  const token = blobToken();
+  if (token) return { token };
+  const storeId = blobStoreId();
+  const oidcToken = req.headers['x-vercel-oidc-token'] || process.env.VERCEL_OIDC_TOKEN || undefined;
+  if (!storeId) return null;
+  if (!oidcToken) {
+    throw httpError(503, 'O Blob está conectado, mas este deploy não recebeu a credencial do Vercel. No Vercel, abra Settings › Security e ative "Secure Backend Access with OIDC Federation" e faça um novo deploy. Outra opção: em Storage › Blob, gere um token de leitura e escrita e salve-o na variável BLOB_READ_WRITE_TOKEN.');
+  }
+  return { storeId, oidcToken };
+}
+
+export function uploadsMode() {
+  if (blobToken()) return 'blob';
+  if (blobStoreId()) return 'blob-oidc';
+  return process.env.VERCEL ? 'missing' : 'local';
+}
+
 export default handler(async (req, res) => {
   const q = query(req);
+  const mode = uploadsMode();
 
-  const token = blobToken();
-  if (token) {
+  // Entrega de arquivo de Blob privado
+  if (req.method === 'GET' && q.get('media')) {
+    const auth = blobAuth(req);
+    if (!auth) throw httpError(404, 'Arquivo não encontrado.');
+    let u;
+    try { u = new URL(q.get('media')); } catch (e) { throw httpError(400, 'Endereço inválido.'); }
+    if (!/\.blob\.vercel-storage\.com$/.test(u.hostname)) throw httpError(400, 'Endereço inválido.');
+    const pathname = decodeURIComponent(u.pathname.replace(/^\//, ''));
+    const signed = await issueSignedToken(Object.assign({ pathname, operations: ['get'] }, auth));
+    const { presignedUrl } = await presignUrl(signed, { operation: 'get', pathname, access: 'private' });
+    res.statusCode = 302;
+    res.setHeader('Location', presignedUrl);
+    res.setHeader('Cache-Control', 'private, max-age=600');
+    return res.end();
+  }
+
+  if (mode === 'blob' || mode === 'blob-oidc') {
     if (req.method !== 'POST') throw httpError(405, 'Método não permitido.');
     const body = await readBody(req);
+    if (body && body.type === 'blob.generate-presigned-url') {
+      const auth = blobAuth(req);
+      const result = await handleUploadPresigned({
+        body,
+        request: req,
+        // só seria usado para conferir avisos de "envio concluído", que não usamos
+        webhookPublicKey: process.env.BLOB_WEBHOOK_PUBLIC_KEY || 'nao-utilizado',
+        getSignedToken: async (pathname) => {
+          if (!isAdmin(req)) throw httpError(401, 'Entre com a senha do organizador.');
+          const token = await issueSignedToken(Object.assign({ pathname, operations: ['put'], allowedContentTypes: TYPES, maximumSizeInBytes: MAX }, auth));
+          return { token, urlOptions: { allowedContentTypes: TYPES, maximumSizeInBytes: MAX, addRandomSuffix: true } };
+        }
+      });
+      return send(res, 200, result);
+    }
+    if (mode !== 'blob') throw httpError(400, 'Modo de envio não suportado por este armazenamento.');
     const result = await handleUpload({
-      token,
+      token: blobToken(),
       body,
       request: req,
       onBeforeGenerateToken: async () => {
         if (!isAdmin(req)) throw httpError(401, 'Entre com a senha do organizador.');
         return { allowedContentTypes: TYPES, maximumSizeInBytes: MAX, addRandomSuffix: true };
-      },
-      onUploadCompleted: async () => {}
+      }
     });
     return send(res, 200, result);
   }
 
-  if (process.env.VERCEL) {
+  if (mode === 'missing') {
     const names = relatedNames();
-    throw httpError(503, 'Armazenamento de arquivos não configurado. No Vercel, conecte um Blob (Storage › Blob) ao projeto e faça um novo deploy.' + (names.length ? ' Variáveis encontradas: ' + names.join(', ') + '.' : ''));
+    throw httpError(503, 'Armazenamento de arquivos não configurado. No Vercel, conecte um Blob (Storage › Blob) ao projeto e faça um novo deploy.' + (names.length ? ' Variáveis encontradas: ' + names.join(', ') + '.' : ' Nenhuma variável de Blob foi encontrada neste deploy.'));
   }
 
   // modo local

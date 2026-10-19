@@ -127,16 +127,25 @@ export const api = {
 
   async upload(file, onProgress) {
     const cfg = config || (await api.me());
-    if (cfg.uploads === 'missing') throw new Error('Armazenamento de arquivos não configurado no Vercel (crie um Blob em Storage).');
-    if (cfg.uploads === 'blob') {
-      const { upload } = await import('@vercel/blob/client');
-      const b = await upload(safeName(file.name), file, {
-        access: 'public',
+    if (cfg.uploads === 'missing') throw new Error('Armazenamento de arquivos não configurado no Vercel (conecte um Blob ao projeto em Storage e faça um novo deploy).');
+    if (cfg.uploads === 'blob' || cfg.uploads === 'blob-oidc') {
+      const mod = await import('@vercel/blob/client');
+      const send = cfg.uploads === 'blob-oidc' ? mod.uploadPresigned : mod.upload;
+      const opts = {
         handleUploadUrl: '/api/upload',
         contentType: file.type || undefined,
         onUploadProgress: onProgress ? (e) => onProgress(Math.round(e.percentage)) : undefined
-      });
-      return { url: b.url };
+      };
+      const name = safeName(file.name);
+      try {
+        const b = await send(name, file, Object.assign({ access: 'public' }, opts));
+        return { url: /\.private\./.test(b.url) ? '/api/upload?media=' + enc(b.url) : b.url };
+      } catch (err) {
+        // Blob criado como privado: envia como privado e entrega por link assinado
+        if (!/private|access|public/i.test(String(err && err.message))) throw err;
+        const b = await send(name, file, Object.assign({ access: 'private' }, opts));
+        return { url: '/api/upload?media=' + enc(b.url) };
+      }
     }
     const r = await fetch('/api/upload?name=' + enc(file.name), {
       method: 'POST',

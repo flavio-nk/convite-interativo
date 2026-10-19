@@ -41,9 +41,11 @@ export function handler(fn) {
     try {
       await fn(req, res);
     } catch (e) {
-      const status = e.status || 500;
+      const isBlob = e && /^Blob/.test((e.constructor && e.constructor.name) || '');
+      const status = e.status || (isBlob ? 502 : 500);
       if (status >= 500) console.error(e);
-      send(res, status, { error: e.status ? e.message : 'Erro interno no servidor.' });
+      const msg = e.status ? e.message : (isBlob ? 'Falha no armazenamento de arquivos: ' + e.message : 'Erro interno no servidor.');
+      if (!res.headersSent) send(res, status, { error: msg });
     }
   };
 }

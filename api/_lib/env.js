@@ -30,6 +30,13 @@ export function blobToken() {
   return v ? v.value : null;
 }
 
+export function blobStoreId() {
+  const v = find((k) => k === 'BLOB_STORE_ID') ||
+    find((k) => /STORE_ID$/.test(k) && /BLOB/.test(k)) ||
+    find((k) => /STORE_ID$/.test(k) && /^store_/.test(process.env[k] || ''));
+  return v ? v.value : null;
+}
+
 // Só nomes (nunca valores), para ajudar a diagnosticar a configuração.
 export function relatedNames() {
   return Object.keys(process.env).filter((k) => /KV|REDIS|UPSTASH|BLOB|STORAGE/.test(k)).sort();
