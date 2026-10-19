@@ -197,10 +197,30 @@ export const photo = {
   }
 };
 
+// ---------- Tamanho da fonte dos blocos ----------
+// O tamanho escolhido vale para o texto principal do bloco (em px); os demais
+// textos do bloco (rótulos, legendas) acompanham na mesma proporção.
+const FONT_BASE = { texto: 15, orientacoes: 14, botao: 15, mapa: 16, contagem: 30, rsvp: 15 };
+const FONT_RANGE = { titulo: [16, 96], contagem: [14, 72] };
+export function fontBase(type, T) {
+  if (type === 'titulo') return parseInt((T && T.titleSize) || '40', 10) || 40;
+  return FONT_BASE[type] || 0;
+}
+export function fontScale(block, T) {
+  const base = fontBase(block && block.type, T);
+  const fs = block && Number(block.fontSize);
+  if (!base || !fs || !isFinite(fs)) return 1;
+  return fs / base;
+}
+export const fontRange = (type) => FONT_RANGE[type] || [9, 48];
+
 export const api = {
   fmt,
   themeTokens,
   photo,
+  fontBase,
+  fontScale,
+  fontRange,
   async me() {
     config = await call('GET', '/api/auth?action=me');
     return config;

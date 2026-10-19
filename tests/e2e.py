@@ -390,16 +390,24 @@ def t_dnd(pg, browser):
     did = pg.url.split('#/Editor/')[1]
     order0 = ovl(pg)
     ok('Arrastar: prévia do editor mostra todos os blocos', order0 == ['c1', 'c2', 'c3', 'c4', 'c5'], order0)
-    # modo automático: arrastar o título para o fim
-    last = pg.locator('[data-ovl="c5"]').bounding_box(); first = pg.locator('[data-ovl="c2"]').bounding_box()
-    seen = drag(pg, '[data-ovl="c2"]', 0, last['y'] + last['height'] - first['y'] + 4, before_up=lambda: count(pg, '[data-testid="insert-line"]'))
-    ok('Automático: mostra a linha de inserção', seen == 1)
-    ok('Automático: arrastar muda a ordem', ovl(pg) == ['c1', 'c3', 'c4', 'c5', 'c2'], ovl(pg))
-    pg.locator('[data-ovl="c2"]').focus(); pg.keyboard.press('ArrowUp'); pg.wait_for_timeout(300)
-    ok('Automático: seta para cima sobe o bloco', ovl(pg) == ['c1', 'c3', 'c4', 'c2', 'c5'], ovl(pg))
-    # posição livre
-    pg.click('button[role=radio]:has-text("Posição livre")'); pg.wait_for_timeout(600)
-    ok('Posição livre: mantém o lugar dos blocos', pg.input_value('#pos-x') != '' and 'Enquadramento ok' in pg.inner_text('[data-testid="check"]'))
+    pg.wait_for_timeout(800)
+    pg.locator('[data-ovl="c2"]').click(); pg.wait_for_timeout(200)
+    ok('Posição livre é o padrão: blocos já têm posição', pg.input_value('#pos-x') != '' and 'Enquadramento ok' in pg.inner_text('[data-testid="check"]'), pg.inner_text('[data-testid="check"]'))
+    ok('Modo automático não existe mais', count(pg, 'button[role=radio]:has-text("Automático")') == 0)
+    # tamanho da fonte
+    pg.fill('#blk-fs', '60'); pg.press('#blk-fs', 'Tab'); pg.wait_for_timeout(400)
+    fsz = pg.evaluate("getComputedStyle(document.querySelector('[data-canvas] [data-bid=\"c2\"] h1')).fontSize")
+    ok('Fonte: título com 60 px na prévia', fsz == '60px', fsz)
+    pg.locator('[data-ovl="c3"]').click(); pg.wait_for_timeout(200)
+    set_range(pg, '#blk-fs-range', 22)
+    fsz3 = pg.evaluate("getComputedStyle(document.querySelector('[data-canvas] [data-bid=\"c3\"] p')).fontSize")
+    ok('Fonte: texto com 22 px (controle deslizante)', fsz3 == '22px', fsz3)
+    pg.locator('[data-ovl="c5"]').click(); pg.wait_for_timeout(200)
+    pg.fill('#blk-fs', '20'); pg.press('#blk-fs', 'Tab'); pg.wait_for_timeout(300)
+    fsz5 = pg.evaluate("getComputedStyle(document.querySelector('[data-canvas] [data-bid=\"c5\"] button')).fontSize")
+    ok('Fonte: botão com 20 px', fsz5 == '20px', fsz5)
+    pg.locator('[data-ovl="c1"]').click(); pg.wait_for_timeout(200)
+    ok('Fonte: bloco de foto não tem tamanho de fonte', count(pg, '#blk-fs') == 0)
     pg.locator('[data-ovl="c5"]').click(); pg.wait_for_timeout(200)
     y0 = int(pg.input_value('#pos-y'))
     guides = drag(pg, '[data-ovl="c5"]', 0, 60, before_up=lambda: count(pg, '[data-testid="guide"]'))
@@ -422,7 +430,8 @@ def t_dnd(pg, browser):
     # largura pelas alças e alinhamento
     pg.click('[aria-label="Ocupar a largura entre as margens"]'); pg.wait_for_timeout(200)
     ok('Alinhar: largura entre as margens', pg.input_value('#pos-x') == '20' and pg.input_value('#pos-w') == '350')
-    h = pg.locator('[data-ovl="c4"] [data-handle="r"]').bounding_box()
+    pg.locator('[data-handles="c4"] [data-handle="r"]').scroll_into_view_if_needed(); pg.wait_for_timeout(200)
+    h = pg.locator('[data-handles="c4"] [data-handle="r"]').bounding_box()
     pg.mouse.move(h['x'] + 5, h['y'] + 10); pg.mouse.down(); pg.mouse.move(h['x'] - 80, h['y'] + 10, steps=8); pg.mouse.up(); pg.wait_for_timeout(300)
     ok('Alça: estreita o bloco', int(pg.input_value('#pos-w')) < 300, pg.input_value('#pos-w'))
     pg.click('[aria-label="Centralizar na largura da tela"]'); pg.wait_for_timeout(200)
@@ -440,12 +449,11 @@ def t_dnd(pg, browser):
     g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(2800)
     st = g.locator('[data-bid="c4"]').get_attribute('style') or ''
     ok('Convidado: bloco na posição livre', 'top: 560px' in st and 'width: %dpx' % wv in st, st)
+    gf = g.evaluate("getComputedStyle(document.querySelector('[data-bid=\"c2\"] h1')).fontSize")
+    ok('Convidado: título com o tamanho de fonte escolhido', gf == '60px', gf)
     ctx.close()
-    # voltar ao automático com desfazer
-    pg.click('button[role=radio]:has-text("Automático")'); pg.wait_for_timeout(400)
-    ok('Automático: volta empilhando de cima para baixo', count(pg, '#pos-x') == 0 and ovl(pg)[0] == 'c1', ovl(pg))
-    pg.click('button:has-text("Desfazer")'); pg.wait_for_timeout(400)
-    ok('Desfazer volta à posição livre', count(pg, '#pos-x') == 1)
+    pg.locator('[data-ovl="c2"]').focus(); pg.keyboard.press('Enter'); pg.wait_for_timeout(200)
+    ok('Recarregar: tamanho da fonte salvo', pg.input_value('#blk-fs') == '60', pg.input_value('#blk-fs'))
 
 
 def t_logout(pg):
