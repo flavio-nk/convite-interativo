@@ -91,7 +91,7 @@ button,input,textarea{font-family:inherit}
         <h1 style="margin: 0; font-family: 'Cormorant Garamond', Georgia, serif; font-size: 40px; line-height: 1.05; font-weight: 500">{{doneTitle}}</h1>
         <p style="margin: 0; font-size: 15px; color: #D9DED6; max-width: 290px">{{doneText}}</p>
         <sc-if value="{{doneYes}}" hint-placeholder-val="{{ true }}">
-          <button style="margin-top: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; background: #CDAE6B; color: #1F3329; font-weight: 700; font-size: 15px; cursor: pointer">Adicionar à agenda</button>
+          <button onClick="{{addToCalendar}}" style="margin-top: 8px; min-height: 48px; padding: 0 22px; border-radius: 999px; border: 0; background: #CDAE6B; color: #1F3329; font-weight: 700; font-size: 15px; cursor: pointer">Adicionar à agenda</button>
         </sc-if>
         <button onClick="{{edit}}" style="min-height: 44px; padding: 0 16px; border: 0; background: transparent; color: #CDAE6B; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: underline">Alterar minha resposta</button>
       </div>
@@ -115,6 +115,22 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = { name: '', answer: null, guests: 0, error: '', done: false };
+  }
+  downloadIcs() {
+    const lines = [
+      'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Convite Interativo//PT-BR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH',
+      'BEGIN:VEVENT', 'UID:casamento-ana-pedro-20270417@convite-interativo', 'DTSTAMP:20261019T120000Z',
+      'DTSTART:20270417T190000Z', 'DTEND:20270418T030000Z',
+      'SUMMARY:Casamento Ana & Pedro', 'LOCATION:Espaço Villa Jardim',
+      'DESCRIPTION:Cerimônia às 16h\\, recepção em seguida. Traje: esporte fino.',
+      'END:VEVENT', 'END:VCALENDAR'
+    ];
+    const blob = new Blob([lines.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'casamento-ana-e-pedro.ics';
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
   }
   renderVals() {
     const st = this.state;
@@ -154,7 +170,8 @@ class Component extends DCLogic {
       doneText: yes
         ? 'Obrigado, ' + first + '! Reservamos ' + (total === 1 ? '1 lugar' : total + ' lugares') + ' para 17 de abril. Até lá!'
         : 'Obrigado por avisar, ' + first + '. Sentiremos sua falta.',
-      edit: () => this.setState({ done: false })
+      edit: () => this.setState({ done: false }),
+      addToCalendar: () => this.downloadIcs()
     };
   }
 }

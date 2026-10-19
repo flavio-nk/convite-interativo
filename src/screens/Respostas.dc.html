@@ -51,7 +51,7 @@ td{padding:14px 16px;border-bottom:1px solid #EEECF3;font-size:14px;vertical-ali
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 8px">
         <a href="ConviteCapa.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; text-decoration: none">Abrir convite</a>
-        <button style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">
+        <button onClick="{{exportCsv}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"></path></svg>
           Exportar planilha
         </button>
@@ -80,10 +80,10 @@ td{padding:14px 16px;border-bottom:1px solid #EEECF3;font-size:14px;vertical-ali
 
     <div style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 14px; padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
       <span style="font-weight: 600">Link para os convidados</span>
-      <span style="flex: 1 1 240px; min-width: 0; padding: 10px 12px; border-radius: 10px; background: #F5F4F8; font-family: ui-monospace, monospace; font-size: 14px; color: #3D3A4A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">[seu-domínio]/ana-e-pedro</span>
+      <span style="flex: 1 1 240px; min-width: 0; padding: 10px 12px; border-radius: 10px; background: #F5F4F8; font-family: ui-monospace, monospace; font-size: 14px; color: #3D3A4A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{guestLink}}</span>
       <div style="display: flex; flex-wrap: wrap; gap: 8px">
-        <button style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Copiar link</button>
-        <button style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Enviar por WhatsApp</button>
+        <button style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer" onClick="{{copyLink}}">Copiar link</button>
+        <button style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer" onClick="{{shareWhatsApp}}">Enviar por WhatsApp</button>
       </div>
       <span style="flex-basis: 100%; font-size: 13px; color: #5E5A6B">Prazo para responder: 17 de março de 2027</span>
     </div>
@@ -126,13 +126,27 @@ td{padding:14px 16px;border-bottom:1px solid #EEECF3;font-size:14px;vertical-ali
       <div style="padding: 14px 20px; font-size: 13px; color: #5E5A6B; border-top: 1px solid #EEECF3">{{footer}}</div>
     </section>
   </main>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); max-width: calc(100% - 32px); box-sizing: border-box; background: #17151F; color: #FFFFFF; padding: 12px 18px; border-radius: 10px; font-size: 14px; display: flex; align-items: center; gap: 16px">
+      <span style="overflow-wrap: anywhere">{{toast}}</span>
+      <button onClick="{{closeToast}}" style="border: 0; background: transparent; color: #C9BEFF; font-weight: 700; font-size: 14px; cursor: pointer; min-height: 32px">OK</button>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1280,"height":1100}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { tab: 'Todas', query: '' };
+    this.state = { tab: 'Todas', query: '', toast: '' };
+  }
+  guestLink() {
+    try {
+      const o = window.location.origin;
+      if (o && o !== 'null' && /^https?:/.test(o)) return o + window.location.pathname + '#/Abertura';
+    } catch (e) {}
+    return '[seu-domínio]/ana-e-pedro';
   }
   renderVals() {
     const all = [
@@ -159,7 +173,35 @@ class Component extends DCLogic {
       const on = label === this.state.tab;
       return { label, pressed: on ? 'true' : 'false', bg: on ? '#FFFFFF' : 'transparent', pick: () => this.setState({ tab: label }) };
     });
+    const link = this.guestLink();
     return {
+      guestLink: link,
+      hasToast: !!this.state.toast,
+      toast: this.state.toast,
+      closeToast: () => this.setState({ toast: '' }),
+      copyLink: () => {
+        const done = () => this.setState({ toast: 'Link copiado: ' + link });
+        try {
+          if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(link).then(done, () => this.setState({ toast: 'Copie o link: ' + link }));
+          else this.setState({ toast: 'Copie o link: ' + link });
+        } catch (e) { this.setState({ toast: 'Copie o link: ' + link }); }
+      },
+      shareWhatsApp: () => {
+        const msg = 'Você está convidado para o casamento de Ana & Pedro! Veja o convite e confirme sua presença: ' + link;
+        window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener');
+      },
+      exportCsv: () => {
+        const esc = (v) => '"' + String(v).replace(/"/g, '""') + '"';
+        const head = ['Nome', 'Resposta', 'Pessoas', 'Restrição alimentar', 'Mensagem', 'Data'];
+        const lines = [head.map(esc).join(';')].concat(all.map((r) => [r.name, r.go ? 'Vai' : 'Não vai', r.people, r.diet, r.msg, r.date].map(esc).join(';')));
+        const blob = new Blob(['\ufeff' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = 'respostas-casamento-ana-e-pedro.csv';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+        this.setState({ toast: 'Planilha baixada com ' + all.length + ' respostas.' });
+      },
       rows, tabs,
       empty: rows.length === 0,
       query: this.state.query,
