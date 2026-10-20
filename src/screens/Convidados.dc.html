@@ -328,8 +328,8 @@ class Component extends DCLogic {
         badgeFg: !r ? '#3D3A4A' : (r.go ? '#1E6B43' : '#8A4B00'),
         peopleLine: ppl.length ? 'Convidados: ' + ppl.join(', ') : 'Sem nomes definidos',
         limitLine: 'Até ' + g.max + (g.max === 1 ? ' pessoa' : ' pessoas') + (comp ? ' (' + comp + (comp === 1 ? ' acompanhante extra' : ' acompanhantes extras') + ')' : ''),
-        hasAnswer: !!(r && r.go && names.length),
-        answerLine: names.length ? 'Confirmados (' + names.length + '): ' + names.join(', ') : '',
+        hasAnswer: !!(r && ((r.go && names.length) || (r.absent && r.absent.length))),
+        answerLine: [names.length ? 'Vão (' + names.length + '): ' + names.join(', ') : '', r && r.absent && r.absent.length ? 'Não vão: ' + r.absent.join(', ') : ''].filter(Boolean).join(' · '),
         href: this.link(g),
         editAria: 'Editar ' + g.name, deleteAria: 'Excluir ' + g.name,
         confirming: st.confirm === g.id, notConfirming: st.confirm !== g.id,
@@ -428,11 +428,11 @@ class Component extends DCLogic {
       emptyText: st.error ? st.error : (guests.length ? 'Nenhum convite encontrado.' : 'Nenhum convite individual ainda. Adicione o primeiro acima.'),
       exportCsv: () => {
         const esc = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
-        const head = ['Convite', 'Convidados', 'Acompanhantes extras', 'Máximo de pessoas', 'Situação', 'Confirmados', 'Link'];
+        const head = ['Convite', 'Convidados', 'Acompanhantes extras', 'Máximo de pessoas', 'Situação', 'Vão', 'Não vão', 'Link'];
         const lines = [head.map(esc).join(';')].concat(guests.map((g) => [
           g.name, (g.people || []).join(', '), g.companions || 0, g.max,
           !g.rsvp ? 'Pendente' : (g.rsvp.go ? 'Vai' : 'Não vai'),
-          g.rsvp && g.rsvp.names ? g.rsvp.names.join(', ') : '', this.link(g)
+          g.rsvp && g.rsvp.names ? g.rsvp.names.join(', ') : '', g.rsvp && g.rsvp.absent ? g.rsvp.absent.join(', ') : '', this.link(g)
         ].map(esc).join(';')));
         const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(blob);

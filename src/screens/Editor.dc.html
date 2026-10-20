@@ -202,7 +202,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <sc-if value="{{isOpeningView}}" hint-placeholder-val="{{ false }}">
           <div style="width: 340px; height: 720px; overflow: hidden">
             <div style="width: 390px; height: 844px; transform: scale(0.8718); transform-origin: top left">
-              <dc-import name="Abertura" key="{{openingKey}}" headline="{{op.headlineValue}}" hint="{{op.hint}}" trigger="{{op.trigger}}" initials="{{op.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{coverKicker}}" titulo="{{op.titleValue}}" data="{{op.subtitleValue}}" btn-radius="{{T.radius}}" show-link="{{noLink}}" music="{{musicCfg}}" hint-size="390px,844px"></dc-import>
+              <dc-import name="Abertura" key="{{openingKey}}" recipient="{{op.recipient}}" headline="{{op.headlineValue}}" hint="{{op.hint}}" trigger="{{op.trigger}}" initials="{{op.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{coverKicker}}" titulo="{{op.titleValue}}" data="{{op.subtitleValue}}" btn-radius="{{T.radius}}" show-link="{{noLink}}" music="{{musicCfg}}" hint-size="390px,844px"></dc-import>
             </div>
           </div>
         </sc-if>
@@ -325,9 +325,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
               <div style="display: flex; flex-direction: column; gap: 12px">
                 <button onClick="{{pers.manage}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">{{pers.manageLabel}}</button>
                 <div>
-                  <label class="lbl" for="pers-greeting">Texto no topo da abertura</label>
+                  <label class="lbl" for="pers-greeting">Nome do convidado na abertura</label>
                   <input class="fld" id="pers-greeting" value="{{pers.greeting}}" onChange="{{pers.onGreeting}}" placeholder="Convite para {nome}">
-                  <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{nome} vira o nome do convite (ex.: “Convite para Família Silva”). Vale só para quem abre por um link individual.</span>
+                  <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Aparece no próprio convite fechado (no envelope, na cortina, na capa…), na fonte e nas cores do tema. {nome} vira o nome do convite; o texto antes dele aparece como um rótulo pequeno. Veja na aba Abertura.</span>
                 </div>
                 <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #EFECFB; color: #2F1F8F; font-size: 13px">Dica: em qualquer texto do convite, escreva <strong>{nome}</strong> para mostrar o nome do convidado. Ex.: “Querida {nome}, contamos com você!”</p>
                 <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer">
@@ -2401,7 +2401,12 @@ class Component extends DCLogic {
         const trig = o.trigger || 'toque';
         const words = String(o.title || coverT || '').split(' ').filter((w) => w && w !== '&' && w !== 'e');
         const autoIni = String(o.title || coverT || '').indexOf('&') !== -1 && words.length >= 2 ? words[0][0] + '&' + words[words.length - 1][0] : (words[0] ? words[0].slice(0, 2) : '');
+        const pr = st.personal || {};
+        const tpl = pr.greeting == null || pr.greeting === '' ? 'Para {nome}' : String(pr.greeting);
+        const ti = tpl.search(/\{nome\}/i);
         return {
+          // com a personalização ligada, a prévia mostra um convidado de exemplo
+          recipient: pr.enabled ? (ti === -1 ? { pre: tpl, name: 'Família Exemplo', post: '' } : { pre: tpl.slice(0, ti).trim(), name: 'Família Exemplo', post: tpl.slice(ti + 6).trim() }) : null,
           trigger: trig, headline: o.headline || '', headlineValue: o.headline || '',
           title: o.title || '', titleValue: o.title || coverT,
           subtitle: o.subtitle || '', subtitleValue: o.subtitle || dots,

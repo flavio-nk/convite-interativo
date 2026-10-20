@@ -162,7 +162,8 @@ class Component extends DCLogic {
     const all = (st.rows || []).map((r) => ({
       id: r.id, name: r.name, go: !!r.go, people: r.go ? (r.names && r.names.length ? r.names.length : 1 + (Number(r.guests) || 0)) : 0,
       individual: !!r.guestId, names: r.names || [],
-      hasNames: !!(r.go && r.names && r.names.length), namesLine: r.names && r.names.length ? r.names.join(', ') : '',
+      hasNames: !!((r.go && r.names && r.names.length) || (r.absent && r.absent.length)),
+      namesLine: [r.go && r.names && r.names.length ? 'Vão: ' + r.names.join(', ') : '', r.absent && r.absent.length ? 'Não vão: ' + r.absent.join(', ') : ''].filter(Boolean).join(' · '),
       diet: r.diet || '—', msg: r.msg || '—', date: api.fmt.short(r.updatedAt || r.createdAt)
     }));
     const q = st.query.trim().toLowerCase();
@@ -208,7 +209,7 @@ class Component extends DCLogic {
       exportCsv: () => {
         const esc = (v) => '"' + String(v).replace(/"/g, '""') + '"';
         const head = ['Nome', 'Resposta', 'Pessoas', 'Quem vai', 'Restrição alimentar', 'Mensagem', 'Data'];
-        const lines = [head.map(esc).join(';')].concat(all.map((r) => [r.name, r.go ? 'Vai' : 'Não vai', r.people, r.go ? r.namesLine : '', r.diet, r.msg, r.date].map(esc).join(';')));
+        const lines = [head.map(esc).join(';')].concat(all.map((r) => [r.name, r.go ? 'Vai' : 'Não vai', r.people, r.namesLine, r.diet, r.msg, r.date].map(esc).join(';')));
         const blob = new Blob(['﻿' + lines.join('\r\n')], { type: 'text/csv;charset=utf-8' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

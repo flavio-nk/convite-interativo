@@ -176,6 +176,7 @@ body{margin:0}
                             <input class="gf" id="{{b.r.ids.name}}" autocomplete="name" value="{{b.r.name}}" onChange="{{b.r.onName}}" style="border: 1px solid {{T.line}}; background: {{T.surface}}; color: {{T.fg}}">
                           </div>
                         </sc-if>
+                        <sc-if value="{{b.r.showGo}}" hint-placeholder-val="{{ true }}">
                         <fieldset style="border: 0; margin: 0; padding: 0">
                           <legend style="font-size: calc(13px * var(--k, 1)); font-weight: 600; margin-bottom: 6px; padding: 0">{{b.r.goQuestion}}</legend>
                           <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
@@ -183,16 +184,37 @@ body{margin:0}
                             <button type="button" onClick="{{b.r.no}}" aria-pressed="{{b.r.noPressed}}" style="min-height: 50px; border-radius: 12px; border: 1px solid {{b.r.noBorder}}; background: {{b.r.noBg}}; color: {{b.r.noFg}}; font-weight: 700; font-size: calc(15px * var(--k, 1)); font-family: inherit; cursor: pointer">{{b.r.noLabel}}</button>
                           </div>
                         </fieldset>
-                        <sc-if value="{{b.r.showNames}}" hint-placeholder-val="{{ false }}">
-                          <fieldset data-testid="rsvp-names" style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
-                            <legend style="font-size: calc(13px * var(--k, 1)); font-weight: 600; margin-bottom: 6px; padding: 0">{{b.r.namesTitle}}</legend>
-                            <sc-for list="{{b.r.nameFields}}" as="nf" hint-placeholder-count="3">
-                              <div>
-                                <label for="{{nf.id}}" style="display: block; font-size: calc(12px * var(--k, 1)); opacity: 0.85; margin-bottom: 4px">{{nf.label}}</label>
-                                <input class="gf" id="{{nf.id}}" autocomplete="off" value="{{nf.value}}" onInput="{{nf.onInput}}" placeholder="{{nf.placeholder}}" style="border: 1px solid {{T.line}}; background: {{T.surface}}; color: {{T.fg}}">
+                        </sc-if>
+                        <sc-if value="{{b.r.personal}}" hint-placeholder-val="{{ false }}">
+                          <fieldset data-testid="rsvp-people" style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+                            <legend style="font-size: calc(13px * var(--k, 1)); font-weight: 600; margin-bottom: 6px; padding: 0">{{b.r.peopleTitle}}</legend>
+                            <sc-for list="{{b.r.rows}}" as="pr" hint-placeholder-count="2">
+                              <div data-person="{{pr.idx}}" role="group" aria-label="{{pr.aria}}" style="display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border-radius: 12px; border: 1px solid {{T.line}}; background: {{T.surface}}">
+                                <sc-if value="{{pr.fixed}}" hint-placeholder-val="{{ true }}">
+                                  <span style="font-family: {{T.font}}; font-size: calc(20px * var(--k, 1)); font-weight: {{T.weight}}; font-style: {{T.fstyle}}; line-height: 1.15">{{pr.name}}</span>
+                                </sc-if>
+                                <sc-if value="{{pr.editable}}" hint-placeholder-val="{{ false }}">
+                                  <label for="{{pr.id}}" style="display: block; font-size: calc(12px * var(--k, 1)); opacity: 0.85">Nome e sobrenome</label>
+                                  <input class="gf" id="{{pr.id}}" autocomplete="name" value="{{pr.name}}" onInput="{{pr.onName}}" style="border: 1px solid {{T.line}}; background: {{T.bg}}; color: {{T.fg}}">
+                                </sc-if>
+                                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                                  <button type="button" onClick="{{pr.yes}}" aria-pressed="{{pr.yesPressed}}" style="min-height: 44px; border-radius: 10px; border: 1px solid {{pr.yesBorder}}; background: {{pr.yesBg}}; color: {{pr.yesFg}}; font-weight: 700; font-size: calc(14px * var(--k, 1)); font-family: inherit; cursor: pointer">Vai</button>
+                                  <button type="button" onClick="{{pr.no}}" aria-pressed="{{pr.noPressed}}" style="min-height: 44px; border-radius: 10px; border: 1px solid {{pr.noBorder}}; background: {{pr.noBg}}; color: {{pr.noFg}}; font-weight: 700; font-size: calc(14px * var(--k, 1)); font-family: inherit; cursor: pointer">Não vai</button>
+                                </div>
                               </div>
                             </sc-for>
-                            <span style="font-size: calc(12px * var(--k, 1)); opacity: 0.8">{{b.r.namesHint}}</span>
+                          </fieldset>
+                        </sc-if>
+                        <sc-if value="{{b.r.showExtra}}" hint-placeholder-val="{{ false }}">
+                          <fieldset data-testid="rsvp-extra" style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
+                            <legend style="font-size: calc(13px * var(--k, 1)); font-weight: 600; margin-bottom: 6px; padding: 0">{{b.r.extraTitle}}</legend>
+                            <sc-for list="{{b.r.extraFields}}" as="nf" hint-placeholder-count="1">
+                              <div>
+                                <label for="{{nf.id}}" style="display: block; font-size: calc(12px * var(--k, 1)); opacity: 0.85; margin-bottom: 4px">{{nf.label}}</label>
+                                <input class="gf" id="{{nf.id}}" autocomplete="off" value="{{nf.value}}" onInput="{{nf.onInput}}" placeholder="Nome do acompanhante" style="border: 1px solid {{T.line}}; background: {{T.surface}}; color: {{T.fg}}">
+                              </div>
+                            </sc-for>
+                            <span style="font-size: calc(12px * var(--k, 1)); opacity: 0.8">Deixe em branco se não for levar acompanhante.</span>
                           </fieldset>
                         </sc-if>
                         <sc-if value="{{b.r.showGuests}}" hint-placeholder-val="{{ false }}">
@@ -261,7 +283,7 @@ body{margin:0}
 
   <sc-if value="{{isClosed}}" hint-placeholder-val="{{ true }}">
     <div key="abertura" style="position: absolute; inset: 0; z-index: 5">
-      <dc-import name="Abertura" reveal="{{ true }}" headline="{{opening.headline}}" hint="{{opening.hint}}" trigger="{{opening.trigger}}" initials="{{opening.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{opening.title}}" data="{{opening.subtitle}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
+      <dc-import name="Abertura" reveal="{{ true }}" recipient="{{opening.recipient}}" headline="{{opening.headline}}" hint="{{opening.hint}}" trigger="{{opening.trigger}}" initials="{{opening.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{opening.title}}" data="{{opening.subtitle}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
     </div>
   </sc-if>
 </div>
@@ -435,13 +457,6 @@ class Component extends DCLogic {
     return g.max || (Math.max(1, (g.people || []).length) + (Number(g.companions) || 0));
   }
 
-  padNames(list, g) {
-    const max = this.guestMax(g);
-    const out = (list || []).slice(0, max);
-    while (out.length < max) out.push('');
-    return out;
-  }
-
   // {nome} nos textos vira o nome do convite individual (no editor fica como está)
   nm(text) {
     const t = String(text == null ? '' : text);
@@ -454,9 +469,23 @@ class Component extends DCLogic {
     const g = this.guestCtx();
     if (g) {
       const r = this.state.guestRsvp !== undefined ? this.state.guestRsvp : g.rsvp;
-      const base = r
-        ? { go: r.go, names: this.padNames(r.go && r.names && r.names.length ? r.names : g.people, g), diet: r.diet || '', msg: r.msg || '', done: true }
-        : { go: null, names: this.padNames(g.people, g), diet: '', msg: '', done: false };
+      const ppl = g.people || [];
+      const comp = Number(g.companions) || 0;
+      const pad = (list, n) => { const o = (list || []).slice(0, n); while (o.length < n) o.push(''); return o; };
+      let rows, extra;
+      if (r && Array.isArray(r.attend)) {
+        rows = (ppl.length ? ppl : ['']).map((p, i) => ({ name: p || ((r.attend[i] && r.attend[i].name) || ''), go: r.attend[i] ? r.attend[i].go : null }));
+        extra = pad(r.extra, comp);
+      } else if (r) {
+        // resposta no formato antigo (lista de nomes)
+        const ns = r.names || [];
+        rows = (ppl.length ? ppl : [ns[0] || '']).map((p) => ({ name: p, go: !!r.go && ns.indexOf(p) !== -1 }));
+        extra = pad(ns.filter((n) => ppl.indexOf(n) === -1 && n !== rows[0].name), comp);
+      } else {
+        rows = (ppl.length ? ppl : ['']).map((p) => ({ name: p, go: null }));
+        extra = pad([], comp);
+      }
+      const base = { rows, extra, diet: (r && r.diet) || '', msg: (r && r.msg) || '', done: !!r, go: r ? !!r.go : null };
       return Object.assign({ sending: false, error: '' }, base, this.state.forms[bid] || {});
     }
     const saved = this.state.saved;
@@ -575,18 +604,22 @@ class Component extends DCLogic {
           closed, closedText: 'O prazo para confirmar presença terminou em ' + api.fmt.day(x.deadline) + '.',
           blocked,
           showDone: f.done && !blocked, showForm: !f.done && !closed && !blocked,
-          doneTitle: f.go ? 'Presença confirmada!' : 'Resposta enviada',
+          doneTitle: (g ? (f.rows || []).some((rr) => rr.go === true) : f.go) ? 'Presença confirmada!' : 'Resposta enviada',
           doneText: g
             ? (() => {
-              const ns = (f.names || []).map((n) => String(n).trim()).filter(Boolean);
-              const list = ns.length > 1 ? ns.slice(0, -1).join(', ') + ' e ' + ns[ns.length - 1] : (ns[0] || '');
-              return f.go ? 'Obrigado! Reservamos ' + (ns.length === 1 ? '1 lugar' : ns.length + ' lugares') + ': ' + list + '.' : 'Obrigado por avisar, ' + g.name + '.';
+              const join = (a) => (a.length > 1 ? a.slice(0, -1).join(', ') + ' e ' + a[a.length - 1] : (a[0] || ''));
+              const rows = f.rows || [];
+              const ns = rows.filter((rr) => rr.go === true).map((rr) => String(rr.name).trim()).filter(Boolean)
+                .concat((f.extra || []).map((n) => String(n).trim()).filter(Boolean));
+              const out = rows.filter((rr) => rr.go === false && String(rr.name).trim()).map((rr) => String(rr.name).trim());
+              if (!ns.length) return 'Obrigado por avisar, ' + g.name + '.';
+              return 'Obrigado! Reservamos ' + (ns.length === 1 ? '1 lugar' : ns.length + ' lugares') + ': ' + join(ns) + '.' + (out.length ? ' Não vai' + (out.length > 1 ? 'm' : '') + ': ' + join(out) + '.' : '');
             })()
             : (f.go ? 'Obrigado, ' + first + '! Reservamos ' + (1 + (f.guests || 0) === 1 ? '1 lugar' : (1 + (f.guests || 0)) + ' lugares') + ' para você.' : 'Obrigado por avisar, ' + first + '.'),
-          canCalendar: f.go && !!inv.eventDate,
+          canCalendar: (g ? (f.rows || []).some((rr) => rr.go === true) : f.go) && !!inv.eventDate,
           name: f.name, diet: f.diet, msg: f.msg, guests: String(f.guests || 0),
           showGuests: !g && yes && x.askGuests !== false && max > 0,
-          showDiet: yes && x.askDiet !== false,
+          showDiet: (g ? (f.rows || []).some((rr) => rr.go === true) : yes) && x.askDiet !== false,
           showMsg: x.askMsg !== false,
           maxLabel: 'Até ' + max + (max === 1 ? ' pessoa' : ' pessoas'),
           yesPressed: yes ? 'true' : 'false', noPressed: no ? 'true' : 'false',
@@ -602,20 +635,29 @@ class Component extends DCLogic {
           goQuestion: g && this.guestMax(g) > 1 ? 'Vocês vão?' : 'Você vai?',
           yesLabel: g && this.guestMax(g) > 1 ? 'Sim, vamos' : 'Sim, eu vou',
           noLabel: g && this.guestMax(g) > 1 ? 'Não poderemos ir' : 'Não poderei ir',
-          showNames: !!g && yes,
-          namesTitle: g ? 'Quem vai? Escreva o nome de cada pessoa' : '',
-          namesHint: g ? 'Até ' + this.guestMax(g) + (this.guestMax(g) === 1 ? ' pessoa' : ' pessoas') + ' neste convite. Deixe em branco o nome de quem não for.' : '',
-          nameFields: g ? (f.names || []).map((v, i) => {
-            const invitees = (g.people || []).length;
-            const companion = invitees ? i >= invitees : i >= 1;
-            const k = companion ? i - Math.max(1, invitees) + 1 : i + 1;
+          showGo: !g,
+          peopleTitle: g ? ((f.rows || []).length > 1 ? 'Quem vai? Responda para cada pessoa' : 'Você vai?') : '',
+          rows: g ? (f.rows || []).map((row, i) => {
+            const y = row.go === true, n = row.go === false;
+            const setRow = (patch) => { const rs = this.form(x.id).rows.map((rr, j) => (j === i ? Object.assign({}, rr, patch) : rr)); this.setForm(x.id, { rows: rs, error: '' }); };
             return {
-              id: 'rnm-' + x.id + '-' + i, value: v,
-              label: companion ? 'Acompanhante ' + k : 'Pessoa ' + k,
-              placeholder: companion ? 'Nome do acompanhante (opcional)' : 'Nome e sobrenome',
-              onInput: (e) => { const ns = this.form(x.id).names.slice(); ns[i] = e.target.value; this.setForm(x.id, { names: ns, error: '' }); }
+              idx: String(i), id: 'rpn-' + x.id + '-' + i, name: row.name,
+              fixed: !!(g.people || [])[i], editable: !(g.people || [])[i],
+              aria: (row.name || 'Convidado') + ': vai ou não vai?',
+              yesPressed: y ? 'true' : 'false', noPressed: n ? 'true' : 'false',
+              yesBg: y ? T.accent : 'transparent', yesFg: y ? T.btnFg : T.fg, yesBorder: y ? T.accent : T.line,
+              noBg: n ? T.fg : 'transparent', noFg: n ? T.bg : T.fg, noBorder: n ? T.fg : T.line,
+              yes: () => setRow({ go: true }), no: () => setRow({ go: false }),
+              onName: (e) => setRow({ name: e.target.value })
             };
           }) : [],
+          showExtra: !!g && (g.companions || 0) > 0 && (f.rows || []).some((rr) => rr.go === true),
+          extraTitle: g ? ((g.companions || 0) === 1 ? 'Acompanhante (opcional)' : 'Acompanhantes (opcional, até ' + g.companions + ')') : '',
+          extraFields: g ? (f.extra || []).map((v, i) => ({
+            id: 'rnm-' + x.id + '-' + i, value: v,
+            label: (f.extra || []).length > 1 ? 'Acompanhante ' + (i + 1) : 'Nome do acompanhante',
+            onInput: (e) => { const ex = this.form(x.id).extra.slice(); ex[i] = e.target.value; this.setForm(x.id, { extra: ex, error: '' }); }
+          })) : [],
           onDiet: (e) => this.setForm(x.id, { diet: e.target.value }),
           onMsg: (e) => this.setForm(x.id, { msg: e.target.value }),
           yes: () => this.setForm(x.id, { go: true, error: '' }),
@@ -627,10 +669,16 @@ class Component extends DCLogic {
             if (e && e.preventDefault) e.preventDefault();
             const cf = this.form(x.id);
             if (g) {
-              if (cf.go !== true && cf.go !== false) { this.setForm(x.id, { error: 'Escolha se vocês vão ou não.' }); return; }
-              const names = cf.go ? (cf.names || []).map((n) => String(n).trim()).filter(Boolean) : [];
-              if (cf.go && !names.length) { this.setForm(x.id, { error: 'Escreva o nome de quem vai.' }); return; }
-              const gp = { guestId: g.id, go: cf.go, names, diet: cf.go && x.askDiet !== false ? cf.diet : '', msg: x.askMsg !== false ? cf.msg : '' };
+              const rows = cf.rows || [];
+              if (rows.some((rr) => rr.go !== true && rr.go !== false)) { this.setForm(x.id, { error: rows.length > 1 ? 'Responda “Vai” ou “Não vai” para cada pessoa.' : 'Responda se você vai ou não.' }); return; }
+              if (rows.some((rr) => rr.go === true && !String(rr.name).trim())) { this.setForm(x.id, { error: 'Escreva o nome de quem vai.' }); return; }
+              const anyGo = rows.some((rr) => rr.go === true);
+              const gp = {
+                guestId: g.id,
+                attend: rows.map((rr) => ({ name: String(rr.name).trim(), go: rr.go })),
+                extra: anyGo ? (cf.extra || []).map((n) => String(n).trim()).filter(Boolean) : [],
+                diet: anyGo && x.askDiet !== false ? cf.diet : '', msg: x.askMsg !== false ? cf.msg : ''
+              };
               if (preview) { this.setForm(x.id, { done: true, error: '' }); return; }
               this.setForm(x.id, { sending: true, error: '' });
               api.sendRsvp(inv.id, gp).then((r) => {
@@ -671,9 +719,18 @@ class Component extends DCLogic {
         const o = inv.opening || {};
         const pr = inv.personal || {};
         const g = inv.guest && pr.enabled ? inv.guest : null;
-        const greet = g && pr.greeting !== '' ? this.nm(pr.greeting == null ? 'Convite para {nome}' : pr.greeting) : null;
+        // nome do convidado escrito no próprio convite: "Convite para {nome}" → rótulo + nome na fonte do tema
+        let recipient = null;
+        if (g) {
+          const tpl = pr.greeting == null || pr.greeting === '' ? 'Para {nome}' : String(pr.greeting);
+          const i = tpl.search(/\{nome\}/i);
+          recipient = i === -1
+            ? { pre: tpl, name: g.name, post: '' }
+            : { pre: tpl.slice(0, i).trim(), name: g.name, post: tpl.slice(i + 6).trim() };
+        }
         return {
-          headline: greet || this.nm(o.headline === undefined ? 'Você recebeu um convite' : o.headline),
+          recipient,
+          headline: this.nm(o.headline === undefined ? 'Você recebeu um convite' : o.headline),
           hint: this.nm(o.hint || ''), trigger: o.trigger || 'toque', initials: o.initials || '',
           title: this.nm(o.title || inv.coverTitle || inv.title),
           subtitle: this.nm(o.subtitle || api.fmt.dots(inv.eventDate))

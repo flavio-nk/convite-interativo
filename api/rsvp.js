@@ -31,17 +31,40 @@ export default handler(async (req, res) => {
     if (guestId) {
       const guest = await hget('guests:' + inviteId, guestId);
       if (!guest) throw httpError(404, 'Este convite individual não existe mais.');
-      if (typeof body.go !== 'boolean') throw httpError(400, 'Escolha se vocês vão ou não.');
       const max = maxPeople(guest);
-      const names = body.go ? (Array.isArray(body.names) ? body.names : []).map((n) => str(n, 120)).filter(Boolean) : [];
-      if (body.go && !names.length) throw httpError(400, 'Escreva o nome de quem vai.');
+      let names, absent = [], attend = null, extra = [], go;
+      if (Array.isArray(body.attend)) {
+        // resposta pessoa a pessoa: cada convidado vai ou não; acompanhantes pelo nome
+        const slots = Math.max(1, (guest.people || []).length);
+        if (body.attend.length > slots) throw httpError(400, 'Este convite tem ' + slots + (slots === 1 ? ' convidado.' : ' convidados.'));
+        attend = body.attend.map((a, i) => {
+          if (!a || typeof a.go !== 'boolean') throw httpError(400, 'Responda se cada pessoa vai ou não.');
+          const fixed = (guest.people || [])[i];
+          const nm = fixed || str(a.name, 120);
+          if (a.go && !nm) throw httpError(400, 'Escreva o nome de quem vai.');
+          return { name: nm, go: a.go };
+        });
+        if (attend.length < slots) throw httpError(400, 'Responda se cada pessoa vai ou não.');
+        const going = attend.filter((a) => a.go);
+        extra = going.length ? (Array.isArray(body.extra) ? body.extra : []).map((n) => str(n, 120)).filter(Boolean) : [];
+        const comp = Number(guest.companions) || 0;
+        if (extra.length > comp) throw httpError(400, 'Este convite permite no máximo ' + comp + (comp === 1 ? ' acompanhante.' : ' acompanhantes.'));
+        names = going.map((a) => a.name).concat(extra);
+        absent = attend.filter((a) => !a.go && a.name).map((a) => a.name);
+        go = names.length > 0;
+      } else {
+        if (typeof body.go !== 'boolean') throw httpError(400, 'Escolha se vocês vão ou não.');
+        go = body.go;
+        names = go ? (Array.isArray(body.names) ? body.names : []).map((n) => str(n, 120)).filter(Boolean) : [];
+        if (go && !names.length) throw httpError(400, 'Escreva o nome de quem vai.');
+      }
       if (names.length > max) throw httpError(400, 'Este convite permite no máximo ' + max + (max === 1 ? ' pessoa.' : ' pessoas.'));
       const rid = 'g-' + guestId;
       const prev = await hget(key, rid);
       const entry = {
-        id: rid, guestId, name: guest.name, names, go: body.go,
-        guests: body.go ? Math.max(0, names.length - 1) : 0,
-        diet: body.go ? str(body.diet, 200) : '',
+        id: rid, guestId, name: guest.name, names, absent, attend, extra, go,
+        guests: go ? Math.max(0, names.length - 1) : 0,
+        diet: go ? str(body.diet, 200) : '',
         msg: str(body.msg, 1000),
         createdAt: (prev && prev.createdAt) || now,
         updatedAt: now
