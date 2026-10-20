@@ -388,6 +388,7 @@ def t_dnd(pg, browser):
     pg.click('[aria-label="Tema Jardim"]'); pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(2000)
     wait_saved(pg)
     did = pg.url.split('#/Editor/')[1]
+    state['dnd'] = did
     order0 = ovl(pg)
     ok('Arrastar: prévia do editor mostra todos os blocos', order0 == ['c1', 'c2', 'c3', 'c4', 'c5'], order0)
     pg.wait_for_timeout(800)
@@ -456,6 +457,33 @@ def t_dnd(pg, browser):
     ok('Recarregar: tamanho da fonte salvo', pg.input_value('#blk-fs') == '60', pg.input_value('#blk-fs'))
 
 
+def t_loading(pg, browser):
+    go(pg, 'Editor/' + state['dnd'], 1500)
+    link = pg.inner_text('[role=status] span span').strip()
+    ok('Link do convidado leva as cores do tema', '?t=' in link and len(link.split('?t=')[1].split('.')) == 3, link)
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    held = []
+    hold = [True]
+    g.route('**/api/invites*', lambda r: held.append(r) if hold[0] else r.continue_())
+    g.goto(link)
+    g.wait_for_selector('.ci-spin', timeout=5000)
+    bg = '#' + link.split('?t=')[1].split('.')[0]
+    rgb = 'rgb(%d, %d, %d)' % tuple(int(bg[i:i + 2], 16) for i in (1, 3, 5))
+    loading_bg = g.evaluate("getComputedStyle(document.querySelector('.ci-spin').parentElement).backgroundColor")
+    ok('Carregamento: tela nas cores do tema', loading_bg == rgb, (loading_bg, rgb))
+    hold[0] = False
+    for r in held:
+        r.continue_()
+    g.wait_for_timeout(1500)
+    ok('Carregamento: guarda as cores no aparelho', g.evaluate("localStorage.getItem('ci:tema:%s')" % state['dnd']) == link.split('?t=')[1])
+    ctx.close()
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.route('**/assets/*.js', lambda r: r.abort())
+    g.goto(link.split('?')[0]); g.wait_for_timeout(400)
+    ok('Carregamento: link sem cores usa fundo neutro', g.evaluate("getComputedStyle(document.body).backgroundColor") == 'rgb(28, 27, 34)')
+    ctx.close()
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -483,7 +511,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

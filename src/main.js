@@ -32,12 +32,25 @@ function useViewport() {
   return vp;
 }
 
+function useFrameColor() {
+  const [c, setC] = useState(window.__ciFrame || null);
+  useEffect(() => {
+    const f = (e) => setC(e.detail);
+    window.addEventListener('ci:frame', f);
+    return () => window.removeEventListener('ci:frame', f);
+  }, []);
+  return c;
+}
+
 function PhoneFrame({ children }) {
   const vp = useViewport();
+  const color = useFrameColor();
   const mobile = vp.w < 640;
   const scale = mobile ? Math.min(vp.w / 390, vp.h / 844) : Math.min(1, (vp.h - 32) / 844);
+  // ao redor do celular: a cor do tema (no computador, um tom mais escuro dela)
+  const bg = color ? (mobile ? color : 'color-mix(in srgb, ' + color + ' 78%, #000)') : (mobile ? '#000' : '#1C1B22');
   return h('div', {
-    style: 'min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;background:' + (mobile ? '#000' : '#1C1B22')
+    style: 'min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;background:' + bg
   },
   h('div', {
     style: 'width:' + 390 * scale + 'px;height:' + 844 * scale + 'px;overflow:hidden;position:relative;' + (mobile ? '' : 'border-radius:' + 36 * scale + 'px;box-shadow:0 20px 60px rgba(0,0,0,.45);')
@@ -82,4 +95,6 @@ function App() {
   return h(Screen, { key: route.key + ':' + visit, route, onLogout: refreshMe });
 }
 
-render(h(App), document.getElementById('app'));
+const root = document.getElementById('app');
+root.textContent = ''; // remove a tela de carregamento desenhada antes do app chegar
+render(h(App), root);

@@ -12,6 +12,8 @@
 <style>
 body{margin:0}
 @keyframes ciFade{from{opacity:0}to{opacity:1}}
+@keyframes ciSpin{to{transform:rotate(360deg)}}
+.ci-spin{animation:ciSpin .9s linear infinite}
 @keyframes ciUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
 @keyframes ciZoom{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
 .a-surgir{animation:ciFade .9s ease both}
@@ -19,13 +21,16 @@ body{margin:0}
 .a-zoom{animation:ciZoom .7s cubic-bezier(.2,.7,.2,1) both}
 .pg-in{animation:ciFade .45s ease both}
 .gf{width:100%;box-sizing:border-box;min-height:46px;padding:11px 13px;border-radius:12px;font:inherit;font-size:15px}
-@media (prefers-reduced-motion: reduce){.a-surgir,.a-deslizar,.a-zoom,.pg-in{animation:none}}
+@media (prefers-reduced-motion: reduce){.a-surgir,.a-deslizar,.a-zoom,.pg-in{animation:none}.ci-spin{animation-duration:3s}}
 </style>
 </helmet>
 <div style="{{L.root}}">
 
   <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
-    <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 15px; opacity: 0.8">Abrindo convite…</div>
+    <div role="status" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: {{T.bg}}; color: {{T.fg}}">
+      <span aria-hidden="true" class="ci-spin" style="width: 42px; height: 42px; border-radius: 50%; border: 2px solid {{T.line}}; border-top-color: {{T.accent}}; box-sizing: border-box"></span>
+      <span style="font-size: 15px; font-weight: 500; letter-spacing: 0.02em; opacity: 0.85">Abrindo convite…</span>
+    </div>
   </sc-if>
 
   <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
@@ -241,7 +246,10 @@ class Component extends DCLogic {
   constructor(props) {
     super(props);
     const inv = props.invite || null;
-    this.state = { inv, error: '', phase: inv ? this.firstPhase(inv) : 'loading', page: null, now: Date.now(), forms: {}, musicPlaying: false };
+    const rp = (props.route && props.route.params) || {};
+    // cores do tema antes de o convite carregar: do link (?t=) ou do último acesso neste aparelho
+    const hint = inv ? null : (api.themeHint.parse(rp.t) || (rp.id ? api.themeHint.load(rp.id) : null));
+    this.state = { hint, inv, error: '', phase: inv ? this.firstPhase(inv) : 'loading', page: null, now: Date.now(), forms: {}, musicPlaying: false };
   }
 
   firstPhase(inv) {
@@ -253,8 +261,12 @@ class Component extends DCLogic {
     if (this.props.invite) { if (!this.props.edit) this.restoreRsvp(); return; }
     const id = this.props.route && this.props.route.params && this.props.route.params.id;
     if (!id) { this.setState({ phase: 'error', error: 'Link de convite incompleto.' }); return; }
+    api.setFrameColor((this.state.hint || api.NEUTRAL_THEME).bg);
     api.getInvite(id)
-      .then((inv) => { this.setState({ inv, phase: this.firstPhase(inv) }); this.restoreRsvp(inv); })
+      .then((inv) => {
+        if (inv.theme) { api.themeHint.save(id, inv.theme); api.setFrameColor(inv.theme.bg); }
+        this.setState({ inv, phase: this.firstPhase(inv) }); this.restoreRsvp(inv);
+      })
       .catch((e) => this.setState({ phase: 'error', error: e.status === 404 ? 'Este convite não existe ou ainda não foi publicado.' : e.message }));
   }
 
@@ -424,7 +436,7 @@ class Component extends DCLogic {
   renderVals() {
     const st = this.state;
     const inv = st.inv;
-    const T = api.themeTokens(inv ? inv.theme : null);
+    const T = api.themeTokens(inv ? inv.theme : (st.hint || api.NEUTRAL_THEME));
     const edit = !!this.props.edit;
     const allPages = inv ? (inv.pages || []) : [];
     const pages = edit ? allPages : allPages.filter((p) => p.blocks && (p.blocks.length || (p.bg && p.bg.url)));

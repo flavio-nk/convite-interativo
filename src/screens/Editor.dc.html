@@ -1301,7 +1301,7 @@ class Component extends DCLogic {
   }
 
   guestLink() {
-    if (this.inviteId) return api.guestLink(this.inviteId);
+    if (this.inviteId) return api.guestLink(this.inviteId, this.state.theme);
     try {
       const o = window.location.origin;
       if (o && o !== 'null' && /^https?:/.test(o)) return o + window.location.pathname + '#/Abertura';
@@ -2251,7 +2251,7 @@ class Component extends DCLogic {
       coverDate: st.eventDate ? api.fmt.dots(st.eventDate) : (st.date || ''),
       ready: st.loaded, notReady: !st.loaded,
       loadMessage: st.loadError || 'Carregando convite…',
-      guestHref: this.inviteId ? '#/c/' + this.inviteId : '#/Main',
+      guestHref: this.inviteId ? '#/c/' + this.inviteId + (api.themeHint.encode(st.theme) ? '?t=' + api.themeHint.encode(st.theme) : '') : '#/Main',
       previewInvite: ser,
       kicker: st.kicker,
       onKicker: (e) => this.setState({ kicker: e.target.value }),

@@ -214,9 +214,48 @@ export function fontScale(block, T) {
 }
 export const fontRange = (type) => FONT_RANGE[type] || [9, 48];
 
+// ---------- Cores do tema antes de o convite carregar ----------
+// O link do convidado leva as 3 cores principais (?t=fundo.texto.destaque) e o
+// aparelho guarda as cores do último acesso; assim a tela de carregamento já
+// aparece no tema do convite. Sem nenhuma das duas, usa um fundo neutro.
+const HEX6 = /^[0-9A-Fa-f]{6}$/;
+export const NEUTRAL_THEME = { bg: '#1C1B22', fg: '#F3F2F7', accent: '#B9A6FF' };
+export const themeHint = {
+  encode(th) {
+    if (!th) return '';
+    const parts = [th.bg, th.fg, th.accent].map((c) => String(c || '').replace('#', ''));
+    return parts.every((c) => HEX6.test(c)) ? parts.join('.').toUpperCase() : '';
+  },
+  parse(str) {
+    const parts = String(str || '').split('.');
+    if (parts.length !== 3 || !parts.every((c) => HEX6.test(c))) return null;
+    return { bg: '#' + parts[0], fg: '#' + parts[1], accent: '#' + parts[2] };
+  },
+  load(id) {
+    try { return themeHint.parse(localStorage.getItem('ci:tema:' + id)); } catch (e) { return null; }
+  },
+  save(id, th) {
+    const v = themeHint.encode(th);
+    try { if (v && id) localStorage.setItem('ci:tema:' + id, v); } catch (e) {}
+  }
+};
+// Cor ao redor do celular na tela do convidado (e barra do navegador).
+export function setFrameColor(bg) {
+  if (typeof window === 'undefined' || !bg) return;
+  window.__ciFrame = bg;
+  try {
+    const m = document.querySelector('meta[name="theme-color"]');
+    if (m) m.setAttribute('content', bg);
+    window.dispatchEvent(new CustomEvent('ci:frame', { detail: bg }));
+  } catch (e) {}
+}
+
 export const api = {
   fmt,
   themeTokens,
+  themeHint,
+  setFrameColor,
+  NEUTRAL_THEME,
   photo,
   fontBase,
   fontScale,
@@ -287,8 +326,9 @@ export const api = {
     if (window.location.hash === target) window.dispatchEvent(new HashChangeEvent('hashchange'));
     else window.location.hash = target;
   },
-  guestLink(id) {
-    return window.location.origin + window.location.pathname + '#/c/' + id;
+  guestLink(id, theme) {
+    const t = themeHint.encode(theme);
+    return window.location.origin + window.location.pathname + '#/c/' + id + (t ? '?t=' + t : '');
   },
   local: {
     get(k) { try { return JSON.parse(window.localStorage.getItem(k)); } catch (e) { return null; } },

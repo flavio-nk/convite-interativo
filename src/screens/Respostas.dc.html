@@ -171,7 +171,7 @@ class Component extends DCLogic {
       return { label, pressed: on ? 'true' : 'false', bg: on ? '#FFFFFF' : 'transparent', pick: () => this.setState({ tab: label }) };
     });
     const yes = all.filter((r) => r.go);
-    const link = inv ? api.guestLink(inv.id) : '';
+    const link = inv ? api.guestLink(inv.id, inv.theme) : '';
     const slug = inv ? String(inv.title).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : 'convite';
     const loading = st.invites === null || st.rows === null;
     return {
