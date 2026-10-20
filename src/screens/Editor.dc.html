@@ -314,6 +314,29 @@ button:disabled{opacity:.5;cursor:not-allowed}
             <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{eventHint}}</span>
           </div>
           <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #F5F4F8; font-size: 13px; color: #3D3A4A">O nome principal do convite é o bloco Título da página Capa. Edite-o na aba Bloco.</p>
+
+          <section aria-labelledby="pers-title" style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 16px">
+            <h2 id="pers-title" style="margin: 0; font-size: 16px; font-weight: 700">Convite personalizado por convidado</h2>
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer">
+              <input id="pers-on" type="checkbox" checked="{{pers.enabled}}" onChange="{{pers.toggle}}" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
+              <span><strong>Personalizar o convite para cada convidado</strong><br><span style="color: #5E5A6B; font-size: 13px">Cada convidado recebe um link próprio, com o nome dele. Na confirmação de presença, ele escreve o nome de quem vai, até o número de pessoas que você definir para aquele convite.</span></span>
+            </label>
+            <sc-if value="{{pers.enabled}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 12px">
+                <button onClick="{{pers.manage}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">{{pers.manageLabel}}</button>
+                <div>
+                  <label class="lbl" for="pers-greeting">Texto no topo da abertura</label>
+                  <input class="fld" id="pers-greeting" value="{{pers.greeting}}" onChange="{{pers.onGreeting}}" placeholder="Convite para {nome}">
+                  <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{nome} vira o nome do convite (ex.: “Convite para Família Silva”). Vale só para quem abre por um link individual.</span>
+                </div>
+                <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #EFECFB; color: #2F1F8F; font-size: 13px">Dica: em qualquer texto do convite, escreva <strong>{nome}</strong> para mostrar o nome do convidado. Ex.: “Querida {nome}, contamos com você!”</p>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer">
+                  <input id="pers-generic" type="checkbox" checked="{{pers.generic}}" onChange="{{pers.toggleGeneric}}" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
+                  <span>Aceitar respostas também pelo link geral<br><span style="color: #5E5A6B; font-size: 13px">Desmarcado, só quem tem um link individual consegue confirmar presença.</span></span>
+                </label>
+              </div>
+            </sc-if>
+          </section>
         </div>
       </sc-if>
 
@@ -569,6 +592,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
               <sc-if value="{{sel.isRsvp}}" hint-placeholder-val="{{ false }}">
                 <div style="display: flex; flex-direction: column; gap: 12px">
+                  <sc-if value="{{pers.enabled}}" hint-placeholder-val="{{ false }}">
+                    <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #EFECFB; color: #2F1F8F; font-size: 13px">Convite personalizado: quem abre por um link individual escreve o nome de cada pessoa que vai, até o limite daquele convite. O número de acompanhantes abaixo vale só para o link geral.</p>
+                  </sc-if>
                   <span class="lbl" style="margin: 0">Perguntas do formulário</span>
                   <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px">
                     <label style="display: flex; align-items: center; gap: 10px; min-height: 32px"><input type="checkbox" checked disabled style="width: 18px; height: 18px; accent-color: #5B3FD6"> Nome e resposta (obrigatórias)</label>
@@ -945,6 +971,8 @@ class Component extends DCLogic {
       eventDate: null,
       themeBase: null,
       opening: { headline: 'Você recebeu um convite', title: '', subtitle: '', hint: '', trigger: 'toque', initials: '' },
+      personal: { enabled: false, greeting: 'Convite para {nome}', generic: true },
+      guestCount: null,
       openingRun: 0,
       title: it ? 'Novo convite · ' + (it.name || it.baseName) : 'Casamento Ana & Pedro',
       kicker: it ? (it.kicker || 'Convite') : 'Casamento',
@@ -1152,7 +1180,7 @@ class Component extends DCLogic {
     this.scheduleMeasure();
     if (!this.inviteId) return;
     api.getInvite(this.inviteId)
-      .then((inv) => this.applyInvite(inv))
+      .then((inv) => { this.applyInvite(inv); return api.listGuests(this.inviteId).then((gs) => this.setState({ guestCount: gs.length })).catch(() => {}); })
       .catch((e) => this.setState({ loadError: e.status === 404 ? 'Convite não encontrado.' : e.message }));
     this.onBeforeUnload = () => this.flushSave();
     window.addEventListener('beforeunload', this.onBeforeUnload);
@@ -1170,6 +1198,7 @@ class Component extends DCLogic {
       loaded: true, title: inv.title || 'Novo convite', kicker: inv.kicker || 'Convite', eventDate: inv.eventDate || null,
       published: inv.status === 'publicado', theme, themeBase: base, music, pages,
       opening: Object.assign({ headline: 'Você recebeu um convite', title: '', subtitle: '', hint: '', trigger: 'toque', initials: '' }, inv.opening || {}),
+      personal: Object.assign({ enabled: false, greeting: 'Convite para {nome}', generic: true }, inv.personal || {}),
       page: pages[0].id, sel: pages[0].blocks.length ? pages[0].blocks[0].id : null, next: maxId + 1,
       saveState: inv.pages && inv.pages.length ? 'saved' : 'idle'
     });
@@ -1198,7 +1227,7 @@ class Component extends DCLogic {
     const cover = capa && capa.blocks.find((x) => x.type === 'titulo');
     return {
       id: this.inviteId, title: st.title, kicker: st.kicker, eventDate: st.eventDate, coverTitle: cover ? cover.text : st.title,
-      status: st.published ? 'publicado' : 'rascunho', theme: st.theme, themeBase: st.themeBase || this.baseTheme(), music, pages, opening: st.opening,
+      status: st.published ? 'publicado' : 'rascunho', theme: st.theme, themeBase: st.themeBase || this.baseTheme(), music, pages, opening: st.opening, personal: st.personal,
       createdAt: this.createdAt
     };
   }
@@ -1240,7 +1269,7 @@ class Component extends DCLogic {
       this.toastTimer = setTimeout(() => { if (!this.unmounted && this.state.toast === t) this.setState({ toast: '', toastAction: null }); }, this.state.toastAction ? 10000 : 6000);
     }
     if (!this.state.loaded || !prevState.loaded || !this.inviteId) return;
-    const keys = ['title', 'kicker', 'eventDate', 'theme', 'music', 'pages', 'published', 'opening'];
+    const keys = ['title', 'kicker', 'eventDate', 'theme', 'music', 'pages', 'published', 'opening', 'personal'];
     if (keys.some((k) => prevState[k] !== this.state[k])) this.scheduleSave();
   }
 
@@ -2151,9 +2180,26 @@ class Component extends DCLogic {
         reset: () => this.patchSel({ fontSize: null })
       };
     })();
+    const pers = (() => {
+      const pr = st.personal;
+      const setP = (patch) => this.setState({ personal: Object.assign({}, this.state.personal, patch) });
+      const n = st.guestCount;
+      return {
+        enabled: !!pr.enabled, generic: pr.generic !== false, greeting: pr.greeting == null ? 'Convite para {nome}' : pr.greeting,
+        toggle: () => setP({ enabled: !pr.enabled }),
+        toggleGeneric: () => setP({ generic: pr.generic === false }),
+        onGreeting: (e) => setP({ greeting: e.target.value }),
+        manageLabel: n ? 'Gerenciar convites individuais (' + n + ')' : 'Criar convites individuais',
+        manage: () => {
+          if (!this.inviteId) return;
+          Promise.resolve(this.dirty ? this.doSave() : null).then(() => api.navigate('Convidados/' + this.inviteId));
+        }
+      };
+    })();
     return {
       T,
       fs,
+      pers,
       cv: this.cvVals(T, cur),
       canvasInvite,
       pos,

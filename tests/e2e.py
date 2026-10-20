@@ -509,6 +509,106 @@ def t_open_anim(browser):
     ctx.close()
 
 
+SHOTS = os.environ.get('SHOTS', '')
+
+
+def shot(pg, name):
+    if SHOTS:
+        pg.screenshot(path=os.path.join(SHOTS, name + '.png'), full_page=True)
+
+
+def t_personal(pg, browser):
+    go(pg, 'Temas', 1300)
+    pg.click('[aria-label="Tema Jardim"]'); pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(2000)
+    wait_saved(pg)
+    pid = pg.url.split('#/Editor/')[1]
+    pg.fill('#inv-title', 'Casamento Personalizado')
+    pg.click('button[role=tab]:has-text("Evento")'); pg.wait_for_timeout(200)
+    ok('Personalização: desligada por padrão', not pg.is_checked('#pers-on'))
+    pg.check('#pers-on'); pg.wait_for_timeout(200)
+    pg.fill('#pers-greeting', 'Querida {nome}, você recebeu um convite'); pg.press('#pers-greeting', 'Tab')
+    shot(pg, 'p1_editor')
+    wait_saved(pg)
+    pg.click('button:has-text("Criar convites individuais")'); pg.wait_for_timeout(1500)
+    ok('Personalização: abre a tela de convites individuais', 'Convidados/' + pid in pg.url and 'Convites individuais' in text(pg))
+    pg.fill('#g-name', 'Família Silva'); pg.fill('#g-people', 'João Silva\nMaria Silva'); pg.fill('#g-comp', '1')
+    ok('Convidados: mostra o total de pessoas', 'Até 3 pessoas' in text(pg))
+    pg.click('button:has-text("Adicionar convite")'); pg.wait_for_timeout(800)
+    ok('Convidados: convite criado', count(pg, 'li[data-guest]') == 1 and 'Família Silva' in text(pg))
+    pg.click('button:has-text("Adicionar vários de uma vez")')
+    pg.fill('#g-bulk', 'Carlos Souza +1\nTios: Ana Lima, Beto Lima\n\n')
+    pg.click('button:has-text("Adicionar 2 convites")'); pg.wait_for_timeout(800)
+    ok('Convidados: vários de uma vez', count(pg, 'li[data-guest]') == 3 and 'Tios' in text(pg) and 'Carlos Souza' in text(pg))
+    shot(pg, 'p2_convidados')
+    # editar o limite do Carlos
+    pg.click('[aria-label="Editar Carlos Souza"]'); pg.wait_for_timeout(200)
+    pg.locator('li[data-guest] input[type=number]').first.fill('2'); pg.click('button:has-text("Salvar")'); pg.wait_for_timeout(600)
+    ok('Convidados: editar acompanhantes', 'Até 3 pessoas (2 acompanhantes extras)' in pg.inner_text('li[data-guest]:has-text("Carlos Souza")'))
+    silva = pg.get_attribute('li[data-guest]:has-text("Família Silva")', 'data-guest')
+    tios = pg.get_attribute('li[data-guest]:has-text("Tios")', 'data-guest')
+    # publicar
+    go(pg, 'Editor/' + pid, 1800)
+    pg.click('header button:has-text("Publicar")'); wait_saved(pg)
+    # convidado: Família Silva
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + pid + '/' + silva); g.wait_for_selector('[aria-label="Toque para abrir o convite"]', timeout=8000); g.wait_for_timeout(500)
+    ok('Convidado individual: saudação com o nome', 'QUERIDA FAMÍLIA SILVA' in g.inner_text('body').upper(), g.inner_text('body')[:120])
+    shot(g, 'p3_abertura')
+    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(2600)
+    g.click('nav button:has-text("Presença")'); g.wait_for_timeout(500)
+    ok('RSVP individual: sem campo de nome único', count(g, 'label:has-text("Nome completo")') == 0 and 'Convite para Família Silva' in text(g))
+    g.click('button:has-text("Sim, vamos")'); g.wait_for_timeout(300)
+    fields = g.locator('[data-testid="rsvp-names"] input')
+    ok('RSVP individual: um campo por pessoa (2 + 1 acompanhante)', fields.count() == 3, fields.count())
+    ok('RSVP individual: nomes dos convidados já preenchidos', fields.nth(0).input_value() == 'João Silva' and fields.nth(1).input_value() == 'Maria Silva' and fields.nth(2).input_value() == '')
+    fields.nth(2).fill('Pedro Silva')
+    shot(g, 'p4_rsvp')
+    g.click('button:has-text("Enviar resposta")'); g.wait_for_timeout(900)
+    ok('RSVP individual: confirmação lista os nomes', 'João Silva, Maria Silva e Pedro Silva' in text(g), text(g)[-200:])
+    shot(g, 'p5_done')
+    # em outro aparelho, a resposta continua (vem do servidor)
+    g2 = browser.new_context(viewport={'width': 390, 'height': 844}).new_page()
+    g2.goto(BASE + '#/c/' + pid + '/' + silva); g2.wait_for_selector('[aria-label="Toque para abrir o convite"]', timeout=8000)
+    g2.click('[aria-label="Toque para abrir o convite"]'); g2.wait_for_timeout(2600)
+    g2.click('nav button:has-text("Presença")'); g2.wait_for_timeout(400)
+    ok('RSVP individual: resposta aparece em outro aparelho', 'Presença confirmada' in text(g2))
+    g2.click('button:has-text("Alterar minha resposta")'); g2.wait_for_timeout(300)
+    f2 = g2.locator('[data-testid="rsvp-names"] input')
+    ok('RSVP individual: alterar mostra os nomes enviados', f2.count() == 3 and f2.nth(2).input_value() == 'Pedro Silva')
+    f2.nth(1).fill(''); g2.click('button:has-text("Enviar resposta")'); g2.wait_for_timeout(900)
+    ok('RSVP individual: alterar para 2 pessoas', 'Reservamos 2 lugares' in text(g2))
+    g2.context.close()
+    # link de outro convite individual sem nomes predefinidos para acompanhante
+    g.goto('about:blank'); g.goto(BASE + '#/c/' + pid + '/' + tios); g.wait_for_selector('[aria-label="Toque para abrir o convite"]', timeout=8000)
+    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(2600)
+    g.click('nav button:has-text("Presença")'); g.wait_for_timeout(400)
+    g.click('button:has-text("Sim, vamos")'); g.wait_for_timeout(200)
+    ok('RSVP individual: Tios tem 2 campos (sem acompanhantes)', g.locator('[data-testid="rsvp-names"] input').count() == 2)
+    ctx.close()
+    # link geral bloqueado quando a opção estiver desmarcada
+    go(pg, 'Editor/' + pid, 1800)
+    pg.click('button[role=tab]:has-text("Evento")'); pg.wait_for_timeout(200)
+    pg.uncheck('#pers-generic'); wait_saved(pg)
+    gg = browser.new_context(viewport={'width': 390, 'height': 844}).new_page()
+    gg.goto(BASE + '#/c/' + pid); gg.wait_for_selector('[aria-label="Toque para abrir o convite"]', timeout=8000)
+    gg.click('[aria-label="Toque para abrir o convite"]'); gg.wait_for_timeout(2600)
+    gg.click('nav button:has-text("Presença")'); gg.wait_for_timeout(400)
+    ok('Link geral: pede o link individual', 'use o link do convite individual' in text(gg))
+    gg.context.close()
+    # painel e respostas
+    go(pg, 'Convidados/' + pid, 1500)
+    row = pg.inner_text('li[data-guest]:has-text("Família Silva")')
+    ok('Convidados: situação e nomes confirmados', 'Vai' in row and 'João Silva, Pedro Silva' in row, row)
+    go(pg, 'Respostas/' + pid, 1500)
+    ok('Respostas: mostra quem vai no convite individual', 'Família Silva' in text(pg) and 'João Silva, Pedro Silva' in text(pg))
+    go(pg, 'Main', 1500)
+    ok('Painel: atalho para convidados', count(pg, 'article:has-text("Casamento Personalizado") a:has-text("Convidados")') == 1)
+    # excluir convite individual
+    go(pg, 'Convidados/' + pid, 1500)
+    pg.click('[aria-label="Excluir Carlos Souza"]'); pg.click('button:has-text("Confirmar exclusão")'); pg.wait_for_timeout(600)
+    ok('Convidados: excluir', count(pg, 'li[data-guest]') == 2)
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -536,7 +636,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

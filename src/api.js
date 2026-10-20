@@ -269,19 +269,24 @@ export const api = {
   logout: () => call('POST', '/api/auth?action=logout', {}),
 
   listInvites: () => call('GET', '/api/invites'),
-  getInvite: (id) => call('GET', '/api/invites?id=' + enc(id)),
+  getInvite: (id, guestCode) => call('GET', '/api/invites?id=' + enc(id) + (guestCode ? '&g=' + enc(guestCode) : '')),
   createInvite: (data) => call('POST', '/api/invites', data),
   saveInvite: (id, data, opts) => call('PUT', '/api/invites?id=' + enc(id), data, opts),
   deleteInvite: (id) => call('DELETE', '/api/invites?id=' + enc(id)),
   restoreInvite: async (deleted) => {
     if (!deleted || !deleted.invite) return null;
-    const inv = await call('PUT', '/api/invites?id=' + enc(deleted.invite.id), Object.assign({}, deleted.invite, { __rsvps: deleted.rsvps || {} }));
+    const inv = await call('PUT', '/api/invites?id=' + enc(deleted.invite.id), Object.assign({}, deleted.invite, { __rsvps: deleted.rsvps || {}, __guests: deleted.guests || {} }));
     return inv;
   },
 
   listRsvps: (id) => call('GET', '/api/rsvp?invite=' + enc(id)),
   sendRsvp: (id, data) => call('POST', '/api/rsvp?invite=' + enc(id), data),
   deleteRsvp: (id, rid) => call('DELETE', '/api/rsvp?invite=' + enc(id) + '&id=' + enc(rid)),
+
+  listGuests: (id) => call('GET', '/api/guests?invite=' + enc(id)),
+  createGuests: (id, items) => call('POST', '/api/guests?invite=' + enc(id), { items }),
+  saveGuest: (id, gid, data) => call('PUT', '/api/guests?invite=' + enc(id) + '&id=' + enc(gid), data),
+  deleteGuest: (id, gid) => call('DELETE', '/api/guests?invite=' + enc(id) + '&id=' + enc(gid)),
 
   listThemes: () => call('GET', '/api/themes'),
   getTheme: (id) => call('GET', '/api/themes?id=' + enc(id)),
@@ -326,9 +331,10 @@ export const api = {
     if (window.location.hash === target) window.dispatchEvent(new HashChangeEvent('hashchange'));
     else window.location.hash = target;
   },
-  guestLink(id, theme) {
+  // link do convidado; com o código de um convite individual, o link é só daquele convidado
+  guestLink(id, theme, guestCode) {
     const t = themeHint.encode(theme);
-    return window.location.origin + window.location.pathname + '#/c/' + id + (t ? '?t=' + t : '');
+    return window.location.origin + window.location.pathname + '#/c/' + id + (guestCode ? '/' + guestCode : '') + (t ? '?t=' + t : '');
   },
   local: {
     get(k) { try { return JSON.parse(window.localStorage.getItem(k)); } catch (e) { return null; } },
