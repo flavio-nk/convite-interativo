@@ -203,18 +203,21 @@ body{margin:0}
                                 </div>
                               </div>
                             </sc-for>
-                          </fieldset>
-                        </sc-if>
-                        <sc-if value="{{b.r.showExtra}}" hint-placeholder-val="{{ false }}">
-                          <fieldset data-testid="rsvp-extra" style="border: 0; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px">
-                            <legend style="font-size: calc(13px * var(--k, 1)); font-weight: 600; margin-bottom: 6px; padding: 0">{{b.r.extraTitle}}</legend>
-                            <sc-for list="{{b.r.extraFields}}" as="nf" hint-placeholder-count="1">
-                              <div>
-                                <label for="{{nf.id}}" style="display: block; font-size: calc(12px * var(--k, 1)); opacity: 0.85; margin-bottom: 4px">{{nf.label}}</label>
-                                <input class="gf" id="{{nf.id}}" autocomplete="off" value="{{nf.value}}" onInput="{{nf.onInput}}" placeholder="Nome do acompanhante" style="border: 1px solid {{T.line}}; background: {{T.surface}}; color: {{T.fg}}">
+                            <sc-for list="{{b.r.extraRows}}" as="er" hint-placeholder-count="1">
+                              <div data-extra="{{er.idx}}" style="display: flex; flex-direction: column; gap: 6px; padding: 10px 12px; border-radius: 12px; border: 1px dashed {{T.line}}; background: {{T.surface}}">
+                                <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+                                  <label for="{{er.id}}" style="font-size: calc(12px * var(--k, 1)); font-weight: 600; opacity: 0.85">{{er.label}}</label>
+                                  <button type="button" onClick="{{er.remove}}" aria-label="{{er.removeAria}}" style="min-height: 32px; padding: 0 10px; border-radius: 8px; border: 0; background: transparent; color: {{T.fg}}; font-size: calc(13px * var(--k, 1)); font-family: inherit; cursor: pointer; text-decoration: underline">Remover</button>
+                                </div>
+                                <input class="gf" id="{{er.id}}" autocomplete="off" value="{{er.value}}" onInput="{{er.onInput}}" placeholder="Nome do acompanhante" style="border: 1px solid {{T.line}}; background: {{T.bg}}; color: {{T.fg}}">
                               </div>
                             </sc-for>
-                            <span style="font-size: calc(12px * var(--k, 1)); opacity: 0.8">Deixe em branco se não for levar acompanhante.</span>
+                            <sc-if value="{{b.r.canAddExtra}}" hint-placeholder-val="{{ false }}">
+                              <button type="button" data-testid="add-extra" onClick="{{b.r.addExtra}}" style="min-height: 46px; border-radius: 12px; border: 1px dashed {{T.accent}}; background: transparent; color: {{T.fg}}; font-weight: 700; font-size: calc(14px * var(--k, 1)); font-family: inherit; cursor: pointer">+ Adicionar acompanhante</button>
+                            </sc-if>
+                            <sc-if value="{{b.r.hasExtraHint}}" hint-placeholder-val="{{ false }}">
+                              <span style="font-size: calc(12px * var(--k, 1)); opacity: 0.8">{{b.r.extraHint}}</span>
+                            </sc-if>
                           </fieldset>
                         </sc-if>
                         <sc-if value="{{b.r.showGuests}}" hint-placeholder-val="{{ false }}">
@@ -471,19 +474,18 @@ class Component extends DCLogic {
       const r = this.state.guestRsvp !== undefined ? this.state.guestRsvp : g.rsvp;
       const ppl = g.people || [];
       const comp = Number(g.companions) || 0;
-      const pad = (list, n) => { const o = (list || []).slice(0, n); while (o.length < n) o.push(''); return o; };
       let rows, extra;
       if (r && Array.isArray(r.attend)) {
         rows = (ppl.length ? ppl : ['']).map((p, i) => ({ name: p || ((r.attend[i] && r.attend[i].name) || ''), go: r.attend[i] ? r.attend[i].go : null }));
-        extra = pad(r.extra, comp);
+        extra = (r.extra || []).filter(Boolean).slice(0, comp);
       } else if (r) {
         // resposta no formato antigo (lista de nomes)
         const ns = r.names || [];
         rows = (ppl.length ? ppl : [ns[0] || '']).map((p) => ({ name: p, go: !!r.go && ns.indexOf(p) !== -1 }));
-        extra = pad(ns.filter((n) => ppl.indexOf(n) === -1 && n !== rows[0].name), comp);
+        extra = ns.filter((n) => ppl.indexOf(n) === -1 && n !== rows[0].name).slice(0, comp);
       } else {
         rows = (ppl.length ? ppl : ['']).map((p) => ({ name: p, go: null }));
-        extra = pad([], comp);
+        extra = [];
       }
       const base = { rows, extra, diet: (r && r.diet) || '', msg: (r && r.msg) || '', done: !!r, go: r ? !!r.go : null };
       return Object.assign({ sending: false, error: '' }, base, this.state.forms[bid] || {});
@@ -651,13 +653,22 @@ class Component extends DCLogic {
               onName: (e) => setRow({ name: e.target.value })
             };
           }) : [],
-          showExtra: !!g && (g.companions || 0) > 0 && (f.rows || []).some((rr) => rr.go === true),
-          extraTitle: g ? ((g.companions || 0) === 1 ? 'Acompanhante (opcional)' : 'Acompanhantes (opcional, até ' + g.companions + ')') : '',
-          extraFields: g ? (f.extra || []).map((v, i) => ({
-            id: 'rnm-' + x.id + '-' + i, value: v,
-            label: (f.extra || []).length > 1 ? 'Acompanhante ' + (i + 1) : 'Nome do acompanhante',
-            onInput: (e) => { const ex = this.form(x.id).extra.slice(); ex[i] = e.target.value; this.setForm(x.id, { extra: ex, error: '' }); }
+          // acompanhantes na mesma lista dos convidados: "+ Adicionar acompanhante" até o limite do convite
+          extraRows: g ? (f.extra || []).map((v, i) => ({
+            idx: String(i), id: 'rnm-' + x.id + '-' + i, value: v,
+            label: 'Acompanhante ' + (i + 1),
+            removeAria: 'Remover acompanhante ' + (i + 1),
+            onInput: (e) => { const ex = this.form(x.id).extra.slice(); ex[i] = e.target.value; this.setForm(x.id, { extra: ex, error: '' }); },
+            remove: () => { const ex = this.form(x.id).extra.slice(); ex.splice(i, 1); this.setForm(x.id, { extra: ex, error: '' }); }
           })) : [],
+          canAddExtra: !!g && (f.extra || []).length < (g.companions || 0),
+          addExtra: () => {
+            const ex = (this.form(x.id).extra || []).concat(['']);
+            this.setForm(x.id, { extra: ex, error: '' });
+            setTimeout(() => { try { const el = document.getElementById('rnm-' + x.id + '-' + (ex.length - 1)); if (el) el.focus(); } catch (err) {} }, 40);
+          },
+          hasExtraHint: !!g && (g.companions || 0) > 0,
+          extraHint: g ? ((g.companions || 0) === 1 ? 'Este convite permite 1 acompanhante.' : 'Este convite permite até ' + g.companions + ' acompanhantes.') : '',
           onDiet: (e) => this.setForm(x.id, { diet: e.target.value }),
           onMsg: (e) => this.setForm(x.id, { msg: e.target.value }),
           yes: () => this.setForm(x.id, { go: true, error: '' }),
@@ -673,10 +684,12 @@ class Component extends DCLogic {
               if (rows.some((rr) => rr.go !== true && rr.go !== false)) { this.setForm(x.id, { error: rows.length > 1 ? 'Responda “Vai” ou “Não vai” para cada pessoa.' : 'Responda se você vai ou não.' }); return; }
               if (rows.some((rr) => rr.go === true && !String(rr.name).trim())) { this.setForm(x.id, { error: 'Escreva o nome de quem vai.' }); return; }
               const anyGo = rows.some((rr) => rr.go === true);
+              const extras = (cf.extra || []).map((n) => String(n).trim()).filter(Boolean);
+              if (extras.length && !anyGo) { this.setForm(x.id, { error: 'Os acompanhantes precisam ir com pelo menos um convidado.' }); return; }
               const gp = {
                 guestId: g.id,
                 attend: rows.map((rr) => ({ name: String(rr.name).trim(), go: rr.go })),
-                extra: anyGo ? (cf.extra || []).map((n) => String(n).trim()).filter(Boolean) : [],
+                extra: extras,
                 diet: anyGo && x.askDiet !== false ? cf.diet : '', msg: x.askMsg !== false ? cf.msg : ''
               };
               if (preview) { this.setForm(x.id, { done: true, error: '' }); return; }

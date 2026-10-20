@@ -46,7 +46,8 @@ export default handler(async (req, res) => {
         });
         if (attend.length < slots) throw httpError(400, 'Responda se cada pessoa vai ou não.');
         const going = attend.filter((a) => a.go);
-        extra = going.length ? (Array.isArray(body.extra) ? body.extra : []).map((n) => str(n, 120)).filter(Boolean) : [];
+        extra = (Array.isArray(body.extra) ? body.extra : []).map((n) => str(n, 120)).filter(Boolean);
+        if (extra.length && !going.length) throw httpError(400, 'Os acompanhantes precisam ir com pelo menos um convidado.');
         const comp = Number(guest.companions) || 0;
         if (extra.length > comp) throw httpError(400, 'Este convite permite no máximo ' + comp + (comp === 1 ? ' acompanhante.' : ' acompanhantes.'));
         names = going.map((a) => a.name).concat(extra);
