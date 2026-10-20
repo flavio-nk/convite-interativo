@@ -190,7 +190,7 @@ def t_guest(browser):
 
 def t_rsvps(pg):
     go(pg, 'Respostas/' + state['id'], 1500)
-    ok('Respostas: 2 linhas', count(pg, 'tbody tr') == 2, count(pg, 'tbody tr'))
+    ok('Respostas: 2 linhas', count(pg, 'li[data-item]') == 2, count(pg, 'li[data-item]'))
     body = text(pg)
     ok('Respostas: resposta alterada aparece como Não vai', 'Carlos Convidado' in body and 'Não vai' in body)
     ok('Respostas: Dora confirmada', 'Dora Silva' in body)
@@ -198,6 +198,25 @@ def t_rsvps(pg):
         pg.click('button:has-text("Exportar planilha")')
     csv = open(d.value.path(), encoding='utf-8-sig').read()
     ok('Respostas: planilha com dados reais', 'Dora Silva' in csv and 'Carlos Convidado' in csv)
+    # o organizador registra uma resposta que chegou por telefone
+    pg.click('button:has-text("+ Registrar resposta")'); pg.wait_for_timeout(200)
+    pg.fill('#an-name', 'Eva Painel')
+    pg.click('[data-answer="new"] button.seg:has-text("Vai")')
+    pg.fill('#an-guests', '1'); pg.fill('#an-diet', 'sem lactose'); pg.fill('#an-msg', 'Respondeu por telefone')
+    pg.click('[data-answer="new"] button:has-text("Salvar resposta")'); pg.wait_for_timeout(700)
+    row = pg.inner_text('li[data-item]:has-text("Eva Painel")') if count(pg, 'li[data-item]:has-text("Eva Painel")') else ''
+    ok('Painel: registrar resposta manual', 'Vai' in row and '2 pessoas' in row and 'sem lactose' in row and 'registrada por você' in row, row)
+    pg.reload(); pg.wait_for_timeout(1500)
+    ok('Painel: resposta manual salva', count(pg, 'li[data-item]:has-text("Eva Painel")') == 1)
+    pg.click('[aria-label="Editar resposta de Eva Painel"]'); pg.wait_for_timeout(200)
+    pg.click('form[data-answer] button.seg:has-text("Não vai")')
+    pg.click('form[data-answer] button:has-text("Salvar resposta")'); pg.wait_for_timeout(700)
+    ok('Painel: editar resposta (passa a Não vai)', 'Não vai' in pg.inner_text('li[data-item]:has-text("Eva Painel")'))
+    pg.click('[aria-label="Editar resposta de Dora Silva"]'); pg.wait_for_timeout(200)
+    ok('Painel: editar resposta do convidado traz os dados', pg.input_value('#an-name-e') == 'Dora Silva')
+    pg.click('form[data-answer] button:has-text("Cancelar")')
+    pg.click('[aria-label="Excluir Eva Painel"]'); pg.click('button:has-text("Excluir resposta")'); pg.wait_for_timeout(600)
+    ok('Painel: excluir resposta', count(pg, 'li[data-item]:has-text("Eva Painel")') == 0 and count(pg, 'li[data-item]') == 2)
 
 
 def t_dashboard(pg):
@@ -530,7 +549,7 @@ def t_personal(pg, browser):
     shot(pg, 'p1_editor')
     wait_saved(pg)
     pg.click('button:has-text("Criar convites individuais")'); pg.wait_for_timeout(1500)
-    ok('Personalização: abre a tela de convites individuais', 'Convidados/' + pid in pg.url and 'Convites individuais' in text(pg))
+    ok('Personalização: abre a tela de convidados e respostas', 'Respostas/' + pid in pg.url and 'Novo convite individual' in text(pg))
     pg.fill('#g-name', 'Família Silva'); pg.fill('#g-people', 'João Silva\nMaria Silva'); pg.fill('#g-comp', '1')
     ok('Convidados: mostra o total de pessoas', 'Até 3 pessoas' in text(pg))
     pg.click('button:has-text("Adicionar convite")'); pg.wait_for_timeout(800)
@@ -622,17 +641,38 @@ def t_personal(pg, browser):
     gg.context.close()
     # painel e respostas
     go(pg, 'Convidados/' + pid, 1500)
+    ok('Endereço antigo da tela de convidados abre a tela unificada', 'Convidados e respostas' in text(pg))
     row = pg.inner_text('li[data-guest]:has-text("Família Silva")')
     ok('Convidados: situação e nomes confirmados', 'Vai' in row and 'Vão (2): João Silva, Maria Silva' in row, row)
     row2 = pg.inner_text('li[data-guest]:has-text("Tios")')
     ok('Convidados: mostra quem não vai', 'Vão (1): Ana Lima' in row2 and 'Não vão: Beto Lima' in row2, row2)
+    # o organizador registra a resposta de um convite individual pendente
     go(pg, 'Respostas/' + pid, 1500)
-    ok('Respostas: mostra quem vai no convite individual', 'Família Silva' in text(pg) and 'Vão: João Silva, Maria Silva' in text(pg) and 'Não vão: Beto Lima' in text(pg))
-    go(pg, 'Main', 1500)
-    ok('Painel: atalho para convidados', count(pg, 'article:has-text("Casamento Personalizado") a:has-text("Convidados")') == 1)
+    pg.click('[aria-label="Registrar resposta de Carlos Souza"]'); pg.wait_for_timeout(200)
+    fa = 'form[data-answer]'
+    ok('Painel: mesma lista de pessoas do convite', count(pg, fa + ' [data-person]') == 1 and count(pg, fa + ' [data-testid="add-extra"]') == 1)
+    pg.click(fa + ' button:has-text("Salvar resposta")'); pg.wait_for_timeout(300)
+    ok('Painel: exige Vai/Não vai por pessoa', 'para cada pessoa' in pg.inner_text(fa))
+    pg.click(fa + ' [data-person] button.seg:has-text("Vai")')
+    pg.click(fa + ' [data-testid="add-extra"]'); pg.locator(fa + ' [data-extra] input').nth(0).fill('Lia Souza')
+    pg.click(fa + ' [data-testid="add-extra"]'); pg.locator(fa + ' [data-extra] input').nth(1).fill('Rui Souza')
+    ok('Painel: limite de acompanhantes do convite', count(pg, fa + ' [data-testid="add-extra"]') == 0)
+    pg.fill(fa + ' input[placeholder="Ex.: vegetariano"]', 'sem glúten')
+    pg.click(fa + ' button:has-text("Salvar resposta")'); pg.wait_for_timeout(700)
+    rowc = pg.inner_text('li[data-guest]:has-text("Carlos Souza")')
+    ok('Painel: resposta individual registrada', 'Vão (3): Carlos Souza, Lia Souza, Rui Souza' in rowc and 'sem glúten' in rowc and 'registrada por você' in rowc, rowc)
+    cg = pg.get_attribute('li[data-guest]:has-text("Carlos Souza")', 'data-guest')
+    gc = browser.new_context(viewport={'width': 390, 'height': 844}).new_page()
+    gc.goto(BASE + '#/c/' + pid + '/' + cg); gc.wait_for_selector('[aria-label="Toque para abrir o convite"]', timeout=8000)
+    gc.click('[aria-label="Toque para abrir o convite"]'); gc.wait_for_timeout(2600)
+    gc.click('nav button:has-text("Presença")'); gc.wait_for_timeout(400)
+    ok('Convidado vê a resposta registrada pelo organizador', 'Carlos Souza, Lia Souza e Rui Souza' in text(gc))
+    gc.context.close()
+    pg.click('[aria-label="Editar resposta de Carlos Souza"]'); pg.wait_for_timeout(200)
+    pg.click('form[data-answer] button:has-text("Apagar resposta")'); pg.wait_for_timeout(600)
+    ok('Painel: apagar resposta volta a pendente', 'Pendente' in pg.inner_text('li[data-guest]:has-text("Carlos Souza")'))
     # excluir convite individual
-    go(pg, 'Convidados/' + pid, 1500)
-    pg.click('[aria-label="Excluir Carlos Souza"]'); pg.click('button:has-text("Confirmar exclusão")'); pg.wait_for_timeout(600)
+    pg.click('[aria-label="Excluir Carlos Souza"]'); pg.click('button:has-text("Excluir convite e resposta")'); pg.wait_for_timeout(600)
     ok('Convidados: excluir', count(pg, 'li[data-guest]') == 2)
 
 

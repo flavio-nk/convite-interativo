@@ -25,6 +25,8 @@ export default handler(async (req, res) => {
     const body = await readBody(req);
     const now = new Date().toISOString();
     const personal = inv.personal && inv.personal.enabled;
+    // respostas registradas pelo organizador no painel (só com login)
+    const via = admin && body.via === 'painel' ? 'painel' : 'convite';
 
     // Resposta por um convite individual: nomes de quem vai, até o limite daquele convite.
     const guestId = str(body.guestId, 40);
@@ -63,7 +65,7 @@ export default handler(async (req, res) => {
       const rid = 'g-' + guestId;
       const prev = await hget(key, rid);
       const entry = {
-        id: rid, guestId, name: guest.name, names, absent, attend, extra, go,
+        id: rid, guestId, name: guest.name, names, absent, attend, extra, go, via,
         guests: go ? Math.max(0, names.length - 1) : 0,
         diet: go ? str(body.diet, 200) : '',
         msg: str(body.msg, 1000),
@@ -91,6 +93,7 @@ export default handler(async (req, res) => {
       guests,
       diet: body.go ? str(body.diet, 200) : '',
       msg: str(body.msg, 1000),
+      via,
       createdAt: (prev && prev.createdAt) || now,
       updatedAt: now
     };

@@ -5,7 +5,7 @@ import { api } from './api.js';
 
 const h = React.createElement;
 
-const ADMIN = new Set(['Main', 'Temas', 'CriarTema', 'Editor', 'Respostas', 'Convidados']);
+const ADMIN = new Set(['Main', 'Temas', 'CriarTema', 'Editor', 'Respostas']);
 
 // #/Editor/abc?x=1  →  { name: 'Editor', params: { id: 'abc', x: '1' } }
 // #/c/abc           →  convite do convidado
@@ -18,6 +18,7 @@ function parseRoute() {
   new URLSearchParams(queryPart || '').forEach((v, k) => { params[k] = v; });
   let name = parts[0] || 'Main';
   if (name === 'c') { name = 'Convite'; }
+  if (name === 'Convidados') name = 'Respostas'; // a tela de convites individuais foi unida à de respostas
   if (parts[1]) params.id = decodeURIComponent(parts[1]);
   if (name === 'Convite' && parts[2]) params.g = decodeURIComponent(parts[2]);
   if (name !== 'Convite' && !ADMIN.has(name)) name = 'Main';

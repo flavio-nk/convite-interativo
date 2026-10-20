@@ -80,10 +80,6 @@ button{font-family:inherit}
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>Editar</a>
             <a class="act" href="{{inv.rsvpHref}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"></path><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"></path></svg>Respostas</a>
-            <sc-if value="{{inv.personal}}" hint-placeholder-val="{{ false }}">
-              <a class="act" href="{{inv.guestsHref}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8ZM22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"></path></svg>Convidados</a>
-            </sc-if>
             <button class="act" onClick="{{inv.askDelete}}" aria-label="Excluir {{inv.title}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; margin-left: auto; border-radius: 8px; border: 0; background: transparent; color: #B42318; font-size: 14px; font-weight: 600; cursor: pointer">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>Excluir</button>
           </div>
@@ -182,8 +178,6 @@ class Component extends DCLogic {
           viewHref: '#/c/' + i.id,
           editHref: '#/Editor/' + i.id,
           rsvpHref: '#/Respostas/' + i.id,
-          personal: !!i.personal,
-          guestsHref: '#/Convidados/' + i.id,
           askDelete: () => this.setState({ pending: i.id })
         };
       });

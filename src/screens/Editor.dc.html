@@ -2192,7 +2192,7 @@ class Component extends DCLogic {
         manageLabel: n ? 'Gerenciar convites individuais (' + n + ')' : 'Criar convites individuais',
         manage: () => {
           if (!this.inviteId) return;
-          Promise.resolve(this.dirty ? this.doSave() : null).then(() => api.navigate('Convidados/' + this.inviteId));
+          Promise.resolve(this.dirty ? this.doSave() : null).then(() => api.navigate('Respostas/' + this.inviteId));
         }
       };
     })();
