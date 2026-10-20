@@ -495,6 +495,20 @@ def t_tap_margin(browser):
     ctx.close()
 
 
+def t_open_anim(browser):
+    # a animação de abertura precisa passar por posições intermediárias (não pular para o fim)
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + state['dnd']); g.wait_for_selector('[aria-label="Toque para abrir o convite"]', timeout=8000); g.wait_for_timeout(500)
+    g.mouse.click(195, 420)
+    ys = g.evaluate("""async () => { const card = Array.from(document.querySelectorAll('[data-dc="Abertura"] span')).find(s => (s.getAttribute('style') || '').includes('height: 186px'));
+      if (!card) return []; const out = []; const t0 = performance.now();
+      await new Promise((res) => { const f = () => { const m = getComputedStyle(card).transform; out.push(m === 'none' ? 0 : parseFloat(m.split(',')[5])); if (performance.now() - t0 < 1500) requestAnimationFrame(f); else res(); }; requestAnimationFrame(f); });
+      return out; }""")
+    mid = [y for y in ys if -165 < y < -5]
+    ok('Abertura (link do convidado): a carta anima até abrir', len(ys) > 10 and ys[0] > -5 and len(mid) >= 3, (ys[:3], len(mid)))
+    ctx.close()
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -522,7 +536,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 
