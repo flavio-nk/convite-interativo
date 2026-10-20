@@ -27,14 +27,14 @@ body{margin:0}
 <div style="{{L.root}}">
 
   <sc-if value="{{isLoading}}" hint-placeholder-val="{{ false }}">
-    <div role="status" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: {{T.bg}}; color: {{T.fg}}">
+    <div key="carregando" role="status" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: {{T.bg}}; color: {{T.fg}}">
       <span aria-hidden="true" class="ci-spin" style="width: 42px; height: 42px; border-radius: 50%; border: 2px solid {{T.line}}; border-top-color: {{T.accent}}; box-sizing: border-box"></span>
       <span style="font-size: 15px; font-weight: 500; letter-spacing: 0.02em; opacity: 0.85">Abrindo convite…</span>
     </div>
   </sc-if>
 
   <sc-if value="{{isError}}" hint-placeholder-val="{{ false }}">
-    <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 32px; text-align: center; background: #1C1B22; color: #F3F2F7">
+    <div key="erro" style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 32px; text-align: center; background: #1C1B22; color: #F3F2F7">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7l9 6 9-6M3 7h18v12H3z"></path></svg>
       <p style="margin: 0; font-size: 17px; font-weight: 700">Convite indisponível</p>
       <p style="margin: 0; font-size: 14px; opacity: 0.85">{{error}}</p>
@@ -43,7 +43,7 @@ body{margin:0}
 
 
   <sc-if value="{{isPages}}" hint-placeholder-val="{{ false }}">
-    <div inert="{{L.inert}}" style="{{L.pages}}">
+    <div key="paginas" inert="{{L.inert}}" style="{{L.pages}}">
       <sc-if value="{{pageBg.has}}" hint-placeholder-val="{{ false }}">
         <div key="{{pageBg.key}}" class="pg-in" aria-hidden="true" data-testid="page-bg" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none">
           <img src="{{pageBg.url}}" alt="" style="{{pageBg.imgStyle}}">
@@ -235,7 +235,7 @@ body{margin:0}
   </sc-if>
 
   <sc-if value="{{isClosed}}" hint-placeholder-val="{{ true }}">
-    <div style="position: absolute; inset: 0; z-index: 5">
+    <div key="abertura" style="position: absolute; inset: 0; z-index: 5">
       <dc-import name="Abertura" reveal="{{ true }}" headline="{{opening.headline}}" hint="{{opening.hint}}" trigger="{{opening.trigger}}" initials="{{opening.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{opening.title}}" data="{{opening.subtitle}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
     </div>
   </sc-if>

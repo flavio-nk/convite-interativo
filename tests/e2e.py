@@ -484,6 +484,17 @@ def t_loading(pg, browser):
     ctx.close()
 
 
+def t_tap_margin(browser):
+    # celular com barras do navegador: sobram faixas ao lado do convite; tocar nelas também abre
+    ctx = browser.new_context(viewport={'width': 390, 'height': 664}, has_touch=True, is_mobile=True); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + state['dnd']); g.wait_for_selector('[aria-label="Toque para abrir o convite"]', timeout=8000); g.wait_for_timeout(300)
+    box = g.locator('[data-dc="Abertura"]').first.bounding_box()
+    ok('Abertura: há faixa ao lado do convite neste aparelho', box['x'] > 10, box)
+    g.touchscreen.tap(4, 330); g.wait_for_timeout(500)
+    ok('Abertura (toque): tocar na faixa ao lado abre o convite', count(g, 'main') == 1)
+    ctx.close()
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -511,7 +522,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

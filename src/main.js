@@ -49,8 +49,16 @@ function PhoneFrame({ children }) {
   const scale = mobile ? Math.min(vp.w / 390, vp.h / 844) : Math.min(1, (vp.h - 32) / 844);
   // ao redor do celular: a cor do tema (no computador, um tom mais escuro dela)
   const bg = color ? (mobile ? color : 'color-mix(in srgb, ' + color + ' 78%, #000)') : (mobile ? '#000' : '#1C1B22');
+  // Toques nas faixas ao redor do convite (quando a tela do aparelho não tem a mesma
+  // proporção do convite) valem como toque no convite: a abertura "toque" recebe o aviso.
+  const onOutside = (e) => {
+    const frame = e.currentTarget.firstChild;
+    if (frame && frame.contains(e.target)) return;
+    window.dispatchEvent(new CustomEvent('ci:tap-outside'));
+  };
   return h('div', {
-    style: 'min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;background:' + bg
+    onClick: onOutside,
+    style: 'min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;cursor:pointer;-webkit-tap-highlight-color:transparent;background:' + bg
   },
   h('div', {
     style: 'width:' + 390 * scale + 'px;height:' + 844 * scale + 'px;overflow:hidden;position:relative;' + (mobile ? '' : 'border-radius:' + 36 * scale + 'px;box-shadow:0 20px 60px rgba(0,0,0,.45);')

@@ -181,17 +181,23 @@ class Component extends DCLogic {
     super(props);
     this.state = { phase: 'closed', musicPlaying: false, musicError: false };
   }
+  componentDidMount() {
+    this.onTapOutside = () => { if (typeof this.tapOutside === 'function') this.tapOutside(); };
+    window.addEventListener('ci:tap-outside', this.onTapOutside);
+  }
   componentDidUpdate(prev) {
     const musicChanged = JSON.stringify(prev.music || null) !== JSON.stringify(this.props.music || null);
     if (prev.anim !== this.props.anim || prev.paper !== this.props.paper || musicChanged) {
       clearTimeout(this.t);
       this.musicStop();
+      this.opened = false;
       if (this.state.phase !== 'closed' || this.state.musicPlaying || this.state.musicError) {
         this.setState({ phase: 'closed', musicPlaying: false, musicError: false });
       }
     }
   }
   componentWillUnmount() {
+    window.removeEventListener('ci:tap-outside', this.onTapOutside);
     clearTimeout(this.t);
     this.musicStop();
   }
@@ -301,7 +307,9 @@ class Component extends DCLogic {
     const headline = p.headline !== undefined && p.headline !== null ? String(p.headline) : (anim === 'envelope' ? 'Você recebeu um convite' : '');
     const hintText = (p.hint && String(p.hint).trim()) || (trigger === 'botao' ? 'Abrir convite' : (trigger === 'deslizar' ? 'Deslize para cima para abrir' : (anim === 'envelope' ? 'Toque para abrir a carta' : 'Toque para abrir')));
     const doOpen = () => {
-      if (this.state.phase !== 'closed') return;
+      // um toque no botão também chega ao fundo da tela: abre uma vez só
+      if (this.opened || this.state.phase !== 'closed') return;
+      this.opened = true;
       if (typeof this.props.onOpen === 'function') this.props.onOpen();
       const playing = this.musicStart();
       this.setState({ phase: 'opening', musicPlaying: playing, musicError: false, hasMusic: playing });
@@ -311,6 +319,7 @@ class Component extends DCLogic {
         if (typeof this.props.onOpened === 'function') this.props.onOpened();
       }, durations[anim] || 0);
     };
+    this.tapOutside = anim !== 'nenhuma' && trigger === 'toque' ? doOpen : null;
     const words = titulo.split(' ').filter((w) => w && w !== '&' && w !== 'e');
     const autoInitials = titulo.indexOf('&') !== -1 && words.length >= 2
       ? words[0][0] + '&' + words[words.length - 1][0]
@@ -375,6 +384,7 @@ class Component extends DCLogic {
       contentScale: anim === 'neblina' ? T('scale(1.06)', 'scale(1)') : 'none',
       open: () => doOpen(),
       replay: () => {
+        this.opened = false;
         clearTimeout(this.t);
         this.musicStop();
         this.setState({ phase: 'closed', musicPlaying: false, musicError: false, hasMusic: false });
