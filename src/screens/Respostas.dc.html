@@ -25,6 +25,18 @@ button,input,select,textarea{font-family:inherit}
 .danger{color:#B42318;border-color:#F1C4BE}
 button:disabled{opacity:.5;cursor:not-allowed}
 .seg{min-height:40px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer}
+.lrow{display:grid;grid-template-columns:minmax(130px,1fr) 150px 104px minmax(150px,1.2fr) minmax(120px,1fr) 316px;gap:6px 14px;align-items:center}
+.lhead{padding:8px 20px;background:#FAF9FC;border-bottom:1px solid #EEECF3;color:#5E5A6B;font-size:12px;font-weight:600}
+.mlbl{display:none;font-size:11px;font-weight:600;color:#5E5A6B}
+.ib{width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:#3D3A4A;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
+.ib:hover{background:#F1EFF6}
+.ib:focus-visible,.tagb:focus-visible{outline:2px solid #5B3FD6;outline-offset:1px}
+.sbtn{min-height:34px;padding:0 12px;border-radius:8px;border:1px solid #D6D3E0;background:#FFFFFF;color:#17151F;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.sbtn:hover{background:#F5F4F8}
+.chip{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;max-width:100%;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;line-height:1.5;box-sizing:border-box}
+.chip>.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+@media (max-width:900px){.lhead{display:none}.lrow{grid-template-columns:1fr 1fr;align-items:start}.lrow>.c-wide{grid-column:1/-1}.lrow>.c-act{justify-content:flex-start!important;margin-left:-6px}.mlbl{display:block}}
 </style>
 </helmet>
 <div style="min-height: 100vh; background: #F5F4F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
@@ -114,40 +126,69 @@ button:disabled{opacity:.5;cursor:not-allowed}
         </div>
       </div>
 
+      <div class="lrow lhead" aria-hidden="true">
+        <span>Convite</span><span>Cadastrados</span><span>Resposta</span><span>Pessoas</span><span>Observações</span><span style="text-align: right">Ações</span>
+      </div>
       <ul style="list-style: none; margin: 0; padding: 0">
         <sc-for list="{{rows}}" as="g" hint-placeholder-count="4">
-          <li data-item="{{g.key}}" data-guest="{{g.guestId}}" style="padding: 16px 20px; border-bottom: 1px solid #EEECF3">
+          <li data-item="{{g.key}}" data-guest="{{g.guestId}}" style="position: relative; padding: {{g.pad}}; border-bottom: 1px solid #EEECF3">
             <sc-if value="{{g.viewing}}" hint-placeholder-val="{{ true }}">
-              <div style="display: flex; flex-wrap: wrap; align-items: flex-start; gap: 10px 20px">
-                <div style="flex: 1 1 300px; min-width: 0; display: flex; flex-direction: column; gap: 3px">
-                  <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-                    <strong style="font-size: 16px">{{g.name}}</strong>
-                    <span style="padding: 2px 10px; border-radius: 999px; background: {{g.badgeBg}}; color: {{g.badgeFg}}; font-size: 12px; font-weight: 700">{{g.status}}</span>
-                    <sc-if value="{{g.showKind}}" hint-placeholder-val="{{ true }}">
-                      <span style="padding: 2px 8px; border-radius: 999px; background: #F1EFF6; color: #5E5A6B; font-size: 11px; font-weight: 600">{{g.kindLabel}}</span>
-                    </sc-if>
-                    <sc-if value="{{g.byPanel}}" hint-placeholder-val="{{ false }}">
-                      <span style="padding: 2px 8px; border-radius: 999px; background: #FFF4E5; color: #8A4B00; font-size: 11px; font-weight: 600">registrada por você</span>
+              <div class="lrow" style="font-size: 13px">
+                <div class="c-wide" style="min-width: 0">
+                  <strong style="display: block; font-size: 15px; font-weight: 600; overflow-wrap: anywhere">{{g.name}}</strong>
+                </div>
+                <div>
+                  <span class="mlbl">Cadastrados</span>
+                  <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{g.cadTotal}}</span>
+                  <span style="display: block; font-size: 12px; color: #5E5A6B; line-height: 1.35">{{g.cadSplit}}</span>
+                </div>
+                <div>
+                  <span class="mlbl">Resposta</span>
+                  <span title="{{g.statusTitle}}" style="display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; background: {{g.badgeBg}}; color: {{g.badgeFg}}; font-size: 12px; font-weight: 700; white-space: nowrap">{{g.status}}<sc-if value="{{g.hasFrac}}" hint-placeholder-val="{{ false }}"><span style="font-weight: 600; opacity: .85">{{g.frac}}</span></sc-if></span>
+                  <sc-if value="{{g.byPanel}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: block; margin-top: 3px; font-size: 11px; color: #8A4B00; font-weight: 600">registrada por você</span>
+                  </sc-if>
+                </div>
+                <div style="min-width: 0">
+                  <span class="mlbl">Pessoas</span>
+                  <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
+                    <sc-for list="{{g.people}}" as="p" hint-placeholder-count="2">
+                      <span class="chip" title="{{p.title}}" style="border: 1px solid {{p.ring}}; background: {{p.bg}}; color: {{p.fg}}"><span aria-hidden="true" style="font-weight: 700">{{p.mark}}</span><span class="nm" style="text-decoration: {{p.deco}}">{{p.name}}</span><span class="sr">{{p.sr}}</span></span>
+                    </sc-for>
+                    <sc-if value="{{g.hasMore}}" hint-placeholder-val="{{ false }}">
+                      <span style="font-size: 12px; color: #5E5A6B; padding-left: 4px">{{g.more}}</span>
                     </sc-if>
                   </div>
-                  <sc-for list="{{g.lines}}" as="ln" hint-placeholder-count="2">
-                    <span style="font-size: 13px; color: {{ln.color}}">{{ln.text}}</span>
-                  </sc-for>
                 </div>
-                <div style="display: flex; flex-wrap: wrap; gap: 6px">
-                  <button class="btn" onClick="{{g.answer}}" aria-label="{{g.answerAria}}">{{g.answerLabel}}</button>
-                  <sc-if value="{{g.isGuest}}" hint-placeholder-val="{{ true }}">
-                    <button class="btn" onClick="{{g.copy}}">Copiar link</button>
-                    <button class="btn" onClick="{{g.whatsapp}}">WhatsApp</button>
-                    <a class="btn" href="{{g.href}}" target="_blank" rel="noopener">Abrir</a>
-                    <button class="btn" onClick="{{g.edit}}" aria-label="{{g.editAria}}">Editar convite</button>
+                <div style="min-width: 0">
+                  <span class="mlbl">Observações</span>
+                  <div style="display: flex; flex-wrap: wrap; gap: 4px">
+                    <sc-if value="{{g.hasDiet}}" hint-placeholder-val="{{ false }}">
+                      <span title="Restrição alimentar: {{g.diet}}" style="display: inline-flex; align-items: center; gap: 4px; max-width: 100%; box-sizing: border-box; padding: 2px 8px; border-radius: 6px; background: #FFF4E5; color: #8A4B00; font-size: 12px; font-weight: 600"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M7 3v8a2 2 0 0 0 2 2v8"></path><path d="M11 3v8a2 2 0 0 1-2 2"></path><path d="M17 21V3c-2 1-3 4-3 8h3"></path></svg><span class="sr">Restrição alimentar: </span><span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{g.diet}}</span></span>
+                    </sc-if>
+                    <sc-if value="{{g.hasMsg}}" hint-placeholder-val="{{ false }}">
+                      <button type="button" class="tagb" onClick="{{g.toggleMsg}}" aria-expanded="{{g.msgExpanded}}" title="{{g.msgQuoted}}" style="display: inline-flex; align-items: center; gap: 4px; min-height: 24px; padding: 0 8px; border: 0; border-radius: 6px; background: #EEEAFB; color: #43299F; font-size: 12px; font-weight: 600; cursor: pointer"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"></path></svg>Mensagem</button>
+                    </sc-if>
+                    <sc-if value="{{g.noNotes}}" hint-placeholder-val="{{ true }}"><span style="color: #B9B5C6">—</span></sc-if>
+                  </div>
+                  <sc-if value="{{g.msgOpen}}" hint-placeholder-val="{{ false }}">
+                    <p data-msg="{{g.key}}" style="margin: 6px 0 0; padding: 8px 10px; border-radius: 8px; background: #F6F4FD; color: #17151F; font-size: 13px; font-style: italic; overflow-wrap: anywhere">{{g.msgQuoted}}</p>
                   </sc-if>
+                </div>
+                <div class="c-wide c-act" style="display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 0">
                   <sc-if value="{{g.notConfirming}}" hint-placeholder-val="{{ true }}">
-                    <button class="btn danger" onClick="{{g.askDelete}}" aria-label="{{g.deleteAria}}">Excluir</button>
+                    <button class="sbtn" onClick="{{g.answer}}" aria-label="{{g.answerAria}}" style="margin-right: 4px">{{g.answerLabel}}</button>
+                    <sc-if value="{{g.isGuest}}" hint-placeholder-val="{{ true }}">
+                      <button class="ib" onClick="{{g.copy}}" aria-label="{{g.copyAria}}" title="Copiar link"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 14a5 5 0 0 0 7.07 0l3-3a5 5 0 0 0-7.07-7.07l-1 1"></path><path d="M14 10a5 5 0 0 0-7.07 0l-3 3a5 5 0 0 0 7.07 7.07l1-1"></path></svg></button>
+                      <button class="ib" onClick="{{g.whatsapp}}" aria-label="{{g.waAria}}" title="Enviar por WhatsApp"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a8.5 8.5 0 0 1-12.6 7.4L3 21l1.6-5.2A8.5 8.5 0 1 1 21 12z"></path></svg></button>
+                      <a class="ib" href="{{g.href}}" target="_blank" rel="noopener" aria-label="{{g.openAria}}" title="Abrir convite"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6"></path><path d="M20 4l-9 9"></path><path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"></path></svg></a>
+                      <button class="ib" onClick="{{g.edit}}" aria-label="{{g.editAria}}" title="Editar convite"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16z"></path><path d="M13 7l4 4"></path></svg></button>
+                    </sc-if>
+                    <button class="ib" onClick="{{g.askDelete}}" aria-label="{{g.deleteAria}}" title="Excluir" style="color: #B42318"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16"></path><path d="M9 7V4h6v3"></path><path d="M6 7l1 13h10l1-13"></path></svg></button>
                   </sc-if>
                   <sc-if value="{{g.confirming}}" hint-placeholder-val="{{ false }}">
-                    <button class="btn" onClick="{{g.doDelete}}" style="border: 0; background: #B42318; color: #FFFFFF">{{g.confirmLabel}}</button>
-                    <button class="btn" onClick="{{g.cancelDelete}}">Cancelar</button>
+                    <button class="sbtn" onClick="{{g.doDelete}}" style="border: 0; background: #B42318; color: #FFFFFF">{{g.confirmLabel}}</button>
+                    <button class="sbtn" onClick="{{g.cancelDelete}}">Cancelar</button>
                   </sc-if>
                 </div>
               </div>
@@ -576,38 +617,61 @@ class Component extends DCLogic {
       const g = it.g, r = it.r;
       const editing = !!g && st.editing === g.id;
       const answering = !!(st.answer && st.answer.key === it.key);
-      const lines = [];
+      const Y = (n) => ({ name: n, mark: '✓', sr: ' (vai)', title: n + ' · vai', bg: '#E3F3EA', fg: '#1E6B43', ring: '#E3F3EA', deco: 'none' });
+      const N = (n) => ({ name: n, mark: '✕', sr: ' (não vai)', title: n + ' · não vai', bg: '#FFFFFF', fg: '#8E2A1F', ring: '#F2C4BE', deco: 'line-through' });
+      const W = (n) => ({ name: n, mark: '·', sr: ' (aguardando)', title: n + ' · aguardando resposta', bg: '#FFFFFF', fg: '#5E5A6B', ring: '#E3E1EA', deco: 'none' });
+      const A = (n) => ({ name: n, mark: '+', sr: ' (acompanhante)', title: n + ' · acompanhante', bg: '#E3F3EA', fg: '#1E6B43', ring: '#E3F3EA', deco: 'none' });
+      const people = [];
+      let more = '', going = 0, notGoing = 0;
       if (g) {
-        lines.push({ text: (g.people || []).length ? 'Convidados: ' + g.people.join(', ') : 'Sem nomes definidos', color: '#3D3A4A' });
-        lines.push({ text: 'Até ' + g.max + (g.max === 1 ? ' pessoa' : ' pessoas') + (g.companions ? ' (' + g.companions + (g.companions === 1 ? ' acompanhante extra' : ' acompanhantes extras') + ')' : ''), color: '#5E5A6B' });
-      }
-      if (r) {
-        const names = r.names || [];
-        if (g || names.length) {
-          if (names.length && r.go) lines.push({ text: 'Vão (' + names.length + '): ' + names.join(', '), color: '#1E6B43' });
-          if (r.absent && r.absent.length) lines.push({ text: 'Não vão: ' + r.absent.join(', '), color: '#8A4B00' });
-        } else if (r.go) {
-          const p = this.peopleOf(r);
-          lines.push({ text: p === 1 ? '1 pessoa' : p + ' pessoas (' + (p - 1) + (p - 1 === 1 ? ' acompanhante)' : ' acompanhantes)'), color: '#1E6B43' });
+        const ppl = g.people || [];
+        const names = (r && r.names) || [], absent = (r && r.absent) || [];
+        const extras = !r ? [] : (Array.isArray(r.extra) ? r.extra : (ppl.length ? names.filter((n) => ppl.indexOf(n) === -1) : []));
+        if (ppl.length) {
+          ppl.forEach((p) => people.push(!r ? W(p) : (names.indexOf(p) !== -1 ? Y(p) : (absent.indexOf(p) !== -1 || !r.go ? N(p) : W(p)))));
+        } else if (r) {
+          names.filter((n) => extras.indexOf(n) === -1).forEach((n) => people.push(Y(n))); absent.forEach((n) => people.push(N(n)));
         }
-        if (r.diet) lines.push({ text: 'Restrição alimentar: ' + r.diet, color: '#3D3A4A' });
-        if (r.msg) lines.push({ text: 'Mensagem: “' + r.msg + '”', color: '#3D3A4A' });
-        lines.push({ text: 'Resposta em ' + api.fmt.short(r.updatedAt || r.createdAt), color: '#5E5A6B' });
+        if (r) {
+          extras.forEach((n) => people.push(A(n)));
+          going = r.go ? (names.length || this.peopleOf(r)) : 0;
+          notGoing = absent.length || (!r.go ? Math.max(1, ppl.length) : 0);
+        } else {
+          if (!ppl.length) more = 'Sem nomes definidos';
+          if (g.companions) more = (more ? more + ' · ' : '') + '+ até ' + g.companions + (g.companions === 1 ? ' acompanhante' : ' acompanhantes');
+        }
+      } else if (r) {
+        people.push(r.go ? Y(r.name) : N(r.name));
+        const p = this.peopleOf(r);
+        if (r.go && p > 1) people.push(A((p - 1) + (p - 1 === 1 ? ' acompanhante' : ' acompanhantes')));
+        going = r.go ? p : 0; notGoing = r.go ? 0 : 1;
       }
+      const np = g ? Math.max(1, (g.people || []).length) : 0;
+      const comps = g ? (g.companions || 0) : 0;
+      const msgOpen = !!(r && r.msg) && st.openMsg === it.key;
       const name = g ? g.name : r.name;
       const ed = editing ? Object.assign({}, st.ed, { total: this.totalLine(st.ed.people, st.ed.companions) }) : null;
       const setEd = (k) => (e) => this.setState({ ed: Object.assign({}, this.state.ed, { [k]: e.target.value }) });
       return {
         key: it.key, guestId: g ? g.id : '', name,
-        isGuest: !!g, kindLabel: g ? 'Convite individual' : 'Link geral', byPanel: !!(r && r.via === 'painel'),
-        showKind: guests.length > 0 && !(!g && r && r.via === 'painel'),
+        isGuest: !!g, byPanel: !!(r && r.via === 'painel'),
         viewing: !editing && !answering, editing, answering,
-        status: !r ? 'Pendente' : (r.go ? 'Vai' : 'Não vai'),
-        badgeBg: !r ? '#F1EFF6' : (r.go ? '#E3F3EA' : '#FBEFD9'),
-        badgeFg: !r ? '#3D3A4A' : (r.go ? '#1E6B43' : '#8A4B00'),
-        lines,
-        answerLabel: r ? 'Editar resposta' : 'Registrar resposta',
-        answerAria: (r ? 'Editar resposta de ' : 'Registrar resposta de ') + name,
+        pad: editing || answering ? '16px 20px' : '10px 20px',
+        cadTotal: g ? String(g.max) : '—',
+        cadSplit: g ? (np + (np === 1 ? ' convidado' : ' convidados') + (comps ? ' + ' + comps + ' acomp.' : '')) : 'pelo link geral',
+        status: !r ? 'Pendente' : (r.go ? (going > 1 ? 'Vão' : 'Vai') : (notGoing > 1 ? 'Não vão' : 'Não vai')),
+        hasFrac: !!(r && r.go && g), frac: g ? going + '/' + g.max : '',
+        statusTitle: r ? (r.via === 'painel' ? 'Registrada por você em ' : 'Resposta em ') + api.fmt.short(r.updatedAt || r.createdAt) : 'Aguardando resposta',
+        badgeBg: !r ? '#F1EFF6' : (r.go ? '#E3F3EA' : '#FDECEA'),
+        badgeFg: !r ? '#3D3A4A' : (r.go ? '#1E6B43' : '#B42318'),
+        people, hasMore: !!more, more,
+        hasDiet: !!(r && r.diet), diet: (r && r.diet) || '',
+        hasMsg: !!(r && r.msg), msgQuoted: r && r.msg ? '“' + r.msg + '”' : '', msgOpen, msgExpanded: msgOpen ? 'true' : 'false',
+        toggleMsg: () => this.setState({ openMsg: msgOpen ? null : it.key }),
+        noNotes: !(r && (r.diet || r.msg)),
+        copyAria: 'Copiar link de ' + name, waAria: 'Enviar por WhatsApp para ' + name, openAria: 'Abrir convite de ' + name,
+        answerLabel: r ? 'Editar resposta' : 'Responder',
+        answerAria: (r ? 'Editar resposta de ' : 'Responder por ') + name,
         answer: () => this.openAnswer(it.key, g, r),
         href: g ? this.link(g) : '',
         editAria: 'Editar ' + name, deleteAria: 'Excluir ' + name,

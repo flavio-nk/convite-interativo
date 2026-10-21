@@ -568,7 +568,8 @@ def t_personal(pg, browser):
     # editar o limite do Carlos
     pg.click('[aria-label="Editar Carlos Souza"]'); pg.wait_for_timeout(200)
     pg.locator('li[data-guest] input[type=number]').first.fill('2'); pg.click('button:has-text("Salvar")'); pg.wait_for_timeout(600)
-    ok('Convidados: editar acompanhantes', 'Até 3 pessoas (2 acompanhantes extras)' in pg.inner_text('li[data-guest]:has-text("Carlos Souza")'))
+    rc = pg.inner_text('li[data-guest]:has-text("Carlos Souza")')
+    ok('Convidados: editar acompanhantes', '3\n1 convidado + 2 acomp.' in rc and '+ até 2 acompanhantes' in rc and 'Responder' in rc, rc)
     silva = pg.get_attribute('li[data-guest]:has-text("Família Silva")', 'data-guest')
     tios = pg.get_attribute('li[data-guest]:has-text("Tios")', 'data-guest')
     # publicar
@@ -651,12 +652,22 @@ def t_personal(pg, browser):
     stats = pg.inner_text('main')
     ok('Indicadores: convites, quem vai (convidados + acompanhantes) e quem não vai', '3\n1 aguardando resposta' in stats and 'Vão comparecer\n3\n3 convidados + 0 acompanhantes' in stats and 'Não vão comparecer\n1\npessoa' in stats, stats[:400])
     row = pg.inner_text('li[data-guest]:has-text("Família Silva")')
-    ok('Convidados: situação e nomes confirmados', 'Vai' in row and 'Vão (2): João Silva, Maria Silva' in row, row)
+    fs = 'li[data-guest]:has-text("Família Silva")'
+    ok('Convidados: situação e nomes confirmados', 'Vão' in row and '2/3' in row and count(pg, fs + ' .chip[title="João Silva · vai"]') == 1 and count(pg, fs + ' .chip[title="Maria Silva · vai"]') == 1, row)
+    ok('Convidados: coluna de cadastrados', '2 convidados + 1 acomp.' in row, row)
+    ok('Convidados: lista sem subtítulo de tipo', 'Convite individual' not in row and 'Até ' not in row)
+    boxes = [b['y'] for b in [pg.locator(fs + ' .chip').nth(i).bounding_box() for i in range(pg.locator(fs + ' .chip').count())]]
+    ok('Convidados: nomes na vertical', len(boxes) == 2 and boxes[1] > boxes[0] + 10, boxes)
     row2 = pg.inner_text('li[data-guest]:has-text("Tios")')
-    ok('Convidados: mostra quem não vai', 'Vão (1): Ana Lima' in row2 and 'Não vão: Beto Lima' in row2, row2)
+    tl = 'li[data-guest]:has-text("Tios")'
+    ok('Convidados: mostra quem não vai', count(pg, tl + ' .chip[title="Ana Lima · vai"]') == 1 and count(pg, tl + ' .chip[title="Beto Lima · não vai"]') == 1 and '1/' in row2, row2)
+    shot(pg, 'p2_lista')
+    if os.environ.get('SHOTS'):
+        pg.set_viewport_size({'width': 390, 'height': 844}); pg.wait_for_timeout(300); shot(pg, 'p2_lista_celular'); pg.set_viewport_size({'width': 1280, 'height': 900})
     # o organizador registra a resposta de um convite individual pendente
     go(pg, 'Respostas/' + pid, 1500)
-    pg.click('[aria-label="Registrar resposta de Carlos Souza"]'); pg.wait_for_timeout(200)
+    ok('Convidados: botão Responder', count(pg, 'li[data-guest]:has-text("Carlos Souza") button:text-is("Responder")') == 1)
+    pg.click('[aria-label="Responder por Carlos Souza"]'); pg.wait_for_timeout(200)
     fa = 'form[data-answer]'
     ok('Painel: mesma lista de pessoas do convite', count(pg, fa + ' [data-person]') == 1 and count(pg, fa + ' [data-testid="add-extra"]') == 1)
     pg.click(fa + ' button:has-text("Salvar resposta")'); pg.wait_for_timeout(300)
@@ -668,7 +679,8 @@ def t_personal(pg, browser):
     pg.fill(fa + ' input[placeholder="Ex.: vegetariano"]', 'sem glúten')
     pg.click(fa + ' button:has-text("Salvar resposta")'); pg.wait_for_timeout(700)
     rowc = pg.inner_text('li[data-guest]:has-text("Carlos Souza")')
-    ok('Painel: resposta individual registrada', 'Vão (3): Carlos Souza, Lia Souza, Rui Souza' in rowc and 'sem glúten' in rowc and 'registrada por você' in rowc, rowc)
+    cs = 'li[data-guest]:has-text("Carlos Souza")'
+    ok('Painel: resposta individual registrada', count(pg, cs + ' .chip[title="Carlos Souza · vai"]') == 1 and count(pg, cs + ' .chip[title="Lia Souza · acompanhante"]') == 1 and count(pg, cs + ' .chip[title="Rui Souza · acompanhante"]') == 1 and '3/3' in rowc and 'sem glúten' in rowc and 'registrada por você' in rowc, rowc)
     cg = pg.get_attribute('li[data-guest]:has-text("Carlos Souza")', 'data-guest')
     gc = browser.new_context(viewport={'width': 390, 'height': 844}).new_page()
     gc.goto(BASE + '#/c/' + pid + '/' + cg); gc.wait_for_selector('[aria-label="Toque para abrir o convite"]', timeout=8000)
