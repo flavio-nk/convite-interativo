@@ -10,6 +10,8 @@
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
 <style>
+.sr-file{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.sr-file:focus-visible~* .mus-pick{outline:2px solid #5B3FD6;outline-offset:2px}
 .xbtn:hover{background:rgba(127,120,150,.16)}
 .xbtn:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
 body{margin:0;background:#ECEBF1}
@@ -376,61 +378,43 @@ button:disabled{opacity:.5;cursor:not-allowed}
             <p style="margin: 4px 0 0; font-size: 13px; color: #5E5A6B">Começa a tocar quando o convidado abre o convite. Ele pode pausar a qualquer momento pelo botão de som.</p>
           </div>
 
-          <div role="radiogroup" aria-label="Origem da música" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
-            <sc-for list="{{musicKinds}}" as="k" hint-placeholder-count="4">
-              <button role="radio" aria-checked="{{k.checked}}" onClick="{{k.pick}}" style="min-height: 48px; padding: 6px 10px; border-radius: 10px; border: 2px solid {{k.ring}}; background: {{k.bg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">{{k.label}}</button>
-            </sc-for>
-          </div>
+          <input id="mus-file" type="file" accept="audio/*" onChange="{{onFile}}" class="sr-file">
 
-          <sc-if value="{{mus.isBiblioteca}}" hint-placeholder-val="{{ true }}">
-            <div role="radiogroup" aria-label="Músicas da biblioteca" style="display: flex; flex-direction: column; gap: 8px">
-              <sc-for list="{{presets}}" as="p" hint-placeholder-count="3">
-                <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px 8px 14px; border-radius: 12px; border: 2px solid {{p.ring}}; background: {{p.bg}}">
-                  <button role="radio" aria-checked="{{p.checked}}" onClick="{{p.pick}}" style="flex: 1 1 auto; min-height: 44px; padding: 0; border: 0; background: transparent; color: #17151F; cursor: pointer; text-align: left; display: flex; flex-direction: column; justify-content: center">
-                    <span style="font-weight: 700; font-size: 14px">{{p.label}}</span>
-                    <span style="font-size: 12px; color: #5E5A6B">{{p.desc}}</span>
-                  </button>
-                  <button onClick="{{p.listen}}" aria-label="{{p.listenAria}}" style="width: 44px; height: 44px; flex: none; border-radius: 50%; border: 1px solid #D6D3E0; background: #FFFFFF; color: #3B26A8; cursor: pointer; display: flex; align-items: center; justify-content: center">
-                    <sc-if value="{{p.isPlaying}}" hint-placeholder-val="{{ false }}">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><rect x="6" y="6" width="12" height="12" rx="1"></rect></svg>
-                    </sc-if>
-                    <sc-if value="{{p.isStopped}}" hint-placeholder-val="{{ true }}">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
-                    </sc-if>
-                  </button>
+          <sc-if value="{{mus.empty}}" hint-placeholder-val="{{ true }}">
+            <div data-testid="mus-drop" onDragOver="{{mus.dragOver}}" onDragLeave="{{mus.dragLeave}}" onDrop="{{mus.drop}}" style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 26px 18px; border-radius: 14px; border: 2px dashed {{mus.dropRing}}; background: {{mus.dropBg}}; text-align: center">
+              <span style="width: 52px; height: 52px; border-radius: 50%; background: #EEEAFB; color: #43299F; display: flex; align-items: center; justify-content: center">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+              </span>
+              <strong style="font-size: 15px">Convite sem música</strong>
+              <span style="font-size: 13px; color: #5E5A6B; max-width: 280px">Para ter música, envie um arquivo de áudio. Ele começa a tocar quando o convidado abre o convite.</span>
+              <label for="mus-file" class="mus-pick" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"></path></svg>
+                Enviar música
+              </label>
+              <span style="font-size: 12px; color: #5E5A6B">ou arraste o arquivo para cá · MP3, M4A, OGG ou WAV, até 100 MB</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{mus.hasTrack}}" hint-placeholder-val="{{ false }}">
+            <div data-testid="mus-track" style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 14px; border: 1px solid #E3E1EA; background: #FAF9FC">
+              <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+                <button onClick="{{listenCustom}}" disabled="{{mus.cannotPreview}}" aria-label="{{mus.listenAria}}" style="width: 48px; height: 48px; flex: none; border-radius: 50%; border: 0; background: #5B3FD6; color: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="{{mus.customIcon}}"></path></svg>
+                </button>
+                <div style="min-width: 0; display: flex; flex-direction: column">
+                  <strong style="font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{mus.trackName}}</strong>
+                  <span style="font-size: 12px; color: #5E5A6B">{{mus.trackNote}}</span>
                 </div>
-              </sc-for>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <label for="mus-file" class="mus-pick" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Trocar música</label>
+                <button onClick="{{removeMusic}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; font-weight: 600; font-size: 14px; cursor: pointer">Remover música</button>
+              </div>
             </div>
-          </sc-if>
-
-          <sc-if value="{{mus.isArquivo}}" hint-placeholder-val="{{ false }}">
-            <div>
-              <label class="lbl" for="mus-file">Arquivo de áudio</label>
-              <input class="fld" id="mus-file" type="file" accept="audio/*" onChange="{{onFile}}" style="padding: 9px 10px">
-              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{mus.fileLine}}</span>
-            </div>
-          </sc-if>
-
-          <sc-if value="{{mus.isLink}}" hint-placeholder-val="{{ false }}">
-            <div>
-              <label class="lbl" for="mus-link">Link direto do áudio</label>
-              <input class="fld" id="mus-link" type="url" placeholder="https://…/musica.mp3" value="{{mus.link}}" onChange="{{onLink}}">
-              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Use o endereço de um arquivo .mp3, .m4a, .ogg ou .wav.</span>
-              <sc-if value="{{mus.streamWarning}}" hint-placeholder-val="{{ false }}">
-                <p role="alert" style="margin: 8px 0 0; padding: 10px 12px; border-radius: 10px; background: #FBEFD9; color: #6B3A00; font-size: 13px">Links de páginas do YouTube ou Spotify não tocam dentro do convite. Envie o arquivo de áudio ou use um link direto para ele.</p>
-              </sc-if>
-            </div>
-          </sc-if>
-
-          <sc-if value="{{mus.hasCustomPreview}}" hint-placeholder-val="{{ false }}">
-            <button onClick="{{listenCustom}}" disabled="{{mus.cannotPreview}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="{{mus.customIcon}}"></path></svg>
-              {{mus.customLabel}}
-            </button>
           </sc-if>
 
           <sc-if value="{{mus.previewError}}" hint-placeholder-val="{{ false }}">
-            <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 13px">Não foi possível tocar este áudio. Confira se o arquivo é de áudio ou se o link aponta direto para ele.</p>
+            <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 13px">Não foi possível tocar este áudio. Confira se o arquivo enviado é mesmo de áudio.</p>
           </sc-if>
 
           <sc-if value="{{mus.active}}" hint-placeholder-val="{{ true }}">
@@ -1017,7 +1001,7 @@ class Component extends DCLogic {
       view: 'pages',
       toast: '',
       theme: this.baseTheme(),
-      music: { kind: 'biblioteca', preset: 'valsa', fileUrl: '', fileName: '', link: '', volume: 70, loop: true },
+      music: { kind: 'nenhuma', preset: 'valsa', fileUrl: '', fileName: '', link: '', volume: 70, loop: true },
       previewing: '',
       previewError: false,
       pages: it ? this.newPages(b, it) : [
@@ -1202,6 +1186,22 @@ class Component extends DCLogic {
     }
   }
 
+  sendMusic(f) {
+    if (!/^audio\//.test(f.type || '') && !/\.(mp3|m4a|aac|ogg|oga|wav|webm)$/i.test(f.name || '')) {
+      this.setState({ toast: 'Esse arquivo não é de áudio. Envie um MP3, M4A, OGG ou WAV.' });
+      return;
+    }
+    const prev = this.state.music;
+    const local = URL.createObjectURL(f);
+    this.setMusic({ kind: 'arquivo', fileUrl: local, fileName: f.name, uploading: true });
+    api.upload(f).then((r) => {
+      this.setState((s) => ({ music: Object.assign({}, s.music, { fileUrl: r.url, uploading: false }) }));
+    }).catch((err) => {
+      // volta para a música que havia antes (ou nenhuma)
+      this.setState({ music: Object.assign({}, prev, { uploading: false }), toast: 'Não foi possível enviar a música: ' + err.message });
+    });
+  }
+
   setMusic(patch) {
     this.previewStop();
     this.setState({ music: Object.assign({}, this.state.music, patch), previewing: '', previewError: false });
@@ -1223,7 +1223,7 @@ class Component extends DCLogic {
     const theme = Object.assign({}, this.baseTheme(), inv.theme || {});
     const base = Object.assign({}, theme, inv.themeBase || inv.theme || {});
     const pages = inv.pages && inv.pages.length ? inv.pages : this.newPages(b, { sample: inv.coverTitle || 'Título do evento' });
-    const music = Object.assign({ kind: 'biblioteca', preset: 'valsa', fileUrl: '', fileName: '', link: '', volume: 70, loop: true }, inv.music || {});
+    const music = Object.assign({ kind: 'nenhuma', preset: 'valsa', fileUrl: '', fileName: '', link: '', volume: 70, loop: true }, inv.music || {});
     const maxId = pages.reduce((mx, p) => p.blocks.reduce((m2, x) => Math.max(m2, parseInt(String(x.id).replace(/\D/g, ''), 10) || 0), mx), 100);
     this.createdAt = inv.createdAt;
     this.setState({
@@ -2161,34 +2161,24 @@ class Component extends DCLogic {
       ['caixinha', 'Caixinha de música', 'Delicada, para chá de bebê e infantil'],
       ['festa', 'Festa animada', 'Alegre, para aniversários e festas']
     ];
-    const presets = presetDefs.map((d) => {
-      const on = m.preset === d[0];
-      const playing = st.previewing === 'preset-' + d[0];
-      return {
-        label: d[1], desc: d[2],
-        checked: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', bg: on ? '#F7F5FE' : '#FFFFFF',
-        isPlaying: playing, isStopped: !playing,
-        listenAria: (playing ? 'Parar ' : 'Ouvir ') + d[1],
-        pick: () => this.setMusic({ preset: d[0] }),
-        listen: () => this.previewToggle('preset-' + d[0], { kind: 'biblioteca', preset: d[0], volume: m.volume / 100 })
-      };
-    });
-    const kindDefs = [['nenhuma', 'Sem música'], ['biblioteca', 'Biblioteca'], ['arquivo', 'Enviar arquivo'], ['link', 'Link do áudio']];
-    const musicKinds = kindDefs.map((d) => {
-      const on = m.kind === d[0];
-      return { label: d[1], checked: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', bg: on ? '#F7F5FE' : '#FFFFFF', pick: () => this.setMusic({ kind: d[0] }) };
-    });
     const customPlaying = st.previewing === 'custom';
     const presetName = (presetDefs.find((d) => d[0] === m.preset) || presetDefs[0])[1];
-    const musicLabel = cfg.kind === 'nenhuma' ? 'sem música' : (m.kind === 'biblioteca' ? presetName : (m.kind === 'arquivo' ? m.fileName : 'link de áudio'));
+    // só duas situações: sem música ou um arquivo enviado (convites antigos com biblioteca/link continuam tocando até trocar)
+    const legacy = cfg.kind === 'biblioteca' || cfg.kind === 'link';
+    const uploading = !!m.uploading;
+    const hasTrack = cfg.kind !== 'nenhuma' || uploading;
+    const trackName = m.kind === 'arquivo' ? (m.fileName || 'Música enviada') : (m.kind === 'biblioteca' ? presetName : 'Música por link');
+    const musicLabel = !hasTrack ? 'sem música' : trackName;
     const mus = {
-      active: cfg.kind !== 'nenhuma',
-      isBiblioteca: m.kind === 'biblioteca', isArquivo: m.kind === 'arquivo', isLink: m.kind === 'link',
-      fileLine: m.uploading ? 'Enviando ' + m.fileName + '…' : (m.fileName ? 'Salvo: ' + m.fileName : 'MP3, M4A, OGG ou WAV, até 100 MB.'),
-      link: m.link,
-      streamWarning: /youtube\.com|youtu\.be|spotify\.com|deezer\.com/i.test(m.link),
-      hasCustomPreview: m.kind === 'arquivo' || m.kind === 'link',
-      cannotPreview: cfg.kind === 'nenhuma',
+      active: hasTrack && !uploading,
+      empty: !hasTrack, hasTrack, trackName,
+      listenAria: (customPlaying ? 'Parar ' : 'Ouvir ') + trackName,
+      trackNote: uploading ? 'Enviando… você pode continuar editando.' : (legacy ? 'Música de uma opção antiga. Continua tocando até você trocar ou remover.' : 'Toca quando o convidado abre o convite.'),
+      dropBg: st.musDrag ? '#F1EEFD' : '#FFFFFF', dropRing: st.musDrag ? '#5B3FD6' : '#CFC8EE',
+      dragOver: (e) => { e.preventDefault(); if (!this.state.musDrag) this.setState({ musDrag: true }); },
+      dragLeave: () => this.setState({ musDrag: false }),
+      drop: (e) => { e.preventDefault(); this.setState({ musDrag: false }); const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) this.sendMusic(f); },
+      cannotPreview: cfg.kind === 'nenhuma' || uploading,
       customLabel: customPlaying ? 'Parar' : 'Ouvir',
       customIcon: customPlaying ? 'M6 6h12v12H6z' : 'M8 5v14l11-7z',
       previewError: st.previewError,
@@ -2399,19 +2389,13 @@ class Component extends DCLogic {
         maxGuests: (e) => this.patchSel({ maxGuests: Math.max(0, Math.min(10, parseInt(e.target.value, 10) || 0)) })
       },
       musicCfg: cfg,
-      mus, presets, musicKinds,
+      mus,
       onFile: (e) => {
         const f = e.target.files && e.target.files[0];
-        if (!f) return;
-        const local = URL.createObjectURL(f);
-        this.setMusic({ kind: 'arquivo', fileUrl: local, fileName: f.name, uploading: true });
-        api.upload(f).then((r) => {
-          this.setState((s) => ({ music: Object.assign({}, s.music, { fileUrl: r.url, uploading: false }) }));
-        }).catch((err) => {
-          this.setState((s) => ({ music: Object.assign({}, s.music, { fileUrl: '', fileName: '', uploading: false }), toast: 'Não foi possível enviar a música: ' + err.message }));
-        });
+        if (f) this.sendMusic(f);
+        try { e.target.value = ''; } catch (err) {}
       },
-      onLink: (e) => this.setMusic({ link: e.target.value }),
+      removeMusic: () => this.setMusic({ kind: 'nenhuma', fileUrl: '', fileName: '', link: '' }),
       onVolume: (e) => this.setMusic({ volume: Number(e.target.value) }),
       toggleLoop: () => this.setMusic({ loop: !m.loop }),
       listenCustom: () => this.previewToggle('custom', cfg),
