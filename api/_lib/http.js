@@ -4,10 +4,24 @@ export function query(req) {
   return new URL(req.url, 'http://localhost').searchParams;
 }
 
+// Sempre devolve um objeto simples: corpo vazio vira {}; lista, número, texto ou null são recusados.
+function asObject(v) {
+  if (v === undefined || v === null || v === '') return {};
+  if (typeof v !== 'object' || Array.isArray(v)) throw httpError(400, 'Conteúdo inválido.');
+  return v;
+}
+
 export async function readBody(req) {
+  return asObject(await readRaw(req));
+}
+
+async function readRaw(req) {
   // No Vercel, req.body já vem interpretado; localmente lemos o fluxo.
   if (req.body !== undefined && req.body !== null && !Buffer.isBuffer(req.body)) {
-    if (typeof req.body === 'string') return req.body ? JSON.parse(req.body) : {};
+    if (typeof req.body === 'string') {
+      if (!req.body) return {};
+      try { return JSON.parse(req.body); } catch (e) { throw httpError(400, 'JSON inválido.'); }
+    }
     return req.body;
   }
   const chunks = [];

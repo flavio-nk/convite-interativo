@@ -5,6 +5,12 @@ import { maxPeople } from './guests.js';
 
 const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
 
+// O bloco de confirmação do convite (o primeiro, se houver mais de um): prazo e limite de acompanhantes.
+function rsvpBlock(inv) {
+  for (const p of inv.pages || []) for (const b of (p && p.blocks) || []) if (b && b.type === 'rsvp') return b;
+  return null;
+}
+
 export default handler(async (req, res) => {
   const q = query(req);
   const inviteId = q.get('invite');
@@ -27,6 +33,10 @@ export default handler(async (req, res) => {
     const personal = inv.personal && inv.personal.enabled;
     // respostas registradas pelo organizador no painel (só com login)
     const via = admin && body.via === 'painel' ? 'painel' : 'convite';
+    const block = rsvpBlock(inv) || {};
+    if (!admin && block.deadline && new Date(block.deadline).getTime() < Date.now()) {
+      throw httpError(403, 'O prazo para confirmar presença terminou.');
+    }
 
     // Resposta por um convite individual: nomes de quem vai, até o limite daquele convite.
     const guestId = str(body.guestId, 40);
@@ -82,7 +92,8 @@ export default handler(async (req, res) => {
     const name = str(body.name, 120);
     if (!name) throw httpError(400, 'Informe seu nome completo.');
     if (typeof body.go !== 'boolean') throw httpError(400, 'Escolha se você vai ou não.');
-    const guests = body.go ? Math.max(0, Math.min(20, parseInt(body.guests, 10) || 0)) : 0;
+    const cap = admin ? 20 : (block.askGuests === false ? 0 : Math.max(0, Math.min(20, block.maxGuests == null ? 2 : Number(block.maxGuests) || 0)));
+    const guests = body.go ? Math.max(0, Math.min(cap, parseInt(body.guests, 10) || 0)) : 0;
     let rid = str(body.rsvpId, 40);
     const prev = rid ? await hget(key, rid) : null;
     if (!prev || prev.guestId) rid = newId(12);

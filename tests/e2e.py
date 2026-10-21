@@ -701,6 +701,68 @@ def t_personal(pg, browser):
     ok('Convidados: excluir', count(pg, 'li[data-guest]') == 2)
 
 
+def t_robust(pg, browser):
+    """Correções da bateria de 21/10: API robusta, prazo, limites, planilha, nomes longos, editor."""
+    go(pg, 'Main', 900)
+    J = "{method: m, headers: {'content-type': 'application/json'}, body: b}"
+    call = "async ([m, u, b]) => { const r = await fetch(u, " + J + "); let d = null; try { d = await r.json(); } catch (e) {} return [r.status, d]; }"
+    st, _ = pg.evaluate(call, ['POST', '/api/auth?action=login', 'null'])
+    ok('API: corpo null no login não dá erro interno', st == 401, st)
+    st, _ = pg.evaluate(call, ['POST', '/api/invites', '[1,2]'])
+    ok('API: lista no lugar de objeto é recusada', st == 400, st)
+    st, _ = pg.evaluate(call, ['PUT', '/api/invites?id=naoexiste', '{"title":"x"}'])
+    ok('API: salvar convite excluído não o recria', st == 404, st)
+    st, _ = pg.evaluate(call, ['POST', '/api/themes', 'null'])
+    ok('API: tema sem cores é recusado', st == 400, st)
+    body = '{"title":"Prazo vencido","status":"publicado","pages":[{"id":"p1","name":"Capa","blocks":[{"id":"r1","type":"rsvp","deadline":"2020-01-01T23:59:00.000Z","maxGuests":1},{"id":"b1","type":"botao","text":"Site","action":"link","dest":"www.exemplo.com.br"}]}]}'
+    st, inv = pg.evaluate(call, ['POST', '/api/invites', body])
+    iid = inv['id']
+    ctx = browser.new_context(); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + iid); g.wait_for_timeout(1500)
+    st, d = g.evaluate(call, ['POST', '/api/rsvp?invite=' + iid, '{"name":"Atrasado","go":true}'])
+    ok('API: prazo vencido recusa resposta do convidado', st == 403 and 'prazo' in d['error'], [st, d])
+    st, _ = pg.evaluate(call, ['POST', '/api/rsvp?invite=' + iid, '{"name":"Pelo painel","go":true,"via":"painel"}'])
+    ok('API: organizador ainda registra resposta após o prazo', st == 200, st)
+    pg.evaluate(call, ['PUT', '/api/invites?id=' + iid, body.replace('"deadline":"2020-01-01T23:59:00.000Z",', '')])
+    st, d = g.evaluate(call, ['POST', '/api/rsvp?invite=' + iid, '{"name":"Excesso","go":true,"guests":9}'])
+    ok('API: acompanhantes limitados ao máximo do bloco', st == 200 and d['entry']['guests'] == 1, d)
+    # botão com link sem https://
+    g.goto(BASE + '#/c/' + iid); g.wait_for_timeout(1200)
+    if g.locator('[aria-label="Toque para abrir o convite"]').count():
+        g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(2600)
+    g.evaluate("() => { window.__opened = []; window.open = (u) => { window.__opened.push(u); return null; }; }")
+    g.click('button:has-text("Site")'); g.wait_for_timeout(200)
+    opened = g.evaluate('window.__opened')
+    ok('Botão de link aceita endereço sem https://', opened == ['https://www.exemplo.com.br'], opened)
+    ctx.close()
+    # planilha: textos que viram fórmula entram como texto
+    pg.evaluate(call, ['POST', '/api/rsvp?invite=' + iid, '{"name":"=HYPERLINK(1)","go":false,"via":"painel"}'])
+    go(pg, 'Respostas/' + iid, 1300)
+    with pg.expect_download() as dl:
+        pg.click('button:has-text("Exportar planilha")')
+    csv = open(dl.value.path(), encoding='utf-8-sig').read()
+    ok('Planilha: fórmula vira texto', '"\'=HYPERLINK(1)"' in csv, csv[:300])
+    # modal: frase no singular
+    pg.evaluate(call, ['PUT', '/api/invites?id=' + iid, body.replace('"pages"', '"personal":{"enabled":true,"generic":true},"pages"')])
+    go(pg, 'Respostas/' + iid, 1300)
+    pg.click('button:has-text("+ Adicionar convidados")'); pg.wait_for_timeout(200)
+    ok('Modal: frase no singular', 'Só 1 pessoa poderá confirmar' in text(pg))
+    pg.keyboard.press('Escape')
+    # nome longo cabe no convite fechado
+    gid = pg.evaluate("(id) => fetch('/api/guests?invite=' + id, {method: 'POST', headers: {'content-type': 'application/json'}, body: JSON.stringify({name: 'Família Albuquerque de Vasconcelos e Silva Pereira dos Santos'})}).then(r => r.json()).then(d => d[0].id)", iid)
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/%s/%s' % (iid, gid)); g.wait_for_selector('[data-testid="destinatario"]'); g.wait_for_timeout(600)
+    fit = g.evaluate("() => { const d = document.querySelector('[data-testid=destinatario]'); const box = d.parentElement.getBoundingClientRect(); const r = d.getBoundingClientRect(); return r.bottom <= box.bottom + 1 && r.top >= box.top - 1; }")
+    ok('Nome longo cabe no envelope', fit)
+    ctx.close()
+    # editor: convite excluído em outra aba
+    go(pg, 'Editor/' + iid, 1800)
+    pg.evaluate("(id) => fetch('/api/invites?id=' + id, {method: 'DELETE'})", iid)
+    pg.click('button[role=tab]:has-text("Evento")'); pg.wait_for_timeout(200)
+    pg.locator('input.fld').first.fill('Outro título'); pg.wait_for_timeout(1800)
+    ok('Editor: avisa que o convite foi excluído (sem tentar de novo)', 'este convite foi excluído' in text(pg))
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -728,7 +790,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

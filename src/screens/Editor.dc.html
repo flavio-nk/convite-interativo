@@ -1253,9 +1253,12 @@ class Component extends DCLogic {
     if (!keepalive) this.setState({ saveState: 'saving' });
     return api.saveInvite(this.inviteId, this.serialize(), { keepalive: !!keepalive })
       .then(() => { if (!this.unmounted && seq === this.saveSeq && !this.dirty) this.setState({ saveState: 'saved' }); })
-      .catch(() => {
+      .catch((err) => {
         if (this.unmounted) return;
         this.dirty = true;
+        // convite excluído em outra aba ou sessão expirada (ex.: senha trocada): não adianta tentar de novo
+        if (err && err.status === 404) { this.setState({ saveState: 'gone' }); return; }
+        if (err && err.status === 401) { this.setState({ saveState: 'auth' }); return; }
         this.setState({ saveState: 'error' });
         clearTimeout(this.saveTimer);
         this.saveTimer = setTimeout(() => this.doSave(), 4000);
@@ -2351,7 +2354,7 @@ class Component extends DCLogic {
       paletteHint: curPal ? 'Paleta atual: ' + curPal.label + ' (' + curPal.group + ')' : 'Cores personalizadas · escolha uma paleta ou ajuste abaixo',
       title: st.title,
       onTitle: (e) => this.setState({ title: e.target.value }),
-      statusLine: (st.published ? 'Publicado' : 'Rascunho') + ' · ' + ({ idle: 'tema ' + T.baseName, pending: 'alterações não salvas…', saving: 'salvando…', saved: 'todas as alterações salvas', error: 'erro ao salvar, tentando de novo…' }[st.saveState] || '') + ' · música: ' + musicLabel,
+      statusLine: (st.published ? 'Publicado' : 'Rascunho') + ' · ' + ({ idle: 'tema ' + T.baseName, pending: 'alterações não salvas…', saving: 'salvando…', saved: 'todas as alterações salvas', error: 'erro ao salvar, tentando de novo…', gone: 'este convite foi excluído; as alterações não serão salvas', auth: 'sua sessão expirou; entre de novo para salvar' }[st.saveState] || '') + ' · música: ' + musicLabel,
       published: st.published,
       publishLabel: st.published ? 'Despublicar' : 'Publicar',
       publishBg: st.published ? '#ECEAF3' : '#5B3FD6',

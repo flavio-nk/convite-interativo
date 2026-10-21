@@ -22,6 +22,7 @@ export default handler(async (req, res) => {
   if (req.method === 'POST') {
     const body = await readBody(req);
     if (JSON.stringify(body).length > 50_000) throw httpError(413, 'Tema grande demais.');
+    if (!body.bg || !body.fg || !body.accent) throw httpError(400, 'Tema incompleto: faltam as cores.');
     const tid = body.id && (await hget(KEY, body.id)) ? body.id : newId();
     const now = new Date().toISOString();
     const prev = await hget(KEY, tid);

@@ -421,7 +421,7 @@ class Component extends DCLogic {
     const n = this.people(peopleText).length;
     const c = Math.max(0, parseInt(companions, 10) || 0);
     const total = Math.max(1, n) + c;
-    return 'Até ' + total + (total === 1 ? ' pessoa' : ' pessoas') + ' poderão confirmar presença por este convite.';
+    return total === 1 ? 'Só 1 pessoa poderá confirmar presença por este convite.' : 'Até ' + total + ' pessoas poderão confirmar presença por este convite.';
   }
 
   // "Família Silva: João Silva, Maria Silva +2"  →  { name, people, companions }
@@ -838,7 +838,8 @@ class Component extends DCLogic {
       emptyText: st.error ? st.error : (items.length ? 'Nada encontrado.' : (personalOn ? 'Nenhum convite individual ou resposta ainda.' : 'Nenhuma resposta ainda.')),
       footer: loading ? 'Carregando…' : 'Mostrando ' + rows.length + ' de ' + items.length + (items.length === 1 ? ' item' : ' itens'),
       exportCsv: () => {
-        const esc = (v) => '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"';
+        // textos digitados pelos convidados que começam com = + - @ virariam fórmula no Excel: entram como texto
+        const esc = (v) => { let t = String(v == null ? '' : v); if (/^[=+\-@\t\r]/.test(t)) t = "'" + t; return '"' + t.replace(/"/g, '""') + '"'; };
         const head = ['Nome', 'Tipo', 'Resposta', 'Pessoas', 'Quem vai', 'Quem não vai', 'Restrição alimentar', 'Mensagem', 'Data', 'Convidados', 'Acompanhantes extras', 'Registrada por', 'Link'];
         const lines = [head.map(esc).join(';')].concat(items.map((it) => {
           const g = it.g, r = it.r;

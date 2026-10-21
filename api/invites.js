@@ -77,10 +77,13 @@ export default handler(async (req, res) => {
   if (req.method === 'PUT') {
     if (!id) throw httpError(400, 'Informe o convite.');
     const body = await readBody(req);
-    const restore = body && body.__rsvps;
-    const restoreGuests = body && body.__guests;
-    if (body) { delete body.__rsvps; delete body.__guests; delete body.guest; }
+    const restoring = '__rsvps' in body || '__guests' in body;
+    const restore = body.__rsvps;
+    const restoreGuests = body.__guests;
+    delete body.__rsvps; delete body.__guests; delete body.guest;
     const existing = await hget(KEY, id);
+    // só o "Desfazer" (que manda as respostas apagadas junto) pode recriar um convite excluído
+    if (!existing && !restoring) throw httpError(404, 'Este convite foi excluído.');
     const inv = clean(body, existing);
     inv.id = id;
     await hset(KEY, id, inv);
