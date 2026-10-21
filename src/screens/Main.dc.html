@@ -30,7 +30,7 @@ button{font-family:inherit}
       <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto">
         <a href="Main.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #EFECFB; color: #3B26A8; font-weight: 600; text-decoration: none">Convites</a>
         <a href="Temas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Temas</a>
-        <a href="Respostas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Respostas</a>
+        <a href="Respostas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Convidados</a>
       </nav>
       <button onClick="{{logout}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Sair</button>
     </div>
@@ -79,7 +79,7 @@ button{font-family:inherit}
             <a class="act" href="{{inv.editHref}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z"></path><path d="m13.5 6.5 4 4"></path></svg>Editar</a>
             <a class="act" href="{{inv.rsvpHref}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; border-radius: 8px; color: #17151F; font-size: 14px; font-weight: 600; text-decoration: none">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"></path><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"></path></svg>Respostas</a>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 11l3 3 8-8"></path><path d="M20 12v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h9"></path></svg>Convidados</a>
             <button class="act" onClick="{{inv.askDelete}}" aria-label="Excluir {{inv.title}}" style="display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 10px; margin-left: auto; border-radius: 8px; border: 0; background: transparent; color: #B42318; font-size: 14px; font-weight: 600; cursor: pointer">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>Excluir</button>
           </div>

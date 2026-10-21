@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Convidados e respostas</title>
+<title>Convidados</title>
 <script src="./support.js"></script>
 </head>
 <body>
@@ -38,7 +38,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
       <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto">
         <a href="Main.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Convites</a>
         <a href="Temas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Temas</a>
-        <a href="Respostas.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #EFECFB; color: #3B26A8; font-weight: 600; text-decoration: none">Respostas</a>
+        <a href="Respostas.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #EFECFB; color: #3B26A8; font-weight: 600; text-decoration: none">Convidados</a>
       </nav>
     </div>
   </header>
@@ -46,8 +46,8 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <main style="max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 22px">
     <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
       <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
-        <h1 style="margin: 0; font-size: 26px; letter-spacing: -0.02em">Convidados e respostas</h1>
-        <p style="margin: 0; color: #5E5A6B; font-size: 14px; max-width: 640px">Acompanhe quem respondeu, crie convites individuais e registre você mesmo as respostas que chegarem por outros meios.</p>
+        <h1 style="margin: 0; font-size: 26px; letter-spacing: -0.02em">Convidados</h1>
+        <p style="margin: 0; color: #5E5A6B; font-size: 14px; max-width: 640px">Acompanhe quem vai ao evento, crie convites individuais e registre você mesmo as respostas que chegarem por outros meios.</p>
       </div>
       <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px">
         <div>
@@ -94,51 +94,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
       </div>
     </sc-if>
 
-    <sc-if value="{{personalOn}}" hint-placeholder-val="{{ false }}">
-      <section aria-labelledby="add-title" style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 14px">
-        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
-          <h2 id="add-title" style="margin: 0; font-size: 18px">Novo convite individual</h2>
-          <button class="btn" onClick="{{toggleBulk}}" aria-expanded="{{bulkExpanded}}">{{bulkToggleLabel}}</button>
-        </div>
-        <sc-if value="{{notBulk}}" hint-placeholder-val="{{ true }}">
-          <form onSubmit="{{addOne}}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: start">
-            <div>
-              <label class="lbl" for="g-name">Nome do convite</label>
-              <input class="fld" id="g-name" value="{{form.name}}" onInput="{{form.onName}}" placeholder="Ex.: Família Silva">
-              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Aparece no convite. Vazio: usa os nomes dos convidados.</span>
-            </div>
-            <div>
-              <label class="lbl" for="g-people">Convidados (um nome por linha)</label>
-              <textarea class="fld" id="g-people" rows="3" value="{{form.people}}" onInput="{{form.onPeople}}" placeholder="João Silva&#10;Maria Silva" style="resize: vertical"></textarea>
-            </div>
-            <div>
-              <label class="lbl" for="g-comp">Acompanhantes extras</label>
-              <input class="fld" id="g-comp" type="number" min="0" max="20" value="{{form.companions}}" onInput="{{form.onCompanions}}">
-              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{form.total}}</span>
-            </div>
-            <div style="grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
-              <button type="submit" class="btn pri" disabled="{{busy}}">Adicionar convite</button>
-              <sc-if value="{{hasFormError}}" hint-placeholder-val="{{ false }}">
-                <span role="alert" style="color: #B42318; font-size: 14px">{{formError}}</span>
-              </sc-if>
-            </div>
-          </form>
-        </sc-if>
-        <sc-if value="{{isBulk}}" hint-placeholder-val="{{ false }}">
-          <div style="display: flex; flex-direction: column; gap: 10px">
-            <label class="lbl" for="g-bulk" style="margin: 0">Um convite por linha</label>
-            <textarea class="fld" id="g-bulk" rows="7" value="{{bulkText}}" onInput="{{onBulk}}" placeholder="Família Silva: João Silva, Maria Silva +2&#10;Carlos Souza +1&#10;Ana Lima, Bia Lima" style="resize: vertical; font-family: ui-monospace, monospace; font-size: 13px"></textarea>
-            <p style="margin: 0; font-size: 13px; color: #5E5A6B">Formato: <strong>Nome do convite:</strong> convidados separados por vírgula e <strong>+N</strong> para acompanhantes extras. O nome do convite e o +N são opcionais.</p>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
-              <button class="btn pri" onClick="{{addBulk}}" disabled="{{bulkDisabled}}">{{bulkButton}}</button>
-              <sc-if value="{{hasFormError}}" hint-placeholder-val="{{ false }}">
-                <span role="alert" style="color: #B42318; font-size: 14px">{{formError}}</span>
-              </sc-if>
-            </div>
-          </div>
-        </sc-if>
-      </section>
-    </sc-if>
 
     <section aria-labelledby="list-title" style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 14px; overflow: hidden">
       <div style="padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #EEECF3">
@@ -151,43 +106,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
           </div>
           <label for="busca" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar por nome</label>
           <input class="fld" id="busca" type="search" placeholder="Buscar por nome" value="{{query}}" onInput="{{onQuery}}" style="width: 200px">
-          <button class="btn" onClick="{{newAnswer}}">+ Registrar resposta</button>
+          <sc-if value="{{personalOn}}" hint-placeholder-val="{{ false }}">
+            <button class="btn pri" onClick="{{addModal.show}}">+ Novo convite individual</button>
+          </sc-if>
         </div>
       </div>
-
-      <sc-if value="{{isNew}}" hint-placeholder-val="{{ false }}">
-        <div data-answer="new" style="padding: 16px 20px; border-bottom: 1px solid #EEECF3; background: #FAFAFC">
-          <h3 style="margin: 0 0 12px; font-size: 16px">Nova resposta (sem convite individual)</h3>
-          <form onSubmit="{{ans.save}}" style="display: flex; flex-direction: column; gap: 12px">
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
-              <div>
-                <label class="lbl" for="an-name">Nome completo</label>
-                <input class="fld" id="an-name" value="{{ans.name}}" onInput="{{ans.onName}}">
-              </div>
-              <div>
-                <span class="lbl">Vai?</span>
-                <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
-                  <button type="button" class="seg" onClick="{{ans.yes}}" aria-pressed="{{ans.yesPressed}}" style="border: 1px solid {{ans.yesRing}}; background: {{ans.yesBg}}; color: {{ans.yesFg}}">Vai</button>
-                  <button type="button" class="seg" onClick="{{ans.no}}" aria-pressed="{{ans.noPressed}}" style="border: 1px solid {{ans.noRing}}; background: {{ans.noBg}}; color: {{ans.noFg}}">Não vai</button>
-                </div>
-              </div>
-              <div>
-                <label class="lbl" for="an-guests">Acompanhantes</label>
-                <input class="fld" id="an-guests" type="number" min="0" max="20" value="{{ans.guests}}" onInput="{{ans.onGuests}}">
-              </div>
-            </div>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px">
-              <div><label class="lbl" for="an-diet">Restrição alimentar</label><input class="fld" id="an-diet" value="{{ans.diet}}" onInput="{{ans.onDiet}}" placeholder="Ex.: vegetariano"></div>
-              <div><label class="lbl" for="an-msg">Mensagem</label><input class="fld" id="an-msg" value="{{ans.msg}}" onInput="{{ans.onMsg}}"></div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
-              <button type="submit" class="btn pri" disabled="{{ans.saving}}">Salvar resposta</button>
-              <button type="button" class="btn" onClick="{{ans.cancel}}">Cancelar</button>
-              <sc-if value="{{ans.hasError}}" hint-placeholder-val="{{ false }}"><span role="alert" style="color: #B42318; font-size: 14px">{{ans.error}}</span></sc-if>
-            </div>
-          </form>
-        </div>
-      </sc-if>
 
       <ul style="list-style: none; margin: 0; padding: 0">
         <sc-for list="{{rows}}" as="g" hint-placeholder-count="4">
@@ -329,6 +252,60 @@ button:disabled{opacity:.5;cursor:not-allowed}
     </section>
   </main>
 
+  <sc-if value="{{addModal.open}}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{addModal.backdrop}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(15, 14, 20, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
+      <div role="dialog" aria-modal="true" aria-labelledby="add-title" data-testid="novo-convite" tabindex="-1" style="position: relative; width: min(760px, 100%); max-height: calc(100vh - 32px); overflow: auto; box-sizing: border-box; background: #FFFFFF; border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35)">
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
+          <h2 id="add-title" style="margin: 0; font-size: 18px">Novo convite individual</h2>
+          <div style="display: flex; flex-wrap: wrap; gap: 8px">
+            <button class="btn" onClick="{{toggleBulk}}" aria-expanded="{{bulkExpanded}}">{{bulkToggleLabel}}</button>
+            <button class="btn" onClick="{{addModal.close}}" aria-label="Fechar">Fechar</button>
+          </div>
+        </div>
+        <sc-if value="{{addModal.hasLast}}" hint-placeholder-val="{{ false }}">
+          <p role="status" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #E3F3EA; color: #1E6B43; font-size: 14px">{{addModal.last}}</p>
+        </sc-if>
+        <sc-if value="{{notBulk}}" hint-placeholder-val="{{ true }}">
+          <form onSubmit="{{addOne}}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: start">
+            <div>
+              <label class="lbl" for="g-name">Nome do convite</label>
+              <input class="fld" id="g-name" value="{{form.name}}" onInput="{{form.onName}}" placeholder="Ex.: Família Silva">
+              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Aparece no convite. Vazio: usa os nomes dos convidados.</span>
+            </div>
+            <div>
+              <label class="lbl" for="g-people">Convidados (um nome por linha)</label>
+              <textarea class="fld" id="g-people" rows="3" value="{{form.people}}" onInput="{{form.onPeople}}" placeholder="João Silva&#10;Maria Silva" style="resize: vertical"></textarea>
+            </div>
+            <div>
+              <label class="lbl" for="g-comp">Acompanhantes extras</label>
+              <input class="fld" id="g-comp" type="number" min="0" max="20" value="{{form.companions}}" onInput="{{form.onCompanions}}">
+              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{form.total}}</span>
+            </div>
+            <div style="grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+              <button type="submit" class="btn pri" disabled="{{busy}}">Adicionar convite</button>
+              <sc-if value="{{hasFormError}}" hint-placeholder-val="{{ false }}">
+                <span role="alert" style="color: #B42318; font-size: 14px">{{formError}}</span>
+              </sc-if>
+            </div>
+          </form>
+        </sc-if>
+        <sc-if value="{{isBulk}}" hint-placeholder-val="{{ false }}">
+          <div style="display: flex; flex-direction: column; gap: 10px">
+            <label class="lbl" for="g-bulk" style="margin: 0">Um convite por linha</label>
+            <textarea class="fld" id="g-bulk" rows="7" value="{{bulkText}}" onInput="{{onBulk}}" placeholder="Família Silva: João Silva, Maria Silva +2&#10;Carlos Souza +1&#10;Ana Lima, Bia Lima" style="resize: vertical; font-family: ui-monospace, monospace; font-size: 13px"></textarea>
+            <p style="margin: 0; font-size: 13px; color: #5E5A6B">Formato: <strong>Nome do convite:</strong> convidados separados por vírgula e <strong>+N</strong> para acompanhantes extras. O nome do convite e o +N são opcionais.</p>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
+              <button class="btn pri" onClick="{{addBulk}}" disabled="{{bulkDisabled}}">{{bulkButton}}</button>
+              <sc-if value="{{hasFormError}}" hint-placeholder-val="{{ false }}">
+                <span role="alert" style="color: #B42318; font-size: 14px">{{formError}}</span>
+              </sc-if>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); max-width: calc(100% - 32px); box-sizing: border-box; background: #17151F; color: #FFFFFF; padding: 12px 18px; border-radius: 10px; font-size: 14px; display: flex; align-items: center; gap: 16px">
       <span style="overflow-wrap: anywhere">{{toast}}</span>
@@ -351,6 +328,9 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
+    // Esc fecha o modal de novo convite individual, onde quer que esteja o foco
+    this.onEsc = (e) => { if (e.key === 'Escape' && this.state.addOpen) this.setState({ addOpen: false, formError: '', lastAdded: '' }); };
+    window.addEventListener('keydown', this.onEsc);
     api.listInvites().then((invites) => {
       const currentId = this.state.currentId && invites.some((i) => i.id === this.state.currentId) ? this.state.currentId : (invites[0] ? invites[0].id : '');
       this.setState({ invites, currentId });
@@ -373,7 +353,10 @@ class Component extends DCLogic {
     }
   }
 
-  componentWillUnmount() { clearTimeout(this.toastTimer); }
+  componentWillUnmount() {
+    clearTimeout(this.toastTimer);
+    window.removeEventListener('keydown', this.onEsc);
+  }
 
   people(text) {
     return String(text || '').split('\n').map((s) => s.trim()).filter(Boolean);
@@ -560,15 +543,29 @@ class Component extends DCLogic {
     const items = guests.map((g) => ({ kind: 'guest', key: 'g-' + g.id, g, r: g.rsvp }))
       .concat(generic.slice().sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt))).map((r) => ({ kind: 'resp', key: 'r-' + r.id, r })));
 
-    const answered = items.filter((it) => it.r);
-    const going = answered.filter((it) => it.r.go);
+    // indicadores: convites, pessoas que vão (convidados + acompanhantes) e pessoas que não vão
+    const tally = (it) => {
+      const r = it.r;
+      if (!r) return { guestsGo: 0, compGo: 0, notGo: 0 };
+      if (Array.isArray(r.attend)) {
+        return { guestsGo: r.attend.filter((a) => a.go).length, compGo: (r.extra || []).filter(Boolean).length, notGo: r.attend.filter((a) => !a.go).length };
+      }
+      if (it.g) {
+        const ns = r.names || [];
+        const ppl = it.g.people || [];
+        const gGo = r.go ? ns.filter((n) => ppl.indexOf(n) !== -1).length || Math.min(1, ns.length) : 0;
+        return { guestsGo: gGo, compGo: r.go ? Math.max(0, ns.length - gGo) : 0, notGo: r.go ? Math.max(0, Math.max(1, ppl.length) - gGo) : Math.max(1, ppl.length) };
+      }
+      return r.go ? { guestsGo: 1, compGo: Number(r.guests) || 0, notGo: 0 } : { guestsGo: 0, compGo: 0, notGo: 1 };
+    };
+    const sum = items.reduce((acc, it) => { const t = tally(it); acc.g += t.guestsGo; acc.c += t.compGo; acc.n += t.notGo; return acc; }, { g: 0, c: 0, n: 0 });
+    const pending = items.filter((it) => !it.r).length;
+    const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
     const stats = [
-      { label: 'Respostas', value: String(answered.length), note: guests.length ? (() => { const n = guests.length - guests.filter((g) => g.rsvp).length; return n === 1 ? '1 convite individual pendente' : n + ' convites individuais pendentes'; })() : 'recebidas', color: '#17151F' },
-      { label: 'Vão', value: String(going.length), note: going.length === 1 ? 'resposta' : 'respostas', color: '#1E6B43' },
-      { label: 'Não vão', value: String(answered.length - going.length), note: 'respostas', color: '#8A4B00' },
-      { label: 'Pessoas confirmadas', value: String(going.reduce((s, it) => s + this.peopleOf(it.r), 0)), note: 'incluindo acompanhantes', color: '#1E6B43' }
+      { label: 'Convites', value: String(items.length), note: pending ? plural(pending, 'aguardando resposta', 'aguardando resposta') : (items.length ? 'todos responderam' : 'nenhum ainda'), color: '#17151F' },
+      { label: 'Vão comparecer', value: String(sum.g + sum.c), note: plural(sum.g, 'convidado', 'convidados') + ' + ' + plural(sum.c, 'acompanhante', 'acompanhantes'), color: '#1E6B43' },
+      { label: 'Não vão comparecer', value: String(sum.n), note: sum.n === 1 ? 'pessoa' : 'pessoas', color: '#8A4B00' }
     ];
-    if (guests.length) stats.splice(0, 0, { label: 'Convites individuais', value: String(guests.length), note: 'até ' + guests.reduce((s, g) => s + (g.max || 1), 0) + ' pessoas', color: '#3B26A8' });
 
     const q = st.query.trim().toLowerCase();
     const want = st.tab;
@@ -667,7 +664,8 @@ class Component extends DCLogic {
       this.setState({ busy: true, formError: '' });
       api.createGuests(inv.id, list)
         .then((created) => {
-          this.setState({ guests: (this.state.guests || []).concat(created), busy: false, tab: 'Todos', toast: created.length === 1 ? 'Convite de ' + created[0].name + ' criado.' : created.length + ' convites criados.' });
+          const msg = created.length === 1 ? 'Convite de ' + created[0].name + ' criado. Você pode adicionar outro.' : created.length + ' convites criados.';
+          this.setState({ guests: (this.state.guests || []).concat(created), busy: false, tab: 'Todos', lastAdded: msg, toast: created.length === 1 ? '' : msg, addOpen: created.length === 1 });
           after();
         })
         .catch((err) => this.setState({ busy: false, formError: err.message }));
@@ -733,12 +731,20 @@ class Component extends DCLogic {
       bulkDisabled: st.busy || !bulkItems.length,
       bulkButton: bulkItems.length ? (bulkItems.length === 1 ? 'Adicionar 1 convite' : 'Adicionar ' + bulkItems.length + ' convites') : 'Adicionar convites',
       addBulk: () => add(bulkItems, () => this.setState({ bulkText: '' })),
-      listTitle: guests.length ? 'Convidados e respostas' : 'Respostas',
+      listTitle: 'Lista de convidados',
+      addModal: {
+        open: !!st.addOpen,
+        show: () => {
+          this.setState({ addOpen: true, formError: '', lastAdded: '' });
+          setTimeout(() => { try { const el = document.getElementById('g-name') || document.getElementById('g-bulk') || document.querySelector('[data-testid="novo-convite"]'); if (el) el.focus(); } catch (err) {} }, 40);
+        },
+        close: () => this.setState({ addOpen: false, formError: '', lastAdded: '' }),
+        backdrop: (e) => { if (e.target === e.currentTarget) this.setState({ addOpen: false, formError: '', lastAdded: '' }); },
+        hasLast: !!st.lastAdded, last: st.lastAdded
+      },
       tabs,
       query: st.query,
       onQuery: (e) => this.setState({ query: e.target.value }),
-      newAnswer: () => this.openAnswer('new', null, null),
-      isNew: !!(st.answer && st.answer.key === 'new'),
       ans: this.ansVals(guestsById),
       rows,
       empty: !loading && rows.length === 0,
