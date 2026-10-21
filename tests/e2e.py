@@ -569,7 +569,7 @@ def t_personal(pg, browser):
     pg.click('[aria-label="Editar Carlos Souza"]'); pg.wait_for_timeout(200)
     pg.locator('li[data-guest] input[type=number]').first.fill('2'); pg.click('button:has-text("Salvar")'); pg.wait_for_timeout(600)
     rc = pg.inner_text('li[data-guest]:has-text("Carlos Souza")')
-    ok('Convidados: editar acompanhantes', '3\n1 convidado + 2 acomp.' in rc and '+ até 2 acompanhantes' in rc and 'Responder' in rc, rc)
+    ok('Convidados: editar acompanhantes', '3\n1 convidado\n2 acompanhantes' in rc and 'Responder' in rc and 'Ver pessoas (1)' in rc, rc)
     silva = pg.get_attribute('li[data-guest]:has-text("Família Silva")', 'data-guest')
     tios = pg.get_attribute('li[data-guest]:has-text("Tios")', 'data-guest')
     # publicar
@@ -651,10 +651,14 @@ def t_personal(pg, browser):
     ok('Endereço antigo da tela de convidados abre a tela unificada', pg.inner_text('h1') == 'Convidados')
     stats = pg.inner_text('main')
     ok('Indicadores: convites, quem vai (convidados + acompanhantes) e quem não vai', '3\n1 aguardando resposta' in stats and 'Vão comparecer\n3\n3 convidados + 0 acompanhantes' in stats and 'Não vão comparecer\n1\npessoa' in stats, stats[:400])
-    row = pg.inner_text('li[data-guest]:has-text("Família Silva")')
     fs = 'li[data-guest]:has-text("Família Silva")'
+    ok('Convidados: pessoas escondidas por padrão', count(pg, fs + ' .chip') == 0 and count(pg, '.lhead span:text-is("Pessoas")') == 0)
+    pg.click('[aria-label="Ver pessoas de Família Silva"]'); pg.wait_for_timeout(200)
+    pg.click('[aria-label="Ver pessoas de Tios"]'); pg.wait_for_timeout(200)
+    row = pg.inner_text(fs)
     ok('Convidados: situação e nomes confirmados', 'Vão' in row and '2/3' in row and count(pg, fs + ' .chip[title="João Silva · vai"]') == 1 and count(pg, fs + ' .chip[title="Maria Silva · vai"]') == 1, row)
-    ok('Convidados: coluna de cadastrados', '2 convidados + 1 acomp.' in row, row)
+    ok('Convidados: coluna de cadastrados', '3\n2 convidados\n1 acompanhante' in row, row)
+    ok('Convidados: botão ocultar pessoas', 'Ocultar pessoas' in row)
     ok('Convidados: lista sem subtítulo de tipo', 'Convite individual' not in row and 'Até ' not in row)
     boxes = [b['y'] for b in [pg.locator(fs + ' .chip').nth(i).bounding_box() for i in range(pg.locator(fs + ' .chip').count())]]
     ok('Convidados: nomes na vertical', len(boxes) == 2 and boxes[1] > boxes[0] + 10, boxes)
@@ -680,6 +684,7 @@ def t_personal(pg, browser):
     pg.click(fa + ' button:has-text("Salvar resposta")'); pg.wait_for_timeout(700)
     rowc = pg.inner_text('li[data-guest]:has-text("Carlos Souza")')
     cs = 'li[data-guest]:has-text("Carlos Souza")'
+    pg.click('[aria-label="Ver pessoas de Carlos Souza"]'); pg.wait_for_timeout(200); rowc = pg.inner_text(cs)
     ok('Painel: resposta individual registrada', count(pg, cs + ' .chip[title="Carlos Souza · vai"]') == 1 and count(pg, cs + ' .chip[title="Lia Souza · acompanhante"]') == 1 and count(pg, cs + ' .chip[title="Rui Souza · acompanhante"]') == 1 and '3/3' in rowc and 'sem glúten' in rowc and 'registrada por você' in rowc, rowc)
     cg = pg.get_attribute('li[data-guest]:has-text("Carlos Souza")', 'data-guest')
     gc = browser.new_context(viewport={'width': 390, 'height': 844}).new_page()

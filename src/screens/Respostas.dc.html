@@ -25,7 +25,7 @@ button,input,select,textarea{font-family:inherit}
 .danger{color:#B42318;border-color:#F1C4BE}
 button:disabled{opacity:.5;cursor:not-allowed}
 .seg{min-height:40px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer}
-.lrow{display:grid;grid-template-columns:minmax(130px,1fr) 150px 104px minmax(150px,1.2fr) minmax(120px,1fr) 316px;gap:6px 14px;align-items:center}
+.lrow{display:grid;grid-template-columns:minmax(180px,1.3fr) 170px 120px minmax(140px,1fr) 316px;gap:6px 14px;align-items:center}
 .lhead{padding:8px 20px;background:#FAF9FC;border-bottom:1px solid #EEECF3;color:#5E5A6B;font-size:12px;font-weight:600}
 .mlbl{display:none;font-size:11px;font-weight:600;color:#5E5A6B}
 .ib{width:34px;height:34px;border:0;border-radius:8px;background:transparent;color:#3D3A4A;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;text-decoration:none}
@@ -35,6 +35,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 .sbtn:hover{background:#F5F4F8}
 .chip{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;max-width:100%;padding:2px 9px;border-radius:999px;font-size:12px;font-weight:500;line-height:1.5;box-sizing:border-box}
 .chip>.nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ptog{display:inline-flex;align-items:center;gap:4px;margin:2px 0 0 -6px;min-height:28px;padding:0 6px;border:0;border-radius:7px;background:transparent;color:#4A32C4;font-size:12px;font-weight:600;cursor:pointer}
+.ptog:hover{background:#F1EFF6}
+.ptog:focus-visible{outline:2px solid #5B3FD6;outline-offset:1px}
+.cad{display:flex;align-items:center;gap:6px;font-size:12px;color:#3D3A4A;line-height:1.45;white-space:nowrap}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 @media (max-width:900px){.lhead{display:none}.lrow{grid-template-columns:1fr 1fr;align-items:start}.lrow>.c-wide{grid-column:1/-1}.lrow>.c-act{justify-content:flex-start!important;margin-left:-6px}.mlbl{display:block}}
 </style>
@@ -127,7 +131,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
       </div>
 
       <div class="lrow lhead" aria-hidden="true">
-        <span>Convite</span><span>Cadastrados</span><span>Resposta</span><span>Pessoas</span><span>Observações</span><span style="text-align: right">Ações</span>
+        <span>Convite</span><span>Cadastrados</span><span>Resposta</span><span>Observações</span><span style="text-align: right">Ações</span>
       </div>
       <ul style="list-style: none; margin: 0; padding: 0">
         <sc-for list="{{rows}}" as="g" hint-placeholder-count="4">
@@ -136,11 +140,38 @@ button:disabled{opacity:.5;cursor:not-allowed}
               <div class="lrow" style="font-size: 13px">
                 <div class="c-wide" style="min-width: 0">
                   <strong style="display: block; font-size: 15px; font-weight: 600; overflow-wrap: anywhere">{{g.name}}</strong>
+                  <sc-if value="{{g.hasPeople}}" hint-placeholder-val="{{ true }}">
+                    <button type="button" class="ptog" onClick="{{g.togglePeople}}" aria-expanded="{{g.peopleExpanded}}" aria-label="{{g.peopleAria}}">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="transform: rotate({{g.peopleRot}}deg); transition: transform .15s"><path d="M9 6l6 6-6 6"></path></svg>{{g.peopleLabel}}
+                    </button>
+                  </sc-if>
+                  <sc-if value="{{g.peopleOpen}}" hint-placeholder-val="{{ false }}">
+                    <div data-people="{{g.key}}" style="display: flex; flex-direction: column; gap: 3px; min-width: 0; margin: 4px 0 2px">
+                      <sc-for list="{{g.people}}" as="p" hint-placeholder-count="2">
+                        <span class="chip" title="{{p.title}}" style="border: 1px solid {{p.ring}}; background: {{p.bg}}; color: {{p.fg}}"><span aria-hidden="true" style="font-weight: 700">{{p.mark}}</span><span class="nm" style="text-decoration: {{p.deco}}">{{p.name}}</span><span class="sr">{{p.sr}}</span></span>
+                      </sc-for>
+                      <sc-if value="{{g.hasMore}}" hint-placeholder-val="{{ false }}">
+                        <span style="font-size: 12px; color: #5E5A6B; padding-left: 4px">{{g.more}}</span>
+                      </sc-if>
+                    </div>
+                  </sc-if>
                 </div>
                 <div>
                   <span class="mlbl">Cadastrados</span>
-                  <span style="font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{g.cadTotal}}</span>
-                  <span style="display: block; font-size: 12px; color: #5E5A6B; line-height: 1.35">{{g.cadSplit}}</span>
+                  <sc-if value="{{g.isGuest}}" hint-placeholder-val="{{ true }}">
+                    <div style="display: flex; align-items: center; gap: 10px">
+                      <span title="Total de pessoas cadastradas" style="min-width: 34px; height: 34px; padding: 0 6px; box-sizing: border-box; border-radius: 9px; background: #F1EFF6; color: #17151F; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums">{{g.cadTotal}}</span>
+                      <div style="display: flex; flex-direction: column">
+                        <span class="cad"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>{{g.cadGuests}}</span>
+                        <sc-if value="{{g.hasComp}}" hint-placeholder-val="{{ false }}">
+                          <span class="cad" style="color: #5E5A6B"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>{{g.cadComp}}</span>
+                        </sc-if>
+                      </div>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{g.notGuest}}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size: 12px; color: #5E5A6B">Resposta pelo link geral</span>
+                  </sc-if>
                 </div>
                 <div>
                   <span class="mlbl">Resposta</span>
@@ -148,17 +179,6 @@ button:disabled{opacity:.5;cursor:not-allowed}
                   <sc-if value="{{g.byPanel}}" hint-placeholder-val="{{ false }}">
                     <span style="display: block; margin-top: 3px; font-size: 11px; color: #8A4B00; font-weight: 600">registrada por você</span>
                   </sc-if>
-                </div>
-                <div style="min-width: 0">
-                  <span class="mlbl">Pessoas</span>
-                  <div style="display: flex; flex-direction: column; gap: 3px; min-width: 0">
-                    <sc-for list="{{g.people}}" as="p" hint-placeholder-count="2">
-                      <span class="chip" title="{{p.title}}" style="border: 1px solid {{p.ring}}; background: {{p.bg}}; color: {{p.fg}}"><span aria-hidden="true" style="font-weight: 700">{{p.mark}}</span><span class="nm" style="text-decoration: {{p.deco}}">{{p.name}}</span><span class="sr">{{p.sr}}</span></span>
-                    </sc-for>
-                    <sc-if value="{{g.hasMore}}" hint-placeholder-val="{{ false }}">
-                      <span style="font-size: 12px; color: #5E5A6B; padding-left: 4px">{{g.more}}</span>
-                    </sc-if>
-                  </div>
                 </div>
                 <div style="min-width: 0">
                   <span class="mlbl">Observações</span>
@@ -649,6 +669,7 @@ class Component extends DCLogic {
       const np = g ? Math.max(1, (g.people || []).length) : 0;
       const comps = g ? (g.companions || 0) : 0;
       const msgOpen = !!(r && r.msg) && st.openMsg === it.key;
+      const peopleOpen = !!(st.openPeople && st.openPeople[it.key]);
       const name = g ? g.name : r.name;
       const ed = editing ? Object.assign({}, st.ed, { total: this.totalLine(st.ed.people, st.ed.companions) }) : null;
       const setEd = (k) => (e) => this.setState({ ed: Object.assign({}, this.state.ed, { [k]: e.target.value }) });
@@ -657,8 +678,14 @@ class Component extends DCLogic {
         isGuest: !!g, byPanel: !!(r && r.via === 'painel'),
         viewing: !editing && !answering, editing, answering,
         pad: editing || answering ? '16px 20px' : '10px 20px',
-        cadTotal: g ? String(g.max) : '—',
-        cadSplit: g ? (np + (np === 1 ? ' convidado' : ' convidados') + (comps ? ' + ' + comps + ' acomp.' : '')) : 'pelo link geral',
+        notGuest: !g,
+        cadTotal: g ? String(g.max) : '',
+        cadGuests: np + (np === 1 ? ' convidado' : ' convidados'),
+        hasComp: comps > 0, cadComp: comps + (comps === 1 ? ' acompanhante' : ' acompanhantes'),
+        hasPeople: people.length > 0 || !!more, peopleOpen, peopleExpanded: peopleOpen ? 'true' : 'false', peopleRot: peopleOpen ? 90 : 0,
+        peopleLabel: peopleOpen ? 'Ocultar pessoas' : (people.length ? 'Ver pessoas (' + people.length + ')' : 'Ver pessoas'),
+        peopleAria: (peopleOpen ? 'Ocultar pessoas de ' : 'Ver pessoas de ') + name,
+        togglePeople: () => this.setState({ openPeople: Object.assign({}, this.state.openPeople, { [it.key]: !peopleOpen }) }),
         status: !r ? 'Pendente' : (r.go ? (going > 1 ? 'Vão' : 'Vai') : (notGoing > 1 ? 'Não vão' : 'Não vai')),
         hasFrac: !!(r && r.go && g), frac: g ? going + '/' + g.max : '',
         statusTitle: r ? (r.via === 'painel' ? 'Registrada por você em ' : 'Resposta em ') + api.fmt.short(r.updatedAt || r.createdAt) : 'Aguardando resposta',
