@@ -10,6 +10,8 @@
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
 <style>
+.xbtn:hover{background:rgba(127,120,150,.16)}
+.xbtn:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
 body{margin:0;background:#F5F4F8}
 a{color:#4A32C4}a:hover{color:#2F1F8F}
 button,input,select,textarea{font-family:inherit}
@@ -254,54 +256,46 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
   <sc-if value="{{addModal.open}}" hint-placeholder-val="{{ false }}">
     <div onClick="{{addModal.backdrop}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(15, 14, 20, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
-      <div role="dialog" aria-modal="true" aria-labelledby="add-title" data-testid="novo-convite" tabindex="-1" style="position: relative; width: min(760px, 100%); max-height: calc(100vh - 32px); overflow: auto; box-sizing: border-box; background: #FFFFFF; border-radius: 16px; padding: 20px 22px; display: flex; flex-direction: column; gap: 14px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35)">
-        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px">
-          <h2 id="add-title" style="margin: 0; font-size: 18px">Novo convite individual</h2>
-          <div style="display: flex; flex-wrap: wrap; gap: 8px">
-            <button class="btn" onClick="{{toggleBulk}}" aria-expanded="{{bulkExpanded}}">{{bulkToggleLabel}}</button>
-            <button class="btn" onClick="{{addModal.close}}" aria-label="Fechar">Fechar</button>
+      <div role="dialog" aria-modal="true" aria-labelledby="add-title" data-testid="novo-convite" tabindex="-1" style="position: relative; width: min(760px, 100%); max-height: calc(100vh - 32px); overflow: auto; box-sizing: border-box; background: #FFFFFF; border-radius: 16px; padding: 20px 22px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35)">
+        <button type="button" class="xbtn" onClick="{{addModal.close}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        <form onSubmit="{{addModal.save}}" style="display: flex; flex-direction: column; gap: 14px">
+          <h2 id="add-title" style="margin: 0; padding-right: 48px; font-size: 18px">{{addModal.title}}</h2>
+          <sc-if value="{{addModal.hasLast}}" hint-placeholder-val="{{ false }}">
+            <p role="status" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #E3F3EA; color: #1E6B43; font-size: 14px">{{addModal.last}}</p>
+          </sc-if>
+          <sc-if value="{{notBulk}}" hint-placeholder-val="{{ true }}">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; align-items: start">
+              <div>
+                <label class="lbl" for="g-name">Nome do convite</label>
+                <input class="fld" id="g-name" value="{{form.name}}" onInput="{{form.onName}}" placeholder="Ex.: Família Silva">
+                <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Aparece no convite. Vazio: usa os nomes dos convidados.</span>
+              </div>
+              <div>
+                <label class="lbl" for="g-people">Convidados (um nome por linha)</label>
+                <textarea class="fld" id="g-people" rows="3" value="{{form.people}}" onInput="{{form.onPeople}}" placeholder="João Silva&#10;Maria Silva" style="resize: vertical"></textarea>
+              </div>
+              <div>
+                <label class="lbl" for="g-comp">Acompanhantes extras</label>
+                <input class="fld" id="g-comp" type="number" min="0" max="20" value="{{form.companions}}" onInput="{{form.onCompanions}}">
+                <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{form.total}}</span>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{isBulk}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 10px">
+              <label class="lbl" for="g-bulk" style="margin: 0">Um convite por linha</label>
+              <textarea class="fld" id="g-bulk" rows="7" value="{{bulkText}}" onInput="{{onBulk}}" placeholder="Família Silva: João Silva, Maria Silva +2&#10;Carlos Souza +1&#10;Ana Lima, Bia Lima" style="resize: vertical; font-family: ui-monospace, monospace; font-size: 13px"></textarea>
+              <p style="margin: 0; font-size: 13px; color: #5E5A6B">Formato: <strong>Nome do convite:</strong> convidados separados por vírgula e <strong>+N</strong> para acompanhantes extras. O nome do convite e o +N são opcionais. {{bulkCount}}</p>
+            </div>
+          </sc-if>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 4px">
+            <sc-if value="{{hasFormError}}" hint-placeholder-val="{{ false }}">
+              <span role="alert" style="margin-right: auto; color: #B42318; font-size: 14px">{{formError}}</span>
+            </sc-if>
+            <button type="button" class="btn" onClick="{{toggleBulk}}" aria-pressed="{{bulkExpanded}}">{{bulkToggleLabel}}</button>
+            <button type="submit" class="btn pri" disabled="{{addModal.saveDisabled}}">Salvar</button>
           </div>
-        </div>
-        <sc-if value="{{addModal.hasLast}}" hint-placeholder-val="{{ false }}">
-          <p role="status" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #E3F3EA; color: #1E6B43; font-size: 14px">{{addModal.last}}</p>
-        </sc-if>
-        <sc-if value="{{notBulk}}" hint-placeholder-val="{{ true }}">
-          <form onSubmit="{{addOne}}" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; align-items: start">
-            <div>
-              <label class="lbl" for="g-name">Nome do convite</label>
-              <input class="fld" id="g-name" value="{{form.name}}" onInput="{{form.onName}}" placeholder="Ex.: Família Silva">
-              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Aparece no convite. Vazio: usa os nomes dos convidados.</span>
-            </div>
-            <div>
-              <label class="lbl" for="g-people">Convidados (um nome por linha)</label>
-              <textarea class="fld" id="g-people" rows="3" value="{{form.people}}" onInput="{{form.onPeople}}" placeholder="João Silva&#10;Maria Silva" style="resize: vertical"></textarea>
-            </div>
-            <div>
-              <label class="lbl" for="g-comp">Acompanhantes extras</label>
-              <input class="fld" id="g-comp" type="number" min="0" max="20" value="{{form.companions}}" onInput="{{form.onCompanions}}">
-              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{form.total}}</span>
-            </div>
-            <div style="grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
-              <button type="submit" class="btn pri" disabled="{{busy}}">Adicionar convite</button>
-              <sc-if value="{{hasFormError}}" hint-placeholder-val="{{ false }}">
-                <span role="alert" style="color: #B42318; font-size: 14px">{{formError}}</span>
-              </sc-if>
-            </div>
-          </form>
-        </sc-if>
-        <sc-if value="{{isBulk}}" hint-placeholder-val="{{ false }}">
-          <div style="display: flex; flex-direction: column; gap: 10px">
-            <label class="lbl" for="g-bulk" style="margin: 0">Um convite por linha</label>
-            <textarea class="fld" id="g-bulk" rows="7" value="{{bulkText}}" onInput="{{onBulk}}" placeholder="Família Silva: João Silva, Maria Silva +2&#10;Carlos Souza +1&#10;Ana Lima, Bia Lima" style="resize: vertical; font-family: ui-monospace, monospace; font-size: 13px"></textarea>
-            <p style="margin: 0; font-size: 13px; color: #5E5A6B">Formato: <strong>Nome do convite:</strong> convidados separados por vírgula e <strong>+N</strong> para acompanhantes extras. O nome do convite e o +N são opcionais.</p>
-            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 12px">
-              <button class="btn pri" onClick="{{addBulk}}" disabled="{{bulkDisabled}}">{{bulkButton}}</button>
-              <sc-if value="{{hasFormError}}" hint-placeholder-val="{{ false }}">
-                <span role="alert" style="color: #B42318; font-size: 14px">{{formError}}</span>
-              </sc-if>
-            </div>
-          </div>
-        </sc-if>
+        </form>
       </div>
     </div>
   </sc-if>
@@ -713,24 +707,12 @@ class Component extends DCLogic {
       },
       busy: st.busy,
       hasFormError: !!st.formError, formError: st.formError,
-      addOne: (e) => {
-        if (e && e.preventDefault) e.preventDefault();
-        const f = this.state.form;
-        const ppl = this.people(f.people);
-        if (!f.name.trim() && !ppl.length) { this.setState({ formError: 'Informe o nome do convite ou de pelo menos um convidado.' }); return; }
-        add([{ name: f.name, people: ppl, companions: f.companions }], () => {
-          this.setState({ form: { name: '', people: '', companions: f.companions } });
-          setTimeout(() => { try { document.getElementById('g-name').focus(); } catch (err) {} }, 30);
-        });
-      },
       isBulk: st.bulk, notBulk: !st.bulk, bulkExpanded: st.bulk ? 'true' : 'false',
-      bulkToggleLabel: st.bulk ? 'Adicionar um por vez' : 'Adicionar vários de uma vez',
+      bulkToggleLabel: st.bulk ? 'Adicionar um por vez' : 'Adicionar vários',
+      bulkCount: bulkItems.length ? (bulkItems.length === 1 ? '1 convite será criado.' : bulkItems.length + ' convites serão criados.') : '',
       toggleBulk: () => this.setState({ bulk: !st.bulk, formError: '' }),
       bulkText: st.bulkText,
       onBulk: (e) => this.setState({ bulkText: e.target.value, formError: '' }),
-      bulkDisabled: st.busy || !bulkItems.length,
-      bulkButton: bulkItems.length ? (bulkItems.length === 1 ? 'Adicionar 1 convite' : 'Adicionar ' + bulkItems.length + ' convites') : 'Adicionar convites',
-      addBulk: () => add(bulkItems, () => this.setState({ bulkText: '' })),
       listTitle: 'Lista de convidados',
       addModal: {
         open: !!st.addOpen,
@@ -740,7 +722,21 @@ class Component extends DCLogic {
         },
         close: () => this.setState({ addOpen: false, formError: '', lastAdded: '' }),
         backdrop: (e) => { if (e.target === e.currentTarget) this.setState({ addOpen: false, formError: '', lastAdded: '' }); },
-        hasLast: !!st.lastAdded, last: st.lastAdded
+        hasLast: !!st.lastAdded, last: st.lastAdded,
+        title: st.bulk ? 'Novos convites individuais' : 'Novo convite individual',
+        saveDisabled: st.busy || (st.bulk && !bulkItems.length),
+        // "Salvar" cria o convite do formulário ou, em "Adicionar vários", todos os da lista
+        save: (e) => {
+          if (e && e.preventDefault) e.preventDefault();
+          if (this.state.bulk) { if (bulkItems.length) add(bulkItems, () => this.setState({ bulkText: '' })); return; }
+          const f = this.state.form;
+          const ppl = this.people(f.people);
+          if (!f.name.trim() && !ppl.length) { this.setState({ formError: 'Informe o nome do convite ou de pelo menos um convidado.' }); return; }
+          add([{ name: f.name, people: ppl, companions: f.companions }], () => {
+            this.setState({ form: { name: '', people: '', companions: f.companions } });
+            setTimeout(() => { try { document.getElementById('g-name').focus(); } catch (err) {} }, 30);
+          });
+        }
       },
       tabs,
       query: st.query,

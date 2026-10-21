@@ -10,6 +10,8 @@
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
 <style>
+.xbtn:hover{background:rgba(127,120,150,.16)}
+.xbtn:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
 body{margin:0;background:#ECEBF1}
 a{color:#4A32C4}a:hover{color:#2F1F8F}
 button,input,select,textarea{font-family:inherit}
@@ -824,11 +826,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
 
   <sc-if value="{{pe.open}}" hint-placeholder-val="{{ false }}">
     <div role="dialog" aria-modal="true" aria-labelledby="pe-title" onKeyDown="{{pe.onKey}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(15, 14, 20, 0.72); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
-      <div style="width: min(1060px, 100%); max-height: calc(100vh - 32px); background: #FFFFFF; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4)">
-        <header style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; padding: 12px 14px 12px 18px; border-bottom: 1px solid #E3E1EA">
-          <h2 id="pe-title" style="margin: 0; flex: 1 1 90px; font-size: 17px; font-weight: 700">{{pe.title}}</h2>
-          <button onClick="{{pe.cancel}}" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Cancelar</button>
-          <button onClick="{{pe.apply}}" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">Aplicar</button>
+      <div style="position: relative; width: min(1060px, 100%); max-height: calc(100vh - 32px); background: #FFFFFF; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.4)">
+        <button type="button" class="xbtn" onClick="{{pe.cancel}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; top: 8px; right: 10px"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        <header style="display: flex; align-items: center; min-height: 56px; padding: 0 60px 0 18px; border-bottom: 1px solid #E3E1EA; box-sizing: border-box">
+          <h2 id="pe-title" style="margin: 0; font-size: 17px; font-weight: 700">{{pe.title}}</h2>
         </header>
         <div style="flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-wrap: wrap">
           <div style="flex: 999 1 380px; min-width: 0; background: #1D1B24; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 22px 16px; box-sizing: border-box">
@@ -919,21 +920,25 @@ button:disabled{opacity:.5;cursor:not-allowed}
               </div>
             </sc-if>
 
-            <div style="margin-top: auto; border-top: 1px solid #EEECF3; padding-top: 14px; display: flex; flex-direction: column; gap: 6px">
+            <div style="border-top: 1px solid #EEECF3; padding-top: 14px; display: flex; flex-direction: column; gap: 6px">
               <button onClick="{{pe.reset}}" disabled="{{pe.unedited}}" style="align-self: flex-start; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Desfazer todas as edições</button>
               <span style="font-size: 12px; color: #5E5A6B">A foto original fica guardada. Você pode voltar a editar quando quiser.</span>
             </div>
           </div>
         </div>
+        <footer style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; padding: 12px 14px; border-top: 1px solid #E3E1EA">
+          <button onClick="{{pe.cancel}}" style="min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Cancelar</button>
+          <button onClick="{{pe.apply}}" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">Aplicar</button>
+        </footer>
       </div>
     </div>
   </sc-if>
 
   <sc-if value="{{fullPreview}}" hint-placeholder-val="{{ false }}">
     <div role="dialog" aria-modal="true" aria-label="Pré-visualização do convite" style="position: fixed; inset: 0; z-index: 50; background: rgba(15, 14, 20, 0.94); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 12px; box-sizing: border-box">
-      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; color: #FFFFFF; font-size: 14px">
+      <button type="button" class="xbtn" onClick="{{closePreview}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2; top: 14px; right: 16px; width: 44px; height: 44px; background: rgba(255, 255, 255, 0.12)"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; padding: 0 56px; color: #FFFFFF; font-size: 14px; text-align: center">
         <span>Assim o convidado vê o convite · toque para abrir e navegue pelas páginas</span>
-        <button onClick="{{closePreview}}" style="min-height: 40px; padding: 0 16px; border-radius: 10px; border: 0; background: #FFFFFF; color: #17151F; font-weight: 700; font-size: 14px; cursor: pointer">Fechar prévia</button>
       </div>
       <div style="width: {{pv.w}}; height: {{pv.h}}; border-radius: {{pv.r}}; overflow: hidden; flex: none; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5)">
         <div style="width: 390px; height: 844px; transform: scale({{pv.s}}); transform-origin: top left">

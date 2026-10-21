@@ -10,6 +10,8 @@
 <helmet>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
 <style>
+.xbtn:hover{background:rgba(127,120,150,.16)}
+.xbtn:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
 body{margin:0;background:#F5F4F8}
 a{color:#4A32C4}a:hover{color:#2F1F8F}
 button{font-family:inherit}
@@ -110,7 +112,8 @@ button{font-family:inherit}
 
   <sc-if value="{{showModal}}" hint-placeholder-val="{{ false }}">
     <div style="position: fixed; inset: 0; background: rgba(23, 21, 31, 0.55); display: flex; align-items: center; justify-content: center; padding: 16px">
-      <div role="dialog" aria-modal="true" aria-labelledby="del-title" style="background: #FFFFFF; border-radius: 16px; padding: 28px; width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 12px">
+      <div role="dialog" aria-modal="true" aria-labelledby="del-title" style="position: relative; background: #FFFFFF; border-radius: 16px; padding: 28px; width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 12px">
+        <button type="button" class="xbtn" onClick="{{cancelDelete}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
         <div style="width: 44px; height: 44px; border-radius: 12px; background: #FDECEA; color: #B42318; display: flex; align-items: center; justify-content: center">
           <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>
         </div>
