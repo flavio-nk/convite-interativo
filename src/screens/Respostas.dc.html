@@ -109,7 +109,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
           <label for="busca" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar por nome</label>
           <input class="fld" id="busca" type="search" placeholder="Buscar por nome" value="{{query}}" onInput="{{onQuery}}" style="width: 200px">
           <sc-if value="{{personalOn}}" hint-placeholder-val="{{ false }}">
-            <button class="btn pri" onClick="{{addModal.show}}">+ Novo convite individual</button>
+            <button class="btn pri" onClick="{{addModal.show}}">+ Adicionar convidados</button>
           </sc-if>
         </div>
       </div>
@@ -723,7 +723,7 @@ class Component extends DCLogic {
         close: () => this.setState({ addOpen: false, formError: '', lastAdded: '' }),
         backdrop: (e) => { if (e.target === e.currentTarget) this.setState({ addOpen: false, formError: '', lastAdded: '' }); },
         hasLast: !!st.lastAdded, last: st.lastAdded,
-        title: st.bulk ? 'Novos convites individuais' : 'Novo convite individual',
+        title: 'Adicionar convidados',
         saveDisabled: st.busy || (st.bulk && !bulkItems.length),
         // "Salvar" cria o convite do formulário ou, em "Adicionar vários", todos os da lista
         save: (e) => {
