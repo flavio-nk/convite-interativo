@@ -219,7 +219,7 @@ def t_rsvps(pg):
 def t_dashboard(pg):
     go(pg, 'Main', 1500)
     ok('Painel: convite salvo na lista', count(pg, 'article:has-text("Festa de Teste")') == 1)
-    ok('Painel: contagem de respostas', '1 vão · 1 não vão' in text(pg))
+    ok('Painel: card sem contagem de quem vai e não vai', ' vão · ' not in text(pg) and 'não vão' not in text(pg) and 'Nenhuma resposta' not in text(pg))
     ok('Painel: data do evento', 'Qui, 20 mai 2027 · 17h30' in text(pg))
     pg.click('[aria-label="Excluir Festa de Teste"]'); pg.wait_for_timeout(200)
     pg.click('[role=dialog] [aria-label="Fechar"]'); pg.wait_for_timeout(200)
