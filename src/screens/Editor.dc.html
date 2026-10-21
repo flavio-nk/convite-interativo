@@ -46,6 +46,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <input id="inv-title" value="{{title}}" onChange="{{onTitle}}" style="border: 0; padding: 2px 0; font-size: 18px; font-weight: 700; color: #17151F; background: transparent; min-width: 0">
         <span style="font-size: 13px; color: #5E5A6B">{{statusLine}}</span>
       </div>
+      <button type="button" class="datechip" onClick="{{ev.openPanel}}" aria-label="{{ev.chipAria}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px {{ev.chipBorder}} {{ev.chipRing}}; background: {{ev.chipBg}}; color: {{ev.chipFg}}; font-weight: 600; font-size: 14px; cursor: pointer; white-space: nowrap">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
+        {{ev.chipLabel}}
+      </button>
       <div style="display: flex; flex-wrap: wrap; gap: 8px">
         <button onClick="{{openPreview}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -310,11 +314,34 @@ button:disabled{opacity:.5;cursor:not-allowed}
             <label class="lbl" for="ev-kicker">Chamada (ex.: Casamento, Aniversário)</label>
             <input class="fld" id="ev-kicker" value="{{kicker}}" onChange="{{onKicker}}">
           </div>
-          <div>
-            <label class="lbl" for="ev-date">Data e horário</label>
-            <input class="fld" id="ev-date" type="datetime-local" value="{{eventLocal}}" onChange="{{onEventDate}}">
-            <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{eventHint}}</span>
-          </div>
+          <fieldset style="margin: 0; padding: 14px; border: 1px solid #E3E1EA; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; min-width: 0">
+            <legend style="padding: 0 6px; font-size: 14px; font-weight: 700">Quando é o evento?</legend>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px">
+              <div>
+                <label class="lbl" for="ev-day">Data</label>
+                <input class="fld" id="ev-day" type="date" value="{{ev.day}}" onInput="{{ev.onDay}}" onChange="{{ev.onDay}}">
+              </div>
+              <div>
+                <label class="lbl" for="ev-time">Horário</label>
+                <input class="fld" id="ev-time" type="time" step="300" value="{{ev.time}}" onInput="{{ev.onTime}}" onChange="{{ev.onTime}}">
+              </div>
+            </div>
+            <div>
+              <span id="ev-quick-l" style="display: block; font-size: 12px; font-weight: 600; color: #5E5A6B; margin-bottom: 6px">Horários comuns</span>
+              <div role="group" aria-labelledby="ev-quick-l" data-testid="ev-quick" style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{ev.quick}}" as="q" hint-placeholder-count="7">
+                  <button type="button" onClick="{{q.pick}}" aria-pressed="{{q.pressed}}" style="min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid {{q.ring}}; background: {{q.bg}}; color: {{q.fg}}; font-weight: 600; font-size: 13px; cursor: pointer">{{q.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div role="status" data-testid="ev-summary" style="padding: 10px 12px; border-radius: 10px; background: {{ev.sumBg}}; color: {{ev.sumFg}}; font-size: 14px; line-height: 1.45">
+              <strong style="display: block">{{ev.sumTitle}}</strong>
+              <span style="font-size: 13px">{{ev.sumNote}}</span>
+            </div>
+            <sc-if value="{{ev.has}}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ev.clear}}" style="align-self: flex-start; min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #3D3A4A; font-weight: 600; font-size: 13px; cursor: pointer">Remover data</button>
+            </sc-if>
+          </fieldset>
           <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #F5F4F8; font-size: 13px; color: #3D3A4A">O nome principal do convite é o bloco Título da página Capa. Edite-o na aba Bloco.</p>
 
           <section aria-labelledby="pers-title" style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 16px">
@@ -1234,6 +1261,46 @@ class Component extends DCLogic {
       id: this.inviteId, title: st.title, kicker: st.kicker, eventDate: st.eventDate, coverTitle: cover ? cover.text : st.title,
       status: st.published ? 'publicado' : 'rascunho', theme: st.theme, themeBase: st.themeBase || this.baseTheme(), music, pages, opening: st.opening, personal: st.personal,
       createdAt: this.createdAt
+    };
+  }
+
+  // Data do evento em dois campos simples (data + horário) com horários comuns a um toque.
+  eventVals(st) {
+    const local = api.fmt.toLocalInput(st.eventDate);
+    const day = local ? local.slice(0, 10) : (st.evDay || '');
+    const time = local ? local.slice(11, 16) : (st.evTime || '');
+    const set = (d, t) => {
+      if (d) this.setState({ eventDate: api.fmt.fromLocalInput(d + 'T' + (t || '19:00')), evDay: '', evTime: '' });
+      else this.setState({ evDay: '', evTime: t || '' });
+    };
+    const has = !!st.eventDate;
+    const d = has ? new Date(st.eventDate) : null;
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const days = d ? Math.round((new Date(d.getFullYear(), d.getMonth(), d.getDate()) - today) / 86400000) : 0;
+    const past = has && d.getTime() < Date.now();
+    const note = !has ? 'Escolha a data; o horário começa em 19h e pode ser trocado. A data aparece na abertura e ativa a contagem regressiva.'
+      : (past ? 'Essa data já passou. O convite aparece como Encerrado.'
+        : (days === 0 ? 'É hoje!' : (days === 1 ? 'É amanhã.' : 'Faltam ' + days + ' dias.')));
+    const quick = ['10:00', '12:00', '16:00', '18:00', '19:00', '20:00', '21:00'].map((t) => {
+      const on = time === t;
+      return { label: t.replace(':00', 'h'), pressed: on ? 'true' : 'false', bg: on ? '#5B3FD6' : '#FFFFFF', fg: on ? '#FFFFFF' : '#17151F', ring: on ? '#5B3FD6' : '#D6D3E0', pick: () => set(day, t) };
+    });
+    return {
+      day, time, has, quick,
+      onDay: (e) => set(e.target.value, time),
+      onTime: (e) => { if (e.target.value) set(day, e.target.value); },
+      clear: () => this.setState({ eventDate: null, evDay: '', evTime: '' }),
+      sumTitle: has ? api.fmt.long(st.eventDate) : 'Data ainda não definida',
+      sumNote: note,
+      sumBg: !has ? '#F5F4F8' : (past ? '#FDECEA' : '#EEEAFB'), sumFg: !has ? '#3D3A4A' : (past ? '#8E2A1F' : '#2F1F8F'),
+      chipLabel: has ? api.fmt.card(st.eventDate) : 'Definir data do evento',
+      chipAria: has ? 'Data do evento: ' + api.fmt.long(st.eventDate) + '. Alterar' : 'Definir data do evento',
+      chipBg: has ? '#FFFFFF' : '#EEEAFB', chipFg: has ? '#17151F' : '#43299F',
+      chipRing: has ? '#D6D3E0' : '#B9ABF0', chipBorder: has ? 'solid' : 'dashed',
+      openPanel: () => {
+        this.setState({ panel: 'evento' });
+        setTimeout(() => { try { const el = document.getElementById('ev-day'); if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.focus(); } } catch (e) {} }, 60);
+      }
     };
   }
 
@@ -2309,13 +2376,12 @@ class Component extends DCLogic {
       previewInvite: ser,
       kicker: st.kicker,
       onKicker: (e) => this.setState({ kicker: e.target.value }),
-      eventLocal: api.fmt.toLocalInput(st.eventDate),
-      onEventDate: (e) => this.setState({ eventDate: api.fmt.fromLocalInput(e.target.value) }),
-      eventHint: st.eventDate ? 'Na abertura: ' + api.fmt.dots(st.eventDate) + ' · ' + api.fmt.long(st.eventDate) : 'Defina a data para ativar a contagem regressiva.',
+      ev: this.eventVals(st),
       isEventPanel: st.panel === 'evento',
       eventSelected: st.panel === 'evento' ? 'true' : 'false',
       eventTabBg: st.panel === 'evento' ? '#FFFFFF' : 'transparent',
       panelEvent: () => this.setState({ panel: 'evento' }),
+      // (data do evento: ver eventVals)
       pageOptions: st.pages.map((p) => ({ id: p.id, name: p.name })),
       f: {
         autoplay: () => this.patchSel({ autoplay: !(s && s.autoplay) }),
