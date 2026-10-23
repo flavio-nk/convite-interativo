@@ -55,9 +55,9 @@ button,input,select{font-family:inherit}
     </sc-if>
     <sc-if value="{{saved}}" hint-placeholder-val="{{ false }}">
       <div role="status" style="background: #E3F3EA; color: #1E6B43; padding: 10px 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 16px; font-size: 14px">
-        <strong>Tema “{{name}}” salvo em Meus temas.</strong>
+        <strong>Tema “{{name}}” salvo em Temas criados (visível para todos os usuários).</strong>
         <button onClick="{{useInInvite}}" disabled="{{busy}}" style="min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #9BCBB1; background: #FFFFFF; color: #14472D; font-weight: 700; font-size: 14px; cursor: pointer">Usar em um novo convite</button>
-        <a href="Temas.dc.html" style="color: #14472D; font-weight: 700">Ver Meus temas</a>
+        <a href="Temas.dc.html" style="color: #14472D; font-weight: 700">Ver Temas criados</a>
       </div>
     </sc-if>
   </header>
@@ -258,7 +258,9 @@ class Component extends DCLogic {
   componentDidMount() {
     if (!this.state.themeId) return;
     api.getTheme(this.state.themeId).then((t) => this.setState({
-      name: t.name, cat: t.cat || 'Casamento', bg: t.bg, fg: t.fg, accent: t.accent, btnFg: t.btnFg, paper: t.paper, ph: t.ph,
+      // tema de outro usuário: abre como cópia (o original não muda)
+      ...(t.canEdit === false ? { themeId: null, editing: false } : {}),
+      name: t.canEdit === false ? 'Cópia de ' + t.name : t.name, cat: t.cat || 'Casamento', bg: t.bg, fg: t.fg, accent: t.accent, btnFg: t.btnFg, paper: t.paper, ph: t.ph,
       fontKey: t.fontKey || 'cormorant', bodyKey: t.bodyKey || 'jakarta', italic: !!t.italic, layout: t.layout || 'centro',
       anim: t.anim || 'envelope', radiusKey: t.radiusKey || 'pilula', titleScale: t.titleScale || 1
     })).catch((e) => this.setState({ error: e.message }));

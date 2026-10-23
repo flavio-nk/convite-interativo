@@ -24,12 +24,16 @@ body{margin:0;background:#F5F4F8}
       <span style="font-weight: 700; font-size: 18px">Convite Interativo</span>
     </div>
     <div>
-      <h1 style="margin: 0; font-size: 24px; font-weight: 700">Área do organizador</h1>
-      <p style="margin: 6px 0 0; color: #5E5A6B; font-size: 14px">Entre com a senha para criar e editar seus convites. Convidados não precisam de senha: eles abrem o convite pelo link.</p>
+      <h1 style="margin: 0; font-size: 24px; font-weight: 700">Entrar</h1>
+      <p style="margin: 6px 0 0; color: #5E5A6B; font-size: 14px">Entre com seu usuário e senha para criar e editar seus convites. Convidados não precisam de conta: eles abrem o convite pelo link.</p>
+    </div>
+    <div>
+      <label for="user" style="display: block; font-size: 13px; font-weight: 600; color: #3D3A4A; margin-bottom: 6px">Usuário ou e-mail</label>
+      <input class="fld" id="user" autocomplete="username" autocapitalize="none" spellcheck="false" value="{{username}}" onInput="{{onUsername}}">
     </div>
     <div>
       <label for="pw" style="display: block; font-size: 13px; font-weight: 600; color: #3D3A4A; margin-bottom: 6px">Senha</label>
-      <input class="fld" id="pw" type="password" autocomplete="current-password" value="{{password}}" onChange="{{onPassword}}">
+      <input class="fld" id="pw" type="password" autocomplete="current-password" value="{{password}}" onInput="{{onPassword}}">
     </div>
     <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
       <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{error}}</p>
@@ -45,12 +49,14 @@ body{margin:0;background:#F5F4F8}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { password: '', error: '', busy: false };
+    this.state = { username: '', password: '', error: '', busy: false };
   }
   renderVals() {
     const st = this.state;
     const me = this.props.me || {};
     return {
+      username: st.username,
+      onUsername: (e) => this.setState({ username: e.target.value, error: '' }),
       password: st.password,
       onPassword: (e) => this.setState({ password: e.target.value, error: '' }),
       hasError: !!st.error,
@@ -60,9 +66,14 @@ class Component extends DCLogic {
       buttonLabel: st.busy ? 'Entrando…' : 'Entrar',
       submit: (e) => {
         if (e && e.preventDefault) e.preventDefault();
-        if (!st.password) { this.setState({ error: 'Digite a senha.' }); return; }
-        this.setState({ busy: true, error: '' });
-        api.login(st.password)
+        // lê os campos direto do formulário (o navegador pode preencher sem disparar eventos)
+        const f = e && e.target && e.target.elements;
+        const username = String((f && f.user && f.user.value) || st.username).trim();
+        const password = (f && f.pw && f.pw.value) || st.password;
+        if (!username) { this.setState({ error: 'Digite seu usuário ou e-mail.' }); return; }
+        if (!password) { this.setState({ error: 'Digite a senha.' }); return; }
+        this.setState({ busy: true, error: '', username, password });
+        api.login(username, password)
           .then(() => { if (this.props.onLogin) this.props.onLogin(); })
           .catch((err) => this.setState({ busy: false, error: err.message }));
       }

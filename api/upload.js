@@ -10,7 +10,7 @@ import path from 'node:path';
 import { handleUpload, handleUploadPresigned } from '@vercel/blob/client';
 import { issueSignedToken, presignUrl } from '@vercel/blob';
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
-import { isAdmin, requireAdmin } from './_lib/auth.js';
+import { currentUser, requireUser } from './_lib/auth.js';
 import { blobToken, blobStoreId, relatedNames } from './_lib/env.js';
 
 const DIR = path.join(process.cwd(), '.data', 'uploads');
@@ -66,7 +66,7 @@ export default handler(async (req, res) => {
         // só seria usado para conferir avisos de "envio concluído", que não usamos
         webhookPublicKey: process.env.BLOB_WEBHOOK_PUBLIC_KEY || 'nao-utilizado',
         getSignedToken: async (pathname) => {
-          if (!isAdmin(req)) throw httpError(401, 'Entre com a senha do organizador.');
+          if (!(await currentUser(req))) throw httpError(401, 'Entre com seu usuário e senha.');
           const token = await issueSignedToken(Object.assign({ pathname, operations: ['put'], allowedContentTypes: TYPES, maximumSizeInBytes: MAX }, auth));
           return { token, urlOptions: { allowedContentTypes: TYPES, maximumSizeInBytes: MAX, addRandomSuffix: true } };
         }
@@ -79,7 +79,7 @@ export default handler(async (req, res) => {
       body,
       request: req,
       onBeforeGenerateToken: async () => {
-        if (!isAdmin(req)) throw httpError(401, 'Entre com a senha do organizador.');
+        if (!(await currentUser(req))) throw httpError(401, 'Entre com seu usuário e senha.');
         return { allowedContentTypes: TYPES, maximumSizeInBytes: MAX, addRandomSuffix: true };
       }
     });
@@ -104,7 +104,7 @@ export default handler(async (req, res) => {
     return;
   }
   if (req.method !== 'POST') throw httpError(405, 'Método não permitido.');
-  requireAdmin(req);
+  await requireUser(req);
   const type = String(req.headers['content-type'] || 'application/octet-stream');
   if (!/^(image|video|audio)\//.test(type)) throw httpError(415, 'Envie uma imagem, um vídeo ou um áudio.');
   fs.mkdirSync(DIR, { recursive: true });

@@ -1,0 +1,368 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Usuários</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#F5F4F8}
+a{color:#4A32C4}a:hover{color:#2F1F8F}
+button,input,select,textarea{font-family:inherit}
+.fld{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid #D6D3E0;border-radius:10px;background:#FFFFFF;color:#17151F;font-size:14px}
+.fld:focus{outline:2px solid #5B3FD6;outline-offset:1px;border-color:#5B3FD6}
+.lbl{display:block;font-size:13px;font-weight:600;color:#3D3A4A;margin-bottom:6px}
+.btn{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid #D6D3E0;background:#FFFFFF;color:#17151F;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;gap:6px;text-decoration:none;white-space:nowrap}
+.btn:hover{background:#F5F4F8}
+.pri{border:0;background:#5B3FD6;color:#FFFFFF}
+.pri:hover{background:#4A32C4}
+.sbtn{min-height:34px;padding:0 12px;border-radius:8px;border:1px solid #D6D3E0;background:#FFFFFF;color:#17151F;font-weight:600;font-size:13px;cursor:pointer;white-space:nowrap}
+.sbtn:hover{background:#F5F4F8}
+button:disabled{opacity:.5;cursor:not-allowed}
+.xbtn:hover{background:rgba(127,120,150,.16)}
+.xbtn:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
+.urow{display:grid;grid-template-columns:minmax(160px,1.4fr) minmax(110px,.8fr) minmax(170px,1.3fr) 130px 120px 96px 200px;gap:6px 14px;align-items:center}
+.uhead{padding:8px 20px;background:#FAF9FC;border-bottom:1px solid #EEECF3;color:#5E5A6B;font-size:12px;font-weight:600}
+.mlbl{display:none;font-size:11px;font-weight:600;color:#5E5A6B}
+.seg{min-height:44px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer}
+@media (max-width:980px){.uhead{display:none}.urow{grid-template-columns:1fr 1fr;align-items:start}.urow>.c-wide{grid-column:1/-1}.urow>.c-act{justify-content:flex-start!important}.mlbl{display:block}}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F4F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
+      <div style="display: flex; align-items: center; gap: 10px">
+        <div style="width: 32px; height: 32px; border-radius: 9px; background: #5B3FD6; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
+        </div>
+        <span style="font-weight: 700; font-size: 17px; letter-spacing: -0.01em">Convite Interativo</span>
+      </div>
+      <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto">
+        <a href="Main.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Convites</a>
+        <a href="Temas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Temas</a>
+        <a href="Respostas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Convidados</a>
+        <a href="Usuarios.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #EFECFB; color: #3B26A8; font-weight: 600; text-decoration: none">Usuários</a>
+      </nav>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; font-size: 13px"><strong style="font-size: 14px">{{hdr.name}}</strong><span style="color: #5E5A6B">{{hdr.role}}</span></span>
+        <button onClick="{{hdr.logout}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Sair</button>
+      </div>
+    </div>
+  </header>
+
+  <main style="max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 22px">
+    <div>
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700">Usuários</h1>
+      <p style="margin: 6px 0 0; color: #5E5A6B; max-width: 720px">Quem pode entrar na plataforma. <strong>Administradores</strong> veem todos os convites, temas e listas de convidados e acessam este painel. <strong>Usuários</strong> veem só os próprios convites e listas de convidados, e podem usar todos os temas.</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px">
+      <sc-for list="{{stats}}" as="s" hint-placeholder-count="3">
+        <div style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 14px; padding: 16px 18px">
+          <span style="font-size: 13px; font-weight: 600; color: #3D3A4A">{{s.label}}</span>
+          <strong style="display: block; font-size: 28px; line-height: 1.2">{{s.value}}</strong>
+          <span style="font-size: 12px; color: #5E5A6B">{{s.note}}</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <section aria-labelledby="ul-title" style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 14px; overflow: hidden">
+      <div style="padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #EEECF3">
+        <h2 id="ul-title" style="margin: 0; font-size: 18px">Lista de usuários</h2>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+          <div role="group" aria-label="Filtrar" style="display: flex; flex-wrap: wrap; gap: 4px; padding: 4px; border-radius: 12px; background: #F1EFF6">
+            <sc-for list="{{tabs}}" as="t" hint-placeholder-count="3">
+              <button onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="min-height: 34px; padding: 0 12px; border-radius: 9px; border: 0; background: {{t.bg}}; color: #17151F; font-weight: 600; font-size: 13px; cursor: pointer">{{t.label}}</button>
+            </sc-for>
+          </div>
+          <label for="ubusca" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Buscar usuário</label>
+          <input class="fld" id="ubusca" type="search" placeholder="Buscar por nome, usuário ou e-mail" value="{{query}}" onInput="{{onQuery}}" style="width: 260px">
+          <button class="btn pri" onClick="{{openNew}}">+ Novo usuário</button>
+        </div>
+      </div>
+
+      <div class="urow uhead" aria-hidden="true">
+        <span>Nome</span><span>Usuário</span><span>E-mail</span><span>Telefone</span><span>Perfil</span><span>Situação</span><span style="text-align: right">Ações</span>
+      </div>
+      <ul style="list-style: none; margin: 0; padding: 0">
+        <sc-for list="{{rows}}" as="u" hint-placeholder-count="4">
+          <li data-user="{{u.username}}" style="padding: 12px 20px; border-bottom: 1px solid #EEECF3; background: {{u.rowBg}}">
+            <div class="urow" style="font-size: 14px">
+              <div class="c-wide" style="min-width: 0">
+                <strong style="display: block; font-size: 15px; overflow-wrap: anywhere">{{u.name}}</strong>
+                <sc-if value="{{u.master}}" hint-placeholder-val="{{ false }}">
+                  <span style="display: block; font-size: 12px; color: #5E5A6B">Conta principal · senha na variável ADMIN_PASSWORD do Vercel</span>
+                </sc-if>
+                <sc-if value="{{u.isMe}}" hint-placeholder-val="{{ false }}">
+                  <span style="display: block; font-size: 12px; color: #4A32C4; font-weight: 600">Você</span>
+                </sc-if>
+              </div>
+              <div style="min-width: 0"><span class="mlbl">Usuário</span><span style="font-family: ui-monospace, monospace; font-size: 13px; overflow-wrap: anywhere">{{u.username}}</span></div>
+              <div style="min-width: 0"><span class="mlbl">E-mail</span><span style="overflow-wrap: anywhere">{{u.emailText}}</span></div>
+              <div><span class="mlbl">Telefone</span>{{u.phoneText}}</div>
+              <div>
+                <span class="mlbl">Perfil</span>
+                <span style="display: inline-block; padding: 2px 10px; border-radius: 999px; background: {{u.roleBg}}; color: {{u.roleFg}}; font-size: 12px; font-weight: 700">{{u.roleLabel}}</span>
+              </div>
+              <div>
+                <span class="mlbl">Situação</span>
+                <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: {{u.stFg}}"><span aria-hidden="true" style="width: 8px; height: 8px; border-radius: 50%; background: {{u.stDot}}"></span>{{u.stLabel}}</span>
+              </div>
+              <div class="c-wide c-act" style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px">
+                <sc-if value="{{u.editable}}" hint-placeholder-val="{{ true }}">
+                  <button class="sbtn" onClick="{{u.edit}}" aria-label="Editar {{u.name}}">Editar</button>
+                  <sc-if value="{{u.canToggle}}" hint-placeholder-val="{{ true }}">
+                    <button class="sbtn" onClick="{{u.toggle}}" aria-label="{{u.toggleAria}}" style="color: {{u.toggleFg}}">{{u.toggleLabel}}</button>
+                  </sc-if>
+                </sc-if>
+              </div>
+            </div>
+          </li>
+        </sc-for>
+      </ul>
+      <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+        <p style="margin: 0; padding: 28px 20px; text-align: center; color: #5E5A6B">{{emptyText}}</p>
+      </sc-if>
+      <div style="padding: 14px 20px; font-size: 13px; color: #5E5A6B">{{footer}}</div>
+    </section>
+  </main>
+
+  <sc-if value="{{modal.open}}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{modal.backdrop}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(15, 14, 20, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
+      <div role="dialog" aria-modal="true" aria-labelledby="um-title" data-testid="usuario-modal" style="position: relative; width: min(640px, 100%); max-height: calc(100vh - 32px); overflow: auto; box-sizing: border-box; background: #FFFFFF; border-radius: 16px; padding: 20px 22px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35)">
+        <button type="button" class="xbtn" onClick="{{modal.close}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 2"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        <form onSubmit="{{modal.save}}" autocomplete="off" style="display: flex; flex-direction: column; gap: 14px">
+          <h2 id="um-title" style="margin: 0; padding-right: 48px; font-size: 18px">{{modal.title}}</h2>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px">
+            <div>
+              <label class="lbl" for="u-name">Nome</label>
+              <input class="fld" id="u-name" value="{{f.name}}" onInput="{{f.on.name}}" autocomplete="off" placeholder="Nome completo">
+            </div>
+            <div>
+              <label class="lbl" for="u-email">E-mail</label>
+              <input class="fld" id="u-email" type="email" value="{{f.email}}" onInput="{{f.on.email}}" autocomplete="off" placeholder="nome@exemplo.com">
+            </div>
+            <div>
+              <label class="lbl" for="u-phone">Telefone <span style="font-weight: 400; color: #5E5A6B">(opcional)</span></label>
+              <input class="fld" id="u-phone" type="tel" value="{{f.phone}}" onInput="{{f.on.phone}}" autocomplete="off" placeholder="(16) 99999-9999">
+            </div>
+            <div>
+              <label class="lbl" for="u-username">Nome de usuário</label>
+              <input class="fld" id="u-username" value="{{f.username}}" onInput="{{f.on.username}}" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="ex.: maria.silva">
+              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Usado para entrar. Letras minúsculas, números, ponto, hífen ou sublinhado.</span>
+            </div>
+            <div>
+              <label class="lbl" for="u-pass">{{modal.passLabel}}</label>
+              <input class="fld" id="u-pass" type="password" value="{{f.password}}" onInput="{{f.on.password}}" autocomplete="new-password" placeholder="{{modal.passPlaceholder}}">
+              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{modal.passHelp}}</span>
+            </div>
+            <div>
+              <span class="lbl" id="u-role-l">Perfil de acesso</span>
+              <div role="radiogroup" aria-labelledby="u-role-l" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px">
+                <sc-for list="{{f.roles}}" as="r" hint-placeholder-count="2">
+                  <button type="button" role="radio" class="seg" aria-checked="{{r.checked}}" onClick="{{r.pick}}" disabled="{{r.disabled}}" style="border: 1px solid {{r.ring}}; background: {{r.bg}}; color: {{r.fg}}">{{r.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+          </div>
+          <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 10px; background: #F5F4F8; cursor: pointer">
+            <input id="u-active" type="checkbox" checked="{{f.active}}" onChange="{{f.on.active}}" disabled="{{f.lockActive}}" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
+            <span><strong style="font-size: 14px">Usuário ativo</strong><br><span style="font-size: 13px; color: #5E5A6B">{{f.activeHelp}}</span></span>
+          </label>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 8px; padding-top: 4px">
+            <sc-if value="{{modal.hasError}}" hint-placeholder-val="{{ false }}">
+              <span role="alert" style="margin-right: auto; color: #B42318; font-size: 14px">{{modal.error}}</span>
+            </sc-if>
+            <button type="button" class="btn" onClick="{{modal.close}}">Cancelar</button>
+            <button type="submit" class="btn pri" disabled="{{modal.busy}}">{{modal.saveLabel}}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 70; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 12px 18px; border-radius: 12px; background: #17151F; color: #FFFFFF; font-size: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3)">{{toast}}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"onLogout":{"editor":null},"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { users: null, error: '', tab: 'Todos', query: '', modal: null, toast: '' };
+  }
+
+  componentDidMount() {
+    this.load();
+    this.onEsc = (e) => { if (e.key === 'Escape' && this.state.modal) this.setState({ modal: null }); };
+    window.addEventListener('keydown', this.onEsc);
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.onEsc);
+    clearTimeout(this.toastTimer);
+  }
+
+  load() {
+    api.listUsers().then((users) => this.setState({ users })).catch((e) => this.setState({ users: [], error: e.message }));
+  }
+
+  say(msg) {
+    clearTimeout(this.toastTimer);
+    this.setState({ toast: msg });
+    this.toastTimer = setTimeout(() => this.setState({ toast: '' }), 3500);
+  }
+
+  header() {
+    const u = api.user() || {};
+    return {
+      isAdmin: api.isAdmin(), name: u.name || u.username || '',
+      role: u.role === 'admin' ? 'Administrador' : 'Usuário',
+      logout: () => api.logout().then(() => { if (this.props.onLogout) this.props.onLogout(); })
+    };
+  }
+
+  open(u) {
+    this.setState({ modal: {
+      id: u ? u.id : null,
+      form: u ? { name: u.name, email: u.email, phone: u.phone, username: u.username, password: '', role: u.role, active: u.active }
+        : { name: '', email: '', phone: '', username: '', password: '', role: 'user', active: true },
+      error: '', busy: false
+    } });
+    setTimeout(() => { try { document.getElementById('u-name').focus(); } catch (e) {} }, 40);
+  }
+
+  setForm(patch) {
+    const m = this.state.modal;
+    this.setState({ modal: Object.assign({}, m, { form: Object.assign({}, m.form, patch), error: '' }) });
+  }
+
+  // nome de usuário sugerido a partir do nome (sem acentos, minúsculas, com ponto)
+  suggest(name) {
+    const parts = String(name).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9 ]+/g, ' ').trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return '';
+    return (parts.length > 1 ? parts[0] + '.' + parts[parts.length - 1] : parts[0]).slice(0, 30);
+  }
+
+  renderVals() {
+    const st = this.state;
+    const me = api.user() || {};
+    const users = st.users || [];
+    const q = st.query.trim().toLowerCase();
+    const filtered = users.filter((u) => {
+      if (st.tab === 'Ativos' && !u.active) return false;
+      if (st.tab === 'Inativos' && u.active) return false;
+      if (!q) return true;
+      return [u.name, u.username, u.email].some((v) => String(v || '').toLowerCase().indexOf(q) !== -1);
+    });
+    const count = (f) => users.filter(f).length;
+    const tabs = [['Todos', users.length], ['Ativos', count((u) => u.active)], ['Inativos', count((u) => !u.active)]].map(([label, n]) => ({
+      label: label + ' ' + n, pressed: st.tab === label ? 'true' : 'false', bg: st.tab === label ? '#FFFFFF' : 'transparent',
+      pick: () => this.setState({ tab: label })
+    }));
+    const rows = filtered.map((u) => {
+      const isMe = u.id === me.id;
+      return {
+        id: u.id, name: u.name, username: u.username, master: !!u.master, isMe,
+        emailText: u.email || '—', phoneText: u.phone || '—',
+        roleLabel: u.role === 'admin' ? 'Administrador' : 'Usuário',
+        roleBg: u.role === 'admin' ? '#EEEAFB' : '#F1EFF6', roleFg: u.role === 'admin' ? '#43299F' : '#3D3A4A',
+        stLabel: u.active ? 'Ativo' : 'Inativo', stFg: u.active ? '#1E6B43' : '#8E2A1F', stDot: u.active ? '#2E9D62' : '#D64535',
+        rowBg: u.active ? '#FFFFFF' : '#FCFBFD',
+        editable: !u.master, canToggle: !u.master && !isMe,
+        toggleLabel: u.active ? 'Inativar' : 'Ativar', toggleFg: u.active ? '#B42318' : '#1E6B43',
+        toggleAria: (u.active ? 'Inativar ' : 'Ativar ') + u.name,
+        edit: () => this.open(u),
+        toggle: () => api.saveUser(u.id, { active: !u.active })
+          .then((nu) => { this.setState({ users: this.state.users.map((x) => (x.id === nu.id ? nu : x)) }); this.say(nu.name + (nu.active ? ' foi ativado.' : ' foi inativado e não consegue mais entrar.')); })
+          .catch((e) => this.say(e.message))
+      };
+    });
+    const m = st.modal;
+    const editing = !!(m && m.id);
+    const f = m ? m.form : {};
+    const editingMe = editing && m.id === me.id;
+    const loading = st.users === null;
+    return {
+      hdr: this.header(),
+      stats: [
+        { label: 'Usuários', value: String(users.length), note: 'incluindo a conta principal' },
+        { label: 'Ativos', value: String(count((u) => u.active)), note: count((u) => u.active && u.role === 'admin') + ' administradores' },
+        { label: 'Inativos', value: String(count((u) => !u.active)), note: 'não conseguem entrar' }
+      ],
+      tabs, query: st.query, onQuery: (e) => this.setState({ query: e.target.value }),
+      rows,
+      empty: !loading && rows.length === 0,
+      emptyText: st.error || (users.length ? 'Nenhum usuário encontrado.' : 'Nenhum usuário cadastrado.'),
+      footer: loading ? 'Carregando…' : 'Mostrando ' + rows.length + ' de ' + users.length + (users.length === 1 ? ' usuário' : ' usuários'),
+      openNew: () => this.open(null),
+      hasToast: !!st.toast, toast: st.toast,
+      modal: {
+        open: !!m,
+        title: editing ? 'Editar usuário' : 'Novo usuário',
+        passLabel: editing ? 'Nova senha' : 'Senha',
+        passPlaceholder: editing ? 'Deixe em branco para manter' : 'Mínimo de 8 caracteres',
+        passHelp: editing ? 'Ao trocar a senha, o usuário precisa entrar de novo.' : 'Mínimo de 8 caracteres. Envie ao usuário por um canal seguro.',
+        saveLabel: m && m.busy ? 'Salvando…' : 'Salvar',
+        busy: !!(m && m.busy),
+        hasError: !!(m && m.error), error: m ? m.error : '',
+        close: () => this.setState({ modal: null }),
+        backdrop: (e) => { if (e.target === e.currentTarget) this.setState({ modal: null }); },
+        save: (e) => {
+          if (e && e.preventDefault) e.preventDefault();
+          const cur = this.state.modal;
+          const d = cur.form;
+          if (!String(d.name).trim()) { this.setState({ modal: Object.assign({}, cur, { error: 'Informe o nome.' }) }); return; }
+          if (!cur.id && String(d.password).length < 8) { this.setState({ modal: Object.assign({}, cur, { error: 'A senha precisa ter pelo menos 8 caracteres.' }) }); return; }
+          const payload = { name: d.name, email: d.email, phone: d.phone, username: d.username, role: d.role, active: d.active };
+          if (d.password) payload.password = d.password;
+          this.setState({ modal: Object.assign({}, cur, { busy: true, error: '' }) });
+          (cur.id ? api.saveUser(cur.id, payload) : api.createUser(payload))
+            .then((u) => {
+              const list = this.state.users || [];
+              const exists = list.some((x) => x.id === u.id);
+              this.setState({ users: exists ? list.map((x) => (x.id === u.id ? u : x)) : list.concat([u]), modal: null });
+              this.say(cur.id ? 'Usuário ' + u.name + ' atualizado.' : 'Usuário ' + u.name + ' criado. Ele já pode entrar com o usuário “' + u.username + '”.');
+            })
+            .catch((err) => this.setState({ modal: Object.assign({}, this.state.modal, { busy: false, error: err.message }) }));
+        }
+      },
+      f: {
+        name: f.name || '', email: f.email || '', phone: f.phone || '', username: f.username || '', password: f.password || '',
+        active: f.active !== false,
+        lockActive: editingMe,
+        activeHelp: editingMe ? 'Você não pode inativar a sua própria conta.' : 'Usuários inativos não conseguem entrar; os convites deles continuam no ar.',
+        roles: [['user', 'Usuário'], ['admin', 'Administrador']].map(([v, label]) => {
+          const on = f.role === v;
+          return {
+            label, checked: on ? 'true' : 'false', disabled: editingMe && v === 'user',
+            bg: on ? '#5B3FD6' : '#FFFFFF', fg: on ? '#FFFFFF' : '#17151F', ring: on ? '#5B3FD6' : '#D6D3E0',
+            pick: () => this.setForm({ role: v })
+          };
+        }),
+        on: {
+          name: (e) => {
+            const v = e.target.value;
+            const patch = { name: v };
+            // enquanto o nome de usuário não foi mexido, ele acompanha o nome
+            if (!editing && (!f.username || f.username === this.suggest(f.name))) patch.username = this.suggest(v);
+            this.setForm(patch);
+          },
+          email: (e) => this.setForm({ email: e.target.value }),
+          phone: (e) => this.setForm({ phone: e.target.value }),
+          username: (e) => this.setForm({ username: e.target.value.toLowerCase().replace(/\s+/g, '') }),
+          password: (e) => this.setForm({ password: e.target.value }),
+          active: (e) => this.setForm({ active: !!e.target.checked })
+        }
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

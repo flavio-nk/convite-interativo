@@ -4,7 +4,7 @@
 // convidadas e quantos acompanhantes extras podem ser incluídos.
 // Guardados no hash "guests:<convite>"; a resposta fica em "rsvps:<convite>" com id "g-<código>".
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
-import { requireAdmin } from './_lib/auth.js';
+import { requireUser, canManage } from './_lib/auth.js';
 import { hget, hset, hdel, hgetall } from './_lib/store.js';
 
 const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
@@ -35,7 +35,9 @@ export default handler(async (req, res) => {
   const q = query(req);
   const inviteId = q.get('invite');
   if (!inviteId) throw httpError(400, 'Informe o convite.');
-  requireAdmin(req);
+  const user = await requireUser(req);
+  const inv = await hget('invites', inviteId);
+  if (!inv || !canManage(user, inv)) throw httpError(404, 'Convite não encontrado.');
   const key = 'guests:' + inviteId;
   const id = q.get('id');
 
@@ -49,8 +51,6 @@ export default handler(async (req, res) => {
   }
 
   if (req.method === 'POST') {
-    const inv = await hget('invites', inviteId);
-    if (!inv) throw httpError(404, 'Convite não encontrado.');
     const body = await readBody(req);
     const items = Array.isArray(body.items) ? body.items : [body];
     if (!items.length) throw httpError(400, 'Nada para adicionar.');

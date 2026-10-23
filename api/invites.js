@@ -1,5 +1,5 @@
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
-import { isAdmin, requireAdmin } from './_lib/auth.js';
+import { currentUser, requireUser, canManage, ownerOf, isAdminUser, MASTER_ID } from './_lib/auth.js';
 import { hget, hset, hdel, hgetall, del } from './_lib/store.js';
 import { maxPeople } from './guests.js';
 
@@ -18,7 +18,7 @@ function clean(input, existing) {
   return out;
 }
 
-function summarize(inv, rsvps) {
+function summarize(inv, rsvps, owners) {
   const list = Object.values(rsvps || {});
   const yes = list.filter((r) => r.go);
   return {
@@ -31,6 +31,8 @@ function summarize(inv, rsvps) {
     theme: inv.theme ? { bg: inv.theme.bg, fg: inv.theme.fg, accent: inv.theme.accent, font: inv.theme.fontKey } : null,
     themeName: inv.themeBase ? inv.themeBase.baseName : (inv.theme && inv.theme.baseName) || '',
     personal: !!(inv.personal && inv.personal.enabled),
+    ownerId: ownerOf(inv),
+    ownerName: owners ? owners[ownerOf(inv)] || '' : '',
     updatedAt: inv.updatedAt,
     createdAt: inv.createdAt,
     rsvp: { total: list.length, yes: yes.length, no: list.length - yes.length, people: yes.reduce((s, r) => s + 1 + (Number(r.guests) || 0), 0) }
@@ -42,8 +44,9 @@ export default handler(async (req, res) => {
 
   if (req.method === 'GET' && id) {
     const inv = await hget(KEY, id);
-    const admin = isAdmin(req);
-    if (!inv || (!admin && inv.status !== 'publicado')) throw httpError(404, 'Convite não encontrado ou ainda não publicado.');
+    // rascunhos só abrem para o dono do convite ou um administrador
+    const manager = inv ? canManage(await currentUser(req), inv) : false;
+    if (!inv || (!manager && inv.status !== 'publicado')) throw httpError(404, 'Convite não encontrado ou ainda não publicado.');
     // link de um convite individual: devolve só os dados daquele convidado e a resposta dele
     const g = query(req).get('g');
     if (g) {
@@ -57,11 +60,19 @@ export default handler(async (req, res) => {
     return send(res, 200, inv);
   }
 
-  requireAdmin(req);
+  const user = await requireUser(req);
+  const admin = isAdminUser(user);
 
   if (req.method === 'GET') {
     const all = await hgetall(KEY);
-    const items = await Promise.all(Object.values(all).map(async (inv) => summarize(inv, await hgetall('rsvps:' + inv.id))));
+    // Usuário vê só os próprios convites; administrador vê todos (com o nome do dono)
+    const mine = Object.values(all).filter((inv) => admin || ownerOf(inv) === user.id);
+    let owners = null;
+    if (admin) {
+      owners = { [MASTER_ID]: 'Administrador principal' };
+      for (const u of Object.values(await hgetall('users'))) owners[u.id] = u.name;
+    }
+    const items = await Promise.all(mine.map(async (inv) => summarize(inv, await hgetall('rsvps:' + inv.id), owners)));
     items.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
     return send(res, 200, items);
   }
@@ -70,6 +81,7 @@ export default handler(async (req, res) => {
     const body = await readBody(req);
     const inv = clean(body, null);
     inv.id = newId();
+    inv.ownerId = user.id;
     await hset(KEY, inv.id, inv);
     return send(res, 201, inv);
   }
@@ -84,8 +96,12 @@ export default handler(async (req, res) => {
     const existing = await hget(KEY, id);
     // só o "Desfazer" (que manda as respostas apagadas junto) pode recriar um convite excluído
     if (!existing && !restoring) throw httpError(404, 'Este convite foi excluído.');
+    if (existing && !canManage(user, existing)) throw httpError(404, 'Convite não encontrado.');
+    if (!existing && restoring && !admin && body.ownerId && body.ownerId !== user.id) throw httpError(403, 'Este convite não é seu.');
     const inv = clean(body, existing);
     inv.id = id;
+    // o dono não muda ao salvar (no "Desfazer", volta o dono original)
+    inv.ownerId = existing ? ownerOf(existing) : (body.ownerId || user.id);
     await hset(KEY, id, inv);
     if (restoreGuests && typeof restoreGuests === 'object') {
       for (const gid of Object.keys(restoreGuests).slice(0, 5000)) await hset('guests:' + id, gid, restoreGuests[gid]);
@@ -99,6 +115,7 @@ export default handler(async (req, res) => {
   if (req.method === 'DELETE') {
     if (!id) throw httpError(400, 'Informe o convite.');
     const existing = await hget(KEY, id);
+    if (existing && !canManage(user, existing)) throw httpError(404, 'Convite não encontrado.');
     const rsvps = await hgetall('rsvps:' + id);
     const guests = await hgetall('guests:' + id);
     await hdel(KEY, id);

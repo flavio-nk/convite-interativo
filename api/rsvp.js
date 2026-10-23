@@ -1,5 +1,5 @@
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
-import { isAdmin, requireAdmin } from './_lib/auth.js';
+import { currentUser, requireUser, canManage } from './_lib/auth.js';
 import { hget, hset, hdel, hgetall } from './_lib/store.js';
 import { maxPeople } from './guests.js';
 
@@ -17,8 +17,15 @@ export default handler(async (req, res) => {
   if (!inviteId) throw httpError(400, 'Informe o convite.');
   const key = 'rsvps:' + inviteId;
 
+  // dono do convite ou administrador
+  const manage = async () => {
+    const user = await requireUser(req);
+    const inv = await hget('invites', inviteId);
+    if (!inv || !canManage(user, inv)) throw httpError(404, 'Convite não encontrado.');
+  };
+
   if (req.method === 'GET') {
-    requireAdmin(req);
+    await manage();
     const all = await hgetall(key);
     const list = Object.values(all).sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
     return send(res, 200, list);
@@ -26,7 +33,8 @@ export default handler(async (req, res) => {
 
   if (req.method === 'POST') {
     const inv = await hget('invites', inviteId);
-    const admin = isAdmin(req);
+    // quem gerencia o convite (dono ou administrador) pode responder por um convidado
+    const admin = canManage(await currentUser(req), inv);
     if (!inv || (!admin && inv.status !== 'publicado')) throw httpError(404, 'Convite não encontrado ou ainda não publicado.');
     const body = await readBody(req);
     const now = new Date().toISOString();
@@ -113,7 +121,7 @@ export default handler(async (req, res) => {
   }
 
   if (req.method === 'DELETE') {
-    requireAdmin(req);
+    await manage();
     const id = q.get('id');
     if (!id) throw httpError(400, 'Informe a resposta.');
     await hdel(key, id);

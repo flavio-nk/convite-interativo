@@ -265,7 +265,14 @@ export const api = {
     return config;
   },
   config: () => config,
-  login: (password) => call('POST', '/api/auth?action=login', { password }),
+  login: (username, password) => call('POST', '/api/auth?action=login', { username, password }),
+  // usuário logado (do último /api/auth?action=me)
+  user: () => (config && config.user) || null,
+  isAdmin: () => !!(config && config.admin),
+
+  listUsers: () => call('GET', '/api/users'),
+  createUser: (data) => call('POST', '/api/users', data),
+  saveUser: (id, data) => call('PUT', '/api/users?id=' + enc(id), data),
   logout: () => call('POST', '/api/auth?action=logout', {}),
 
   listInvites: () => call('GET', '/api/invites'),

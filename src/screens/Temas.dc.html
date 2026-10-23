@@ -147,7 +147,7 @@ button,select{font-family:inherit}
         </span>
       </div>
       <div style="display: flex; flex-wrap: wrap; gap: 8px">
-        <sc-if value="{{sel.custom}}" hint-placeholder-val="{{ false }}">
+        <sc-if value="{{sel.editable}}" hint-placeholder-val="{{ false }}">
           <button onClick="{{editTheme}}" style="display: inline-flex; align-items: center; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">Editar tema</button>
         </sc-if>
         <button onClick="{{showOpening}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">
@@ -203,8 +203,9 @@ class Component extends DCLogic {
     const rad = { pilula: '999px', arredondado: '10px', reto: '0px' };
     const d = c.createdAt ? new Date(c.createdAt) : null;
     return {
-      id: 'custom:' + c.id, themeId: c.id, name: c.name, cat: 'Meus temas',
-      desc: d ? 'Criado por você em ' + d.toLocaleDateString('pt-BR') + '.' : 'Criado por você.',
+      id: 'custom:' + c.id, themeId: c.id, name: c.name, cat: 'Temas criados',
+      desc: (c.mine === false ? 'Criado por outro usuário' : 'Criado por você') + (d ? ' em ' + d.toLocaleDateString('pt-BR') + '.' : '.'),
+      canEdit: c.canEdit !== false,
       bg: c.bg, fg: c.fg, accent: c.accent, paper: c.paper, ph: c.ph, btnFg: c.btnFg,
       font: fam[c.fontKey] || fam.cormorant, weight: wt[c.fontKey] || '500', fstyle: c.italic ? 'italic' : 'normal',
       layout: c.layout || 'centro', anim: c.anim || 'envelope', radius: rad[c.radiusKey] || '999px',
@@ -268,7 +269,7 @@ class Component extends DCLogic {
     const st = this.state;
     const changeFor = (this.props.route && this.props.route.params && this.props.route.params.invite) || '';
     const all = this.themes().concat((st.custom || []).map((c) => this.fromCustom(c))).map((x) => Object.assign({}, x, { layoutLabel: layoutLabels[x.layout], animLabel: animLabels[x.anim] }));
-    const catNames = ['Todos', 'Casamento', 'Aniversário', 'Infantil', 'Corporativo', 'Formatura', 'Religioso', 'Temático', 'Meus temas'];
+    const catNames = ['Todos', 'Casamento', 'Aniversário', 'Infantil', 'Corporativo', 'Formatura', 'Religioso', 'Temático', 'Temas criados'];
     const cats = catNames.map((label) => {
       const on = label === st.cat;
       return {
@@ -278,7 +279,7 @@ class Component extends DCLogic {
       };
     });
     const themes = all
-      .filter((x) => st.cat === 'Todos' || x.cat === st.cat || (x.id === 'branco' && st.cat !== 'Meus temas'))
+      .filter((x) => st.cat === 'Todos' || x.cat === st.cat || (x.id === 'branco' && st.cat !== 'Temas criados'))
       .filter((x) => st.layout === 'todos' || x.layout === st.layout)
       .filter((x) => st.anim === 'todas' || x.anim === st.anim)
       .map((x) => {
@@ -292,7 +293,7 @@ class Component extends DCLogic {
     const ready = all.filter((x) => !x.custom).length;
     const mine = all.length - ready;
     return {
-      cats, themes, sel,
+      cats, themes, sel: Object.assign({}, sel, { editable: !!(sel && sel.custom && sel.canEdit !== false) }),
       isEmpty: themes.length === 0,
       countLabel: 'Mostrando ' + themes.length + ' · ' + ready + ' temas prontos e ' + mine + ' criado por você',
       layoutFilter: st.layout, animFilter: st.anim,

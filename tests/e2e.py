@@ -50,11 +50,11 @@ state = {}
 
 def t_login(pg):
     go(pg, 'Main')
-    ok('Login: pede senha', count(pg, '#pw') == 1)
-    pg.fill('#pw', 'errada'); pg.click('button:has-text("Entrar")'); pg.wait_for_timeout(900)
-    ok('Login: senha errada recusada', 'Senha incorreta' in text(pg))
+    ok('Login: pede usuário e senha', count(pg, '#user') == 1 and count(pg, '#pw') == 1)
+    pg.fill('#user', 'admin'); pg.fill('#pw', 'errada'); pg.click('button:has-text("Entrar")'); pg.wait_for_timeout(900)
+    ok('Login: senha errada recusada', 'Usuário ou senha incorretos' in text(pg))
     pg.fill('#pw', PASSWORD); pg.click('button:has-text("Entrar")'); pg.wait_for_timeout(1000)
-    ok('Login: entra no painel', 'Meus convites' in text(pg))
+    ok('Login: entra no painel (administrador vê todos os convites)', 'Todos os convites' in text(pg) and count(pg, 'nav a:has-text("Usuários")') == 1)
 
 
 def t_create(pg):
@@ -268,14 +268,14 @@ def t_custom_theme(pg):
     go(pg, 'CriarTema', 1200)
     pg.fill('#t-name', 'Tema Salvo E2E'); pg.click('[aria-label="Paleta Café"]')
     pg.click('button:has-text("Salvar tema")'); pg.wait_for_timeout(900)
-    ok('Criar tema: salvo', 'salvo em Meus temas' in text(pg))
+    ok('Criar tema: salvo', 'salvo em Temas criados' in text(pg))
     go(pg, 'Temas', 1300)
-    pg.click('button[aria-pressed]:has-text("Meus temas")'); pg.wait_for_timeout(300)
-    ok('Meus temas lista o tema salvo', count(pg, '[aria-label="Tema Tema Salvo E2E"]') == 1)
+    pg.click('button[aria-pressed]:has-text("Temas criados")'); pg.wait_for_timeout(300)
+    ok('Temas criados lista o tema salvo', count(pg, '[aria-label="Tema Tema Salvo E2E"]') == 1)
     pg.click('[aria-label="Tema Tema Salvo E2E"]'); pg.click('button:has-text("Editar tema")'); pg.wait_for_timeout(1300)
     ok('Editar tema carrega dados', pg.input_value('#t-name') == 'Tema Salvo E2E' and pg.input_value('#c-bg').lower() == '#3b2a20')
     pg.click('button:has-text("Excluir tema")'); pg.click('[role=alert] button:has-text("Excluir")'); pg.wait_for_timeout(1300)
-    pg.click('button[aria-pressed]:has-text("Meus temas")'); pg.wait_for_timeout(300)
+    pg.click('button[aria-pressed]:has-text("Temas criados")'); pg.wait_for_timeout(300)
     ok('Excluir tema', count(pg, '[aria-label="Tema Tema Salvo E2E"]') == 0)
 
 
@@ -721,7 +721,7 @@ def t_robust(pg, browser):
     J = "{method: m, headers: {'content-type': 'application/json'}, body: b}"
     call = "async ([m, u, b]) => { const r = await fetch(u, " + J + "); let d = null; try { d = await r.json(); } catch (e) {} return [r.status, d]; }"
     st, _ = pg.evaluate(call, ['POST', '/api/auth?action=login', 'null'])
-    ok('API: corpo null no login não dá erro interno', st == 401, st)
+    ok('API: corpo null no login não dá erro interno', st == 400, st)
     st, _ = pg.evaluate(call, ['POST', '/api/invites', '[1,2]'])
     ok('API: lista no lugar de objeto é recusada', st == 400, st)
     st, _ = pg.evaluate(call, ['PUT', '/api/invites?id=naoexiste', '{"title":"x"}'])
@@ -777,16 +777,119 @@ def t_robust(pg, browser):
     ok('Editor: avisa que o convite foi excluído (sem tentar de novo)', 'este convite foi excluído' in text(pg))
 
 
+def login_as(browser, user, pw, vp=None):
+    ctx = browser.new_context(viewport=vp or {'width': 1280, 'height': 900})
+    p = ctx.new_page(); p.set_default_timeout(6000)
+    p.on('pageerror', lambda e: errors.append('[%s] %s' % (user, e)))
+    go(p, 'Main', 900)
+    p.fill('#user', user); p.fill('#pw', pw); p.click('button:has-text("Entrar")'); p.wait_for_timeout(1100)
+    return p
+
+
+def t_users(pg, browser):
+    """Painel de administração: usuários, perfis e permissões."""
+    J = "async ([m, u, b]) => { const r = await fetch(u, {method: m, headers: {'content-type': 'application/json'}, body: b}); let d = null; try { d = await r.json(); } catch (e) {} return [r.status, d]; }"
+    go(pg, 'Usuarios', 1300)
+    ok('Usuários: painel abre com a conta principal', 'Usuários' in pg.inner_text('h1') and count(pg, 'li[data-user="admin"]') == 1 and 'Conta principal' in pg.inner_text('li[data-user="admin"]'))
+    ok('Usuários: conta principal sem ações', count(pg, 'li[data-user="admin"] button') == 0)
+    # novo usuário (perfil Usuário)
+    pg.click('button:has-text("+ Novo usuário")'); pg.wait_for_timeout(200)
+    ok('Usuários: modal de cadastro com os campos', all(count(pg, '#u-' + f) == 1 for f in ['name', 'email', 'phone', 'username', 'pass', 'active']))
+    pg.fill('#u-name', 'Maria Teste')
+    ok('Usuários: nome de usuário sugerido pelo nome', pg.input_value('#u-username') == 'maria.teste', pg.input_value('#u-username'))
+    pg.fill('#u-email', 'maria@exemplo.com'); pg.fill('#u-phone', '(16) 99999-0000'); pg.fill('#u-pass', '123')
+    pg.click('[data-testid="usuario-modal"] button:has-text("Salvar")'); pg.wait_for_timeout(300)
+    ok('Usuários: senha curta recusada', '8 caracteres' in pg.inner_text('[data-testid="usuario-modal"]'))
+    pg.fill('#u-pass', 'senhaMaria1'); pg.click('[data-testid="usuario-modal"] button:has-text("Salvar")'); pg.wait_for_timeout(800)
+    row = pg.inner_text('li[data-user="maria.teste"]') if count(pg, 'li[data-user="maria.teste"]') else ''
+    ok('Usuários: usuário criado na lista', 'Maria Teste' in row and 'maria@exemplo.com' in row and 'Usuário' in row and 'Ativo' in row, row)
+    # duplicado
+    pg.click('button:has-text("+ Novo usuário")'); pg.wait_for_timeout(200)
+    pg.fill('#u-name', 'Outra Maria'); pg.fill('#u-email', 'maria@exemplo.com'); pg.fill('#u-username', 'outra'); pg.fill('#u-pass', 'senhaOutra1')
+    pg.click('[data-testid="usuario-modal"] button:has-text("Salvar")'); pg.wait_for_timeout(600)
+    ok('Usuários: e-mail repetido recusado', 'Já existe um usuário com esse e-mail' in pg.inner_text('[data-testid="usuario-modal"]'))
+    pg.click('[data-testid="usuario-modal"] [aria-label="Fechar"]'); pg.wait_for_timeout(200)
+    # novo administrador
+    pg.click('button:has-text("+ Novo usuário")'); pg.wait_for_timeout(200)
+    pg.fill('#u-name', 'Bruno Admin'); pg.fill('#u-email', 'bruno@exemplo.com'); pg.fill('#u-pass', 'senhaBruno1')
+    pg.click('[data-testid="usuario-modal"] button[role=radio]:has-text("Administrador")')
+    pg.click('[data-testid="usuario-modal"] button:has-text("Salvar")'); pg.wait_for_timeout(800)
+    ok('Usuários: administrador criado', 'Administrador' in pg.inner_text('li[data-user="bruno.admin"]'))
+    pg.screenshot(path=os.environ['SHOTS'] + '/usuarios.png', full_page=True) if os.environ.get('SHOTS') else None
+
+    # Maria (perfil Usuário)
+    mp = login_as(browser, 'maria.teste', 'senhaMaria1')
+    ok('Usuário: entra e vê "Meus convites" sem convites de outros', 'Meus convites' in text(mp) and count(mp, '[aria-label^="Excluir "]') == 0, text(mp)[:300])
+    ok('Usuário: sem acesso ao menu Usuários', count(mp, 'nav a:has-text("Usuários")') == 0)
+    go(mp, 'Usuarios', 1000)
+    ok('Usuário: endereço do painel de administração volta para os convites', 'Meus convites' in text(mp))
+    st, _ = mp.evaluate(J, ['GET', '/api/users', None])
+    ok('Usuário: API de usuários recusada', st == 403, st)
+    admin_ids = [i['id'] for i in pg.evaluate("fetch('/api/invites').then(r => r.json())")]
+    st, _ = mp.evaluate(J, ['PUT', '/api/invites?id=' + admin_ids[0], '{"title":"invadido"}'])
+    ok('Usuário: não altera convite de outro', st == 404, st)
+    st, _ = mp.evaluate(J, ['GET', '/api/guests?invite=' + admin_ids[0], None])
+    ok('Usuário: não vê convidados de outro', st == 404, st)
+    st, _ = mp.evaluate(J, ['DELETE', '/api/invites?id=' + admin_ids[0], None])
+    ok('Usuário: não exclui convite de outro', st == 404, st)
+    pg.evaluate(J, ['POST', '/api/themes', '{"name":"Tema do Admin","bg":"#111111","fg":"#EEEEEE","accent":"#C9A227"}'])
+    themes = mp.evaluate("fetch('/api/themes').then(r => r.json())")
+    tid = [t['id'] for t in themes if t['name'] == 'Tema do Admin']
+    st, _ = mp.evaluate(J, ['DELETE', '/api/themes?id=' + (tid[0] if tid else 'x'), None])
+    ok('Usuário: não exclui tema de outro', st == 403, st)
+    ok('Usuário: vê todos os temas, sem poder editar os de outros', len(themes) >= 1 and all(t.get('canEdit') is False for t in themes), [(t['name'], t.get('canEdit')) for t in themes])
+    # Maria cria um convite pela galeria de temas
+    go(mp, 'Temas', 1200)
+    mp.click('[aria-label="Tema Jardim"]'); mp.click('button:has-text("Usar este tema")'); mp.wait_for_timeout(2200)
+    mid = mp.url.split('#/Editor/')[1] if '#/Editor/' in mp.url else ''
+    ok('Usuário: cria o próprio convite', bool(mid), mp.url)
+    go(mp, 'Main', 1200)
+    ok('Usuário: vê o próprio convite', count(mp, '[aria-label^="Excluir "]') == 1)
+    st, d = mp.evaluate(J, ['POST', '/api/guests?invite=' + mid, '{"name":"Família da Maria"}'])
+    ok('Usuário: cria convidados no próprio convite', st == 201, [st, d])
+    go(mp, 'Respostas/' + admin_ids[0], 1300)
+    ok('Usuário: lista de convidados só mostra os próprios convites', all(o != admin_ids[0] for o in mp.eval_on_selector_all('select option', 'els => els.map(e => e.value)')))
+    # administrador vê o convite da Maria com o dono
+    go(pg, 'Main', 1300)
+    ok('Administrador: vê convites de todos com o nome do dono', count(pg, '[data-owner="Maria Teste"]') == 1)
+    st, _ = pg.evaluate(J, ['GET', '/api/guests?invite=' + mid, None])
+    ok('Administrador: vê convidados de qualquer convite', st == 200, st)
+    # inativar derruba a sessão
+    go(pg, 'Usuarios', 1300)
+    pg.click('[aria-label="Inativar Maria Teste"]'); pg.wait_for_timeout(700)
+    ok('Usuários: inativar', 'Inativo' in pg.inner_text('li[data-user="maria.teste"]'))
+    go(mp, 'Main', 1200)
+    ok('Usuário inativado perde o acesso na hora', count(mp, '#pw') == 1)
+    mp.fill('#user', 'maria.teste'); mp.fill('#pw', 'senhaMaria1'); mp.click('button:has-text("Entrar")'); mp.wait_for_timeout(1000)
+    ok('Usuário inativo não consegue entrar', 'inativo' in text(mp))
+    pg.click('[aria-label="Ativar Maria Teste"]'); pg.wait_for_timeout(700)
+    # editar: nova senha
+    pg.click('[aria-label="Editar Maria Teste"]'); pg.wait_for_timeout(200)
+    ok('Usuários: edição traz os dados', pg.input_value('#u-email') == 'maria@exemplo.com' and pg.input_value('#u-pass') == '')
+    pg.fill('#u-pass', 'novaSenha99'); pg.click('[data-testid="usuario-modal"] button:has-text("Salvar")'); pg.wait_for_timeout(800)
+    mp.fill('#user', 'maria@exemplo.com'); mp.fill('#pw', 'senhaMaria1'); mp.click('button:has-text("Entrar")'); mp.wait_for_timeout(1000)
+    ok('Senha antiga deixa de valer', 'incorretos' in text(mp))
+    mp.fill('#pw', 'novaSenha99'); mp.click('button:has-text("Entrar")'); mp.wait_for_timeout(1100)
+    ok('Entra com e-mail e a nova senha', 'Meus convites' in text(mp))
+    mp.context.close()
+    # administrador criado entra e acessa o painel; não pode se inativar
+    bp = login_as(browser, 'bruno.admin', 'senhaBruno1')
+    ok('Novo administrador vê todos os convites e o painel', 'Todos os convites' in text(bp) and count(bp, 'nav a:has-text("Usuários")') == 1)
+    st, d = bp.evaluate(J, ['PUT', '/api/users?id=' + bp.evaluate("fetch('/api/auth?action=me').then(r => r.json()).then(d => d.user.id)"), '{"active":false}'])
+    ok('Administrador não pode inativar a própria conta', st == 400, [st, d])
+    bp.context.close()
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
     ok('Sair volta ao login', count(pg, '#pw') == 1)
-    pg.fill('#pw', PASSWORD); pg.click('button:has-text("Entrar")'); pg.wait_for_timeout(1000)
+    pg.fill('#user', 'admin'); pg.fill('#pw', PASSWORD); pg.click('button:has-text("Entrar")'); pg.wait_for_timeout(1000)
 
 
 def t_mobile(pg):
     pg.set_viewport_size({'width': 390, 'height': 844})
-    for r in ['Main', 'Temas', 'CriarTema', 'Respostas']:
+    for r in ['Main', 'Temas', 'CriarTema', 'Respostas', 'Usuarios']:
         go(pg, r, 1200)
         sw = pg.evaluate('document.documentElement.scrollWidth')
         ok('Celular sem rolagem lateral: ' + r, sw <= 392, sw)
@@ -804,7 +907,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

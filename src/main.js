@@ -5,7 +5,7 @@ import { api } from './api.js';
 
 const h = React.createElement;
 
-const ADMIN = new Set(['Main', 'Temas', 'CriarTema', 'Editor', 'Respostas']);
+const ADMIN = new Set(['Main', 'Temas', 'CriarTema', 'Editor', 'Respostas', 'Usuarios']);
 
 // #/Editor/abc?x=1  →  { name: 'Editor', params: { id: 'abc', x: '1' } }
 // #/c/abc           →  convite do convidado
@@ -78,7 +78,7 @@ function App() {
   const [visit, setVisit] = useState(0);
   const [me, setMe] = useState(null);
 
-  const refreshMe = () => api.me().then(setMe).catch(() => setMe({ admin: false, error: true }));
+  const refreshMe = () => api.me().then(setMe).catch(() => setMe({ admin: false, logged: false, error: true }));
 
   useEffect(() => {
     refreshMe();
@@ -97,11 +97,13 @@ function App() {
     return h(PhoneFrame, null, h(Guest, { key: route.key + ':' + visit, route }));
   }
   if (!me) return h(Loading);
-  if (!me.admin) {
+  if (!me.logged) {
     const Login = getComponent('Login');
     return h(Login, { me, onLogin: refreshMe });
   }
-  const Screen = getComponent(route.name);
+  // o painel de administração (Usuários) é só para administradores
+  const name = route.name === 'Usuarios' && !me.admin ? 'Main' : route.name;
+  const Screen = getComponent(name);
   // cada visita começa do zero, como um carregamento real de página
   return h(Screen, { key: route.key + ':' + visit, route, onLogout: refreshMe });
 }

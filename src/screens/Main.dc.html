@@ -33,15 +33,21 @@ button{font-family:inherit}
         <a href="Main.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #EFECFB; color: #3B26A8; font-weight: 600; text-decoration: none">Convites</a>
         <a href="Temas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Temas</a>
         <a href="Respostas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Convidados</a>
+        <sc-if value="{{hdr.isAdmin}}" hint-placeholder-val="{{ false }}">
+          <a href="Usuarios.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Usuários</a>
+        </sc-if>
       </nav>
-      <button onClick="{{logout}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Sair</button>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; font-size: 13px"><strong style="font-size: 14px">{{hdr.name}}</strong><span style="color: #5E5A6B">{{hdr.role}}</span></span>
+        <button onClick="{{hdr.logout}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Sair</button>
+      </div>
     </div>
   </header>
 
   <main style="max-width: 1200px; margin: 0 auto; padding: 40px 24px 64px">
     <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
       <div>
-        <h1 style="margin: 0; font-size: 32px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700">Meus convites</h1>
+        <h1 style="margin: 0; font-size: 32px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700">{{heading}}</h1>
         <p style="margin: 6px 0 0; color: #5E5A6B">{{countLabel}}</p>
       </div>
       <a href="Temas.dc.html" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 20px; border-radius: 10px; background: #5B3FD6; color: #FFFFFF; font-weight: 600; text-decoration: none">
@@ -66,6 +72,12 @@ button{font-family:inherit}
           </div>
           <div style="padding: 18px 18px 8px; display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto">
             <h2 style="margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700">{{inv.title}}</h2>
+            <sc-if value="{{inv.showOwner}}" hint-placeholder-val="{{ false }}">
+              <div data-owner="{{inv.ownerName}}" style="display: flex; align-items: center; gap: 6px; color: #5E5A6B; font-size: 14px">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg>
+                <span>de {{inv.ownerName}}</span>
+              </div>
+            </sc-if>
             <div style="display: flex; align-items: center; gap: 6px; color: #5E5A6B; font-size: 14px">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M16 3v4M8 3v4M3 10h18"></path></svg>
               {{inv.date}}
@@ -126,6 +138,16 @@ button{font-family:inherit}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"onLogout":{"editor":null},"$preview":{"width":1280,"height":1000}}'>
 class Component extends DCLogic {
+  // cabeçalho comum: menu (Usuários só para administradores), nome de quem está logado e Sair
+  header() {
+    const u = api.user() || {};
+    return {
+      isAdmin: api.isAdmin(), name: u.name || u.username || '',
+      role: u.role === 'admin' ? 'Administrador' : 'Usuário',
+      logout: () => api.logout().then(() => { if (this.props.onLogout) this.props.onLogout(); })
+    };
+  }
+
   constructor(props) {
     super(props);
     this.state = { filter: 'Todos', items: null, error: '', pending: null, lastDeleted: null, busy: false };
@@ -171,6 +193,7 @@ class Component extends DCLogic {
           font: fonts[th.font] || fonts.cormorant,
           monogram: this.monogram(i.coverTitle || i.title),
           date: api.fmt.card(i.eventDate),
+          showOwner: api.isAdmin() && !!i.ownerName, ownerName: i.ownerName || '',
           badgeBg: badge[i.statusLabel][0], badgeFg: badge[i.statusLabel][1],
           viewHref: '#/c/' + i.id,
           editHref: '#/Editor/' + i.id,
@@ -186,6 +209,8 @@ class Component extends DCLogic {
     const n = all.length;
     const loading = st.items === null;
     return {
+      hdr: this.header(),
+      heading: api.isAdmin() ? 'Todos os convites' : 'Meus convites',
       invites, pills, loading,
       hasError: !!st.error, error: st.error,
       reload: () => this.load(),

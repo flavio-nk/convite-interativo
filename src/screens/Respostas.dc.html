@@ -57,7 +57,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <a href="Main.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Convites</a>
         <a href="Temas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Temas</a>
         <a href="Respostas.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #EFECFB; color: #3B26A8; font-weight: 600; text-decoration: none">Convidados</a>
+        <sc-if value="{{hdr.isAdmin}}" hint-placeholder-val="{{ false }}">
+          <a href="Usuarios.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Usuários</a>
+        </sc-if>
       </nav>
+      <div style="display: flex; align-items: center; gap: 10px">
+        <span style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; font-size: 13px"><strong style="font-size: 14px">{{hdr.name}}</strong><span style="color: #5E5A6B">{{hdr.role}}</span></span>
+        <button onClick="{{hdr.logout}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Sair</button>
+      </div>
     </div>
   </header>
 
@@ -371,6 +378,16 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"$preview":{"width":1280,"height":1100}}'>
 class Component extends DCLogic {
+  // cabeçalho comum: menu (Usuários só para administradores), nome de quem está logado e Sair
+  header() {
+    const u = api.user() || {};
+    return {
+      isAdmin: api.isAdmin(), name: u.name || u.username || '',
+      role: u.role === 'admin' ? 'Administrador' : 'Usuário',
+      logout: () => api.logout().then(() => { if (this.props.onLogout) this.props.onLogout(); })
+    };
+  }
+
   constructor(props) {
     super(props);
     const id = props.route && props.route.params && props.route.params.id;
@@ -759,6 +776,7 @@ class Component extends DCLogic {
     const slug = inv ? String(inv.title).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : 'convite';
 
     return {
+      hdr: this.header(),
       inviteOptions: invites.map((i) => ({ id: i.id, title: i.title })),
       currentId: st.currentId,
       onPick: (e) => { const id = e.target.value; this.setState({ currentId: id }); api.navigate('Respostas/' + id); },
