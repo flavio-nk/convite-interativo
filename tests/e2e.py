@@ -943,6 +943,44 @@ def t_security(pg, browser):
     ap.context.close(); bp.context.close()
 
 
+def t_media_limits(pg, browser):
+    """Fotos reduzidas antes do envio; limites de tamanho de vídeo e música; lista de convites leve."""
+    import tempfile, random
+    from PIL import Image
+    tmp = tempfile.mkdtemp()
+    big = os.path.join(tmp, 'grande.jpg')
+    im = Image.new('RGB', (4000, 3000))
+    px = im.load()
+    for y in range(0, 3000, 4):
+        for x in range(0, 4000, 4):
+            px[x, y] = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+    im.save(big, quality=95)
+    vid = os.path.join(tmp, 'longo.mp4'); open(vid, 'wb').write(b'\0' * (21 * 1024 * 1024))
+    mus = os.path.join(tmp, 'longa.mp3'); open(mus, 'wb').write(b'\0' * (11 * 1024 * 1024))
+    go(pg, 'Temas', 1200)
+    pg.click('[aria-label="Tema Jardim"]'); pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(2200)
+    iid = pg.url.split('#/Editor/')[1]
+    pg.click('.blk >> nth=0'); pg.wait_for_timeout(150)
+    pg.set_input_files('#media-file', big)
+    pg.wait_for_function("() => !document.body.innerText.includes('Enviando')", timeout=20000)
+    pg.wait_for_timeout(500)
+    src = pg.get_attribute('[data-canvas] [data-bid] img >> nth=0', 'src') or ''
+    info = pg.evaluate("""async (u) => { const r = await fetch(u); const b = await r.blob(); const img = new Image(); img.src = URL.createObjectURL(b); await img.decode(); return [b.type, b.size, img.naturalWidth, img.naturalHeight]; }""", src)
+    ok('Mídia: foto grande reduzida para 2000 px e WebP antes do envio', info[0] == 'image/webp' and max(info[2], info[3]) == 2000 and info[1] < os.path.getsize(big), [info, os.path.getsize(big)])
+    # vídeo acima de 20 MB
+    pg.click('aside button:has-text("Vídeo")') if count(pg, 'aside button:has-text("Vídeo")') else None
+    pg.wait_for_timeout(300)
+    if count(pg, '#media-file'):
+        pg.set_input_files('#media-file', vid); pg.wait_for_timeout(700)
+        ok('Mídia: vídeo acima de 20 MB recusado com explicação', 'o máximo é 20 MB' in text(pg), text(pg)[-400:])
+    pg.click('button[role=tab]:has-text("Música")'); pg.wait_for_timeout(200)
+    pg.set_input_files('#mus-file', mus); pg.wait_for_timeout(700)
+    ok('Mídia: música acima de 10 MB recusada com explicação', 'o máximo é 10,0 MB' in text(pg) or 'o máximo é 10 MB' in text(pg), text(pg)[-400:])
+    ok('Mídia: música recusada não fica no convite', count(pg, '[data-testid="mus-drop"]') == 1)
+    lst = pg.evaluate("fetch('/api/invites').then(r => r.json())")
+    ok('Lista de convites não traz contagem de respostas (menos leituras no banco)', lst and all('rsvp' not in i for i in lst))
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -970,7 +1008,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

@@ -108,6 +108,16 @@ export async function hgetall(key) {
   return out;
 }
 
+// quantos campos o hash tem (1 comando, sem ler o conteúdo)
+export async function hlen(key) {
+  ensureConfigured();
+  try {
+    if (upstash) return Number(await upstash.hlen(key)) || 0;
+    if (tcp) return Number(await (await client()).hLen(key)) || 0;
+  } catch (e) { throw wrap(e); }
+  return Object.keys(load()[key] || {}).length;
+}
+
 export async function del(key) {
   ensureConfigured();
   try {

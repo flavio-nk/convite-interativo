@@ -22,9 +22,7 @@ function clean(input, existing) {
   return out;
 }
 
-function summarize(inv, rsvps, owners) {
-  const list = Object.values(rsvps || {});
-  const yes = list.filter((r) => r.go);
+function summarize(inv, owners) {
   return {
     id: inv.id,
     title: inv.title,
@@ -38,8 +36,7 @@ function summarize(inv, rsvps, owners) {
     ownerId: ownerOf(inv),
     ownerName: owners ? owners[ownerOf(inv)] || '' : '',
     updatedAt: inv.updatedAt,
-    createdAt: inv.createdAt,
-    rsvp: { total: list.length, yes: yes.length, no: list.length - yes.length, people: yes.reduce((s, r) => s + 1 + (Number(r.guests) || 0), 0) }
+    createdAt: inv.createdAt
   };
 }
 
@@ -80,7 +77,8 @@ export default handler(async (req, res) => {
       owners = { [MASTER_ID]: 'Administrador principal' };
       for (const u of Object.values(await hgetall('users'))) owners[u.id] = u.name;
     }
-    const items = await Promise.all(mine.map(async (inv) => summarize(inv, await hgetall('rsvps:' + inv.id), owners)));
+    // a lista não lê as respostas de cada convite (os cards não mostram contagem): 1 leitura em vez de 1 + N
+    const items = mine.map((inv) => summarize(inv, owners));
     items.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
     return send(res, 200, items);
   }

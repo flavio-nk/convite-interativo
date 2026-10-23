@@ -22,6 +22,65 @@ async function call(method, url, body, opts = {}) {
 
 const enc = encodeURIComponent;
 
+// ---------- envio de mídia: limites e redução de fotos ----------
+const MB = 1024 * 1024;
+export const MEDIA_LIMITS = { image: 10 * MB, video: 20 * MB, audio: 10 * MB };
+const PHOTO_MAX_SIDE = 2000;
+
+function mediaKind(file) {
+  const t = String(file.type || '');
+  const n = String(file.name || '').toLowerCase();
+  if (/^image\//.test(t) || /\.(jpe?g|png|webp|gif|avif|heic|heif)$/.test(n)) return 'image';
+  if (/^video\//.test(t) || /\.(mp4|mov|webm|m4v|ogv)$/.test(n)) return 'video';
+  if (/^audio\//.test(t) || /\.(mp3|m4a|aac|ogg|oga|wav)$/.test(n)) return 'audio';
+  return '';
+}
+
+const fmtMB = (b) => (b / MB).toFixed(b < 10 * MB ? 1 : 0).replace('.', ',') + ' MB';
+
+// Foto grande vira WebP de até 2000 px no lado maior (mantém a orientação da câmera).
+// GIF fica como está (pode ser animado). Se não der para reduzir, envia o original.
+async function shrinkPhoto(file) {
+  if (/gif|svg/i.test(file.type)) return file;
+  if (typeof createImageBitmap !== 'function' || typeof document === 'undefined') return file;
+  let bmp;
+  try { bmp = await createImageBitmap(file, { imageOrientation: 'from-image' }); } catch (e) { return file; }
+  const big = Math.max(bmp.width, bmp.height);
+  if (file.size <= 400 * 1024 && big <= PHOTO_MAX_SIDE) { bmp.close && bmp.close(); return file; }
+  const k = Math.min(1, PHOTO_MAX_SIDE / big);
+  const w = Math.max(1, Math.round(bmp.width * k)), h = Math.max(1, Math.round(bmp.height * k));
+  const canvas = document.createElement('canvas');
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext('2d');
+  ctx.imageSmoothingQuality = 'high';
+  ctx.drawImage(bmp, 0, 0, w, h);
+  bmp.close && bmp.close();
+  const toBlob = (type, q) => new Promise((res) => canvas.toBlob(res, type, q));
+  let blob = await toBlob('image/webp', 0.82);
+  let ext = 'webp';
+  if (!blob || blob.type !== 'image/webp') {
+    // navegador sem WebP: JPEG (PNG com transparência fica no formato original)
+    if (/png/i.test(file.type)) return file;
+    blob = await toBlob('image/jpeg', 0.85); ext = 'jpg';
+  }
+  if (!blob || blob.size >= file.size) return file;
+  const name = String(file.name || 'foto').replace(/\.[^.]+$/, '') + '.' + ext;
+  try { return new File([blob], name, { type: blob.type }); } catch (e) { blob.name = name; return blob; }
+}
+
+export async function prepareMedia(file) {
+  const kind = mediaKind(file);
+  if (!kind) throw new Error('Envie uma foto (JPG, PNG, WebP ou GIF), um vídeo ou um áudio.');
+  if (kind === 'image') file = await shrinkPhoto(file);
+  const max = MEDIA_LIMITS[kind];
+  if (file.size > max) {
+    const what = kind === 'image' ? 'A foto' : (kind === 'video' ? 'O vídeo' : 'A música');
+    const tip = kind === 'video' ? ' Reduza a qualidade ou corte o vídeo (no celular, compartilhe em qualidade menor).' : (kind === 'audio' ? ' Use um MP3 de até ' + fmtMB(max) + ' (128 kbps cabem uns 10 minutos).' : '');
+    throw new Error(what + ' tem ' + fmtMB(file.size) + '; o máximo é ' + fmtMB(max) + '.' + tip);
+  }
+  return file;
+}
+
 function safeName(name) {
   const base = String(name || 'arquivo').normalize('NFD').replace(/[̀-ͯ]/g, '');
   return 'convites/' + base.replace(/[^A-Za-z0-9._-]+/g, '-').slice(-80);
@@ -301,6 +360,8 @@ export const api = {
   deleteTheme: (id) => call('DELETE', '/api/themes?id=' + enc(id)),
 
   async upload(file, onProgress) {
+    // limites por tipo (economizam espaço e transferência do armazenamento) e fotos reduzidas antes do envio
+    file = await prepareMedia(file);
     const cfg = config || (await api.me());
     if (cfg.uploads === 'missing') throw new Error('Armazenamento de arquivos não configurado no Vercel (conecte um Blob ao projeto em Storage e faça um novo deploy).');
     if (cfg.uploads === 'blob' || cfg.uploads === 'blob-oidc') {

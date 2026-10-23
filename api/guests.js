@@ -5,7 +5,7 @@
 // Guardados no hash "guests:<convite>"; a resposta fica em "rsvps:<convite>" com id "g-<código>".
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
 import { requireUser, canManage } from './_lib/auth.js';
-import { hget, hset, hdel, hgetall } from './_lib/store.js';
+import { hget, hset, hdel, hgetall, hlen } from './_lib/store.js';
 import { validId } from './_lib/guard.js';
 
 const MAX_GUESTS_PER_INVITE = 3000;
@@ -58,7 +58,7 @@ export default handler(async (req, res) => {
     const items = Array.isArray(body.items) ? body.items : [body];
     if (!items.length) throw httpError(400, 'Nada para adicionar.');
     if (items.length > 500) throw httpError(400, 'Adicione no máximo 500 convites de uma vez.');
-    const existing = Object.keys(await hgetall(key)).length;
+    const existing = await hlen(key);
     if (existing + items.length > MAX_GUESTS_PER_INVITE) throw httpError(403, 'Limite de ' + MAX_GUESTS_PER_INVITE + ' convites individuais por convite atingido.');
     const created = [];
     for (const it of items) {

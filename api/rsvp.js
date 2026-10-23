@@ -1,6 +1,6 @@
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
 import { currentUser, requireUser, canManage } from './_lib/auth.js';
-import { hget, hset, hdel, hgetall } from './_lib/store.js';
+import { hget, hset, hdel, hgetall, hlen } from './_lib/store.js';
 import { maxPeople } from './guests.js';
 import { validId, clientIp, rateLimit } from './_lib/guard.js';
 
@@ -113,7 +113,7 @@ export default handler(async (req, res) => {
     if (!prev || prev.guestId) {
       rid = newId(12);
       // resposta nova pelo link geral: limite por convite
-      if (!admin && Object.keys(await hgetall(key)).length >= MAX_GENERIC_PER_INVITE) throw httpError(403, 'Este convite atingiu o limite de respostas.');
+      if (!admin && (await hlen(key)) >= MAX_GENERIC_PER_INVITE) throw httpError(403, 'Este convite atingiu o limite de respostas.');
     }
     const entry = {
       id: rid,

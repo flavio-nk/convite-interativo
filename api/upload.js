@@ -14,7 +14,17 @@ import { currentUser, requireUser } from './_lib/auth.js';
 import { blobToken, blobStoreId, relatedNames } from './_lib/env.js';
 
 const DIR = path.join(process.cwd(), '.data', 'uploads');
-const MAX = 100 * 1024 * 1024;
+// limites por tipo (o navegador reduz as fotos antes de enviar)
+const MB = 1024 * 1024;
+const MAX = 20 * MB;
+const MAX_BY_KIND = { image: 10 * MB, video: 20 * MB, audio: 10 * MB };
+// limite pelo tipo do arquivo (extensão do nome que o navegador manda)
+function maxFor(pathname) {
+  const n = String(pathname || '').toLowerCase();
+  if (/\.(jpe?g|png|webp|gif|avif|heic|heif)$/.test(n)) return MAX_BY_KIND.image;
+  if (/\.(mp3|m4a|aac|ogg|oga|wav)$/.test(n)) return MAX_BY_KIND.audio;
+  return MAX;
+}
 // SVG fica de fora: pode conter scripts
 const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/heic', 'image/heif', 'video/*', 'audio/*'];
 
@@ -70,8 +80,9 @@ export default handler(async (req, res) => {
         webhookPublicKey: process.env.BLOB_WEBHOOK_PUBLIC_KEY || 'nao-utilizado',
         getSignedToken: async (pathname) => {
           if (!(await currentUser(req))) throw httpError(401, 'Entre com seu usuário e senha.');
-          const token = await issueSignedToken(Object.assign({ pathname, operations: ['put'], allowedContentTypes: TYPES, maximumSizeInBytes: MAX }, auth));
-          return { token, urlOptions: { allowedContentTypes: TYPES, maximumSizeInBytes: MAX, addRandomSuffix: true } };
+          const max = maxFor(pathname);
+          const token = await issueSignedToken(Object.assign({ pathname, operations: ['put'], allowedContentTypes: TYPES, maximumSizeInBytes: max }, auth));
+          return { token, urlOptions: { allowedContentTypes: TYPES, maximumSizeInBytes: max, addRandomSuffix: true } };
         }
       });
       return send(res, 200, result);
@@ -81,9 +92,9 @@ export default handler(async (req, res) => {
       token: blobToken(),
       body,
       request: req,
-      onBeforeGenerateToken: async () => {
+      onBeforeGenerateToken: async (pathname) => {
         if (!(await currentUser(req))) throw httpError(401, 'Entre com seu usuário e senha.');
-        return { allowedContentTypes: TYPES, maximumSizeInBytes: MAX, addRandomSuffix: true };
+        return { allowedContentTypes: TYPES, maximumSizeInBytes: maxFor(pathname), addRandomSuffix: true };
       }
     });
     return send(res, 200, result);
@@ -116,9 +127,11 @@ export default handler(async (req, res) => {
   const id = newId(16);
   const out = fs.createWriteStream(path.join(DIR, id));
   let size = 0;
+  const kind = type.split('/')[0];
+  const limit = MAX_BY_KIND[kind] || MAX;
   for await (const chunk of req) {
     size += chunk.length;
-    if (size > MAX) { out.destroy(); throw httpError(413, 'Arquivo maior que 100 MB.'); }
+    if (size > limit) { out.destroy(); try { fs.unlinkSync(path.join(DIR, id)); } catch (e) {} throw httpError(413, 'Arquivo maior que ' + limit / MB + ' MB.'); }
     out.write(chunk);
   }
   await new Promise((r) => out.end(r));
