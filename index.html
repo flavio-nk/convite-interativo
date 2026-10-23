@@ -9,42 +9,11 @@
 html,body{margin:0;padding:0}
 body{background:#F5F4F8;-webkit-text-size-adjust:100%}
 </style>
-<script>
-/* Convite do convidado: pinta a tela de carregamento nas cores do tema antes de o app
-   chegar. Cores do link (?t=fundo.texto.destaque) ou do último acesso neste aparelho. */
-(function () {
-  try {
-    var m = location.hash.match(/^#\/c\/([^?\/]+)(?:\?(.*))?/);
-    if (!m) return;
-    var hex = /^[0-9A-Fa-f]{6}$/;
-    var parse = function (v) { var p = String(v || '').split('.'); return p.length === 3 && p.every(function (c) { return hex.test(c); }) ? p : null; };
-    var t = parse(new URLSearchParams(m[2] || '').get('t'));
-    if (!t) { try { t = parse(localStorage.getItem('ci:tema:' + decodeURIComponent(m[1]))); } catch (e) {} }
-    var bg = t ? '#' + t[0] : '#1C1B22', fg = t ? '#' + t[1] : '#F3F2F7', ac = t ? '#' + t[2] : '#B9A6FF';
-    window.__ciFrame = bg;
-    window.__ciLoad = { bg: bg, fg: fg, ac: ac };
-    var st = document.createElement('style');
-    st.textContent = 'html,body{background:' + bg + ' !important}' +
-      '@media (min-width:640px){html,body{background:color-mix(in srgb,' + bg + ' 78%,#000) !important}}' +
-      '@keyframes ciS{to{transform:rotate(360deg)}}';
-    document.head.appendChild(st);
-    var meta = document.querySelector('meta[name="theme-color"]');
-    if (meta) meta.setAttribute('content', bg);
-  } catch (e) {}
-})();
-</script>
+<script src="/boot-tema.js"></script>
 </head>
 <body>
 <div id="app"></div>
-<script>
-(function () {
-  var c = window.__ciLoad, a = document.getElementById('app');
-  if (!c || !a) return;
-  a.innerHTML = '<div role="status" style="min-height:100vh;min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;color:' + c.fg +
-    ';font:500 15px system-ui,-apple-system,sans-serif"><span aria-hidden="true" style="width:42px;height:42px;border-radius:50%;border:2px solid color-mix(in srgb,' + c.fg + ' 24%,transparent);border-top-color:' + c.ac +
-    ';box-sizing:border-box;animation:ciS .9s linear infinite"></span><span style="opacity:.85;letter-spacing:.02em">Abrindo convite…</span></div>';
-})();
-</script>
+<script src="/boot-carregando.js"></script>
 <script type="module" src="/src/main.js"></script>
 </body>
 </html>

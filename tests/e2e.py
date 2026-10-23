@@ -880,6 +880,69 @@ def t_users(pg, browser):
     bp.context.close()
 
 
+def t_security(pg, browser):
+    """Ataques comuns: CSRF, força bruta, ids inválidos, recriar convite alheio, cores injetadas, SVG, cabeçalhos."""
+    import urllib.request, urllib.error, json as _json
+    J = "async ([m, u, b]) => { const r = await fetch(u, {method: m, headers: {'content-type': 'application/json'}, body: b}); let d = null; try { d = await r.json(); } catch (e) {} return [r.status, d]; }"
+    def raw(method, path, body=None, headers=None):
+        req = urllib.request.Request(BASE.rstrip('/') + path, data=(body.encode() if body else None), method=method, headers=headers or {})
+        try:
+            with urllib.request.urlopen(req) as r:
+                return r.status, dict(r.headers), r.read().decode('utf-8', 'ignore')
+        except urllib.error.HTTPError as e:
+            return e.code, dict(e.headers), e.read().decode('utf-8', 'ignore')
+    go(pg, 'Main', 900)
+    cookie = '; '.join(c['name'] + '=' + c['value'] for c in pg.context.cookies())
+    # CSRF: outro site tentando alterar dados com o cookie do organizador
+    st, _, _ = raw('POST', '/api/invites', '{"title":"csrf"}', {'Cookie': cookie, 'Content-Type': 'text/plain', 'Origin': 'https://site-malicioso.example'})
+    ok('Segurança: requisição de outro site (Origin) recusada', st == 403, st)
+    st, _, _ = raw('POST', '/api/invites', '{"title":"csrf"}', {'Cookie': cookie, 'Content-Type': 'text/plain', 'Sec-Fetch-Site': 'cross-site'})
+    ok('Segurança: requisição de outro site (Sec-Fetch-Site) recusada', st == 403, st)
+    # cabeçalhos de segurança
+    st, h, _ = raw('GET', '/')
+    hl = {k.lower(): v for k, v in h.items()}
+    ok('Segurança: cabeçalhos (CSP, frame, nosniff, referrer)', "frame-ancestors 'none'" in hl.get('content-security-policy', '') and hl.get('x-frame-options') == 'DENY' and hl.get('x-content-type-options') == 'nosniff' and 'strict-origin' in hl.get('referrer-policy', ''), hl)
+    ck = [c for c in pg.context.cookies() if c['name'] == 'ci_session']
+    ok('Segurança: cookie de sessão HttpOnly e SameSite', ck and ck[0]['httpOnly'] and ck[0]['sameSite'] in ('Lax', 'Strict'), ck)
+    # ids inválidos
+    st, _ = pg.evaluate(J, ['GET', '/api/invites?id=../../x', None])
+    ok('Segurança: id inválido recusado', st == 400, st)
+    st, _ = pg.evaluate(J, ['GET', '/api/guests?invite=a%20b', None])
+    ok('Segurança: id de convite inválido recusado', st == 400, st)
+    # tema com "cor" que injeta CSS
+    st, _ = pg.evaluate(J, ['POST', '/api/themes', _json.dumps({'name': 'x', 'bg': 'red;background:url(https://x.example/a)', 'fg': '#000000', 'accent': '#111111'})])
+    ok('Segurança: cor inválida no tema recusada', st == 400, st)
+    # senha fraca
+    st, d = pg.evaluate(J, ['POST', '/api/users', _json.dumps({'name': 'Fraca', 'email': 'fraca@exemplo.com', 'username': 'fraca', 'password': '12345678'})])
+    ok('Segurança: senha comum recusada', st == 400 and 'fácil' in d['error'], [st, d])
+    # dois usuários comuns: B não pode recriar (via "Desfazer") o convite excluído de A
+    for nm, un in [('Ana Seg', 'ana.seg'), ('Beto Seg', 'beto.seg')]:
+        pg.evaluate(J, ['POST', '/api/users', _json.dumps({'name': nm, 'email': un + '@exemplo.com', 'username': un, 'password': 'Segura#2026'})])
+    ap = login_as(browser, 'ana.seg', 'Segura#2026')
+    st, inv = ap.evaluate(J, ['POST', '/api/invites', '{"title":"Convite da Ana","status":"publicado"}'])
+    st, deleted = ap.evaluate(J, ['DELETE', '/api/invites?id=' + inv['id'], None])
+    bp = login_as(browser, 'beto.seg', 'Segura#2026')
+    st, _ = bp.evaluate(J, ['PUT', '/api/invites?id=' + inv['id'], _json.dumps(dict(deleted['invite'], title='Sequestrado', __rsvps={}, __guests={}))])
+    ok('Segurança: outro usuário não recria convite excluído', st == 404, st)
+    st, _ = bp.evaluate(J, ['PUT', '/api/invites?id=idnovoqualquer', '{"title":"x","__rsvps":{}}'])
+    ok('Segurança: "Desfazer" não cria convite com id inventado', st == 404, st)
+    st, back = ap.evaluate(J, ['PUT', '/api/invites?id=' + inv['id'], _json.dumps(dict(deleted['invite'], __rsvps={}, __guests={}))])
+    ok('Segurança: dono ainda desfaz a exclusão', st == 200 and back['title'] == 'Convite da Ana', st)
+    # convite público não revela o dono
+    st, _h, body = raw('GET', '/api/invites?id=' + inv['id'])
+    ok('Segurança: convite público sem dados do dono', st == 200 and '"ownerId"' not in body, st)
+    # força bruta: bloqueio depois de várias senhas erradas
+    codes = [ap.evaluate(J, ['POST', '/api/auth?action=login', _json.dumps({'username': 'beto.seg', 'password': 'errada' + str(i)})])[0] for i in range(9)]
+    st, d = ap.evaluate(J, ['POST', '/api/auth?action=login', _json.dumps({'username': 'beto.seg', 'password': 'Segura#2026'})])
+    ok('Segurança: login bloqueado após muitas senhas erradas', codes[:8] == [401] * 8 and codes[8] == 429 and st == 429, [codes, st])
+    st, d = ap.evaluate(J, ['POST', '/api/auth?action=login', _json.dumps({'username': 'naoexiste', 'password': 'qualquer1'})])
+    ok('Segurança: usuário inexistente tem a mesma mensagem', st == 401 and d['error'] == 'Usuário ou senha incorretos.', d)
+    # SVG (pode conter script) não é aceito no envio local
+    st, _, _ = raw('POST', '/api/upload?name=a.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>', {'Cookie': cookie, 'Content-Type': 'image/svg+xml'})
+    ok('Segurança: envio de SVG recusado', st == 415, st)
+    ap.context.close(); bp.context.close()
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -907,7 +970,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

@@ -2,6 +2,9 @@ import { handler, query, readBody, send, httpError, newId } from './_lib/http.js
 import { currentUser, requireUser, canManage } from './_lib/auth.js';
 import { hget, hset, hdel, hgetall } from './_lib/store.js';
 import { maxPeople } from './guests.js';
+import { validId, clientIp, rateLimit } from './_lib/guard.js';
+
+const MAX_GENERIC_PER_INVITE = 3000;
 
 const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
 
@@ -13,7 +16,7 @@ function rsvpBlock(inv) {
 
 export default handler(async (req, res) => {
   const q = query(req);
-  const inviteId = q.get('invite');
+  const inviteId = validId(q.get('invite'), 'Convite');
   if (!inviteId) throw httpError(400, 'Informe o convite.');
   const key = 'rsvps:' + inviteId;
 
@@ -36,6 +39,8 @@ export default handler(async (req, res) => {
     // quem gerencia o convite (dono ou administrador) pode responder por um convidado
     const admin = canManage(await currentUser(req), inv);
     if (!inv || (!admin && inv.status !== 'publicado')) throw httpError(404, 'Convite não encontrado ou ainda não publicado.');
+    // limite de envios por aparelho (IP) e convite: evita robôs enchendo a lista de respostas
+    if (!admin) await rateLimit('rsvp:' + inviteId + ':' + clientIp(req), 30, 10 * 60, 'Muitas respostas enviadas daqui.');
     const body = await readBody(req);
     const now = new Date().toISOString();
     const personal = inv.personal && inv.personal.enabled;
@@ -47,7 +52,7 @@ export default handler(async (req, res) => {
     }
 
     // Resposta por um convite individual: nomes de quem vai, até o limite daquele convite.
-    const guestId = str(body.guestId, 40);
+    const guestId = validId(str(body.guestId, 40), 'Convite individual');
     if (guestId) {
       const guest = await hget('guests:' + inviteId, guestId);
       if (!guest) throw httpError(404, 'Este convite individual não existe mais.');
@@ -103,8 +108,13 @@ export default handler(async (req, res) => {
     const cap = admin ? 20 : (block.askGuests === false ? 0 : Math.max(0, Math.min(20, block.maxGuests == null ? 2 : Number(block.maxGuests) || 0)));
     const guests = body.go ? Math.max(0, Math.min(cap, parseInt(body.guests, 10) || 0)) : 0;
     let rid = str(body.rsvpId, 40);
+    if (rid && !/^[a-z0-9]{12}$/.test(rid)) rid = '';
     const prev = rid ? await hget(key, rid) : null;
-    if (!prev || prev.guestId) rid = newId(12);
+    if (!prev || prev.guestId) {
+      rid = newId(12);
+      // resposta nova pelo link geral: limite por convite
+      if (!admin && Object.keys(await hgetall(key)).length >= MAX_GENERIC_PER_INVITE) throw httpError(403, 'Este convite atingiu o limite de respostas.');
+    }
     const entry = {
       id: rid,
       name,
@@ -122,7 +132,7 @@ export default handler(async (req, res) => {
 
   if (req.method === 'DELETE') {
     await manage();
-    const id = q.get('id');
+    const id = validId(q.get('id'), 'Resposta');
     if (!id) throw httpError(400, 'Informe a resposta.');
     await hdel(key, id);
     return send(res, 200, { deleted: id });

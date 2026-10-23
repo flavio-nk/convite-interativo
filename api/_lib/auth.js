@@ -96,6 +96,8 @@ export async function currentUser(req) {
   if (req.__user !== undefined) return req.__user;
   let user = null;
   const p = verify(cookies(req)[COOKIE]);
+  // sessão vale 30 dias a partir do login (conferido aqui, não só pelo navegador)
+  if (p && p.t && Date.now() - p.t > DAYS * 86400000) return (req.__user = null);
   if (p && p.u) {
     if (p.u === MASTER_ID) {
       const m = masterUser();

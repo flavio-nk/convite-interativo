@@ -9,8 +9,11 @@ const PORT = Number(process.env.PORT || 3000);
 const DIST = path.resolve('dist');
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.json': 'application/json' };
 const cache = {};
+// mesmos cabeçalhos de segurança do Vercel (vercel.json)
+const SEC = (JSON.parse(fs.readFileSync('vercel.json', 'utf8')).headers || [])[0];
 
 http.createServer(async (req, res) => {
+  if (SEC) for (const h of SEC.headers) if (h.key !== 'Strict-Transport-Security') res.setHeader(h.key, h.value);
   const u = new URL(req.url, 'http://localhost');
   const m = u.pathname.match(/^\/api\/([a-z-]+)$/);
   if (m) {

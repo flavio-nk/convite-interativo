@@ -15,7 +15,8 @@ import { blobToken, blobStoreId, relatedNames } from './_lib/env.js';
 
 const DIR = path.join(process.cwd(), '.data', 'uploads');
 const MAX = 100 * 1024 * 1024;
-const TYPES = ['image/*', 'video/*', 'audio/*'];
+// SVG fica de fora: pode conter scripts
+const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/heic', 'image/heif', 'video/*', 'audio/*'];
 
 function blobAuth(req) {
   const token = blobToken();
@@ -47,6 +48,8 @@ export default handler(async (req, res) => {
     try { u = new URL(q.get('media')); } catch (e) { throw httpError(400, 'Endereço inválido.'); }
     if (!/\.blob\.vercel-storage\.com$/.test(u.hostname)) throw httpError(400, 'Endereço inválido.');
     const pathname = decodeURIComponent(u.pathname.replace(/^\//, ''));
+    // só arquivos enviados pelos convites
+    if (!/^convites\//.test(pathname) || pathname.includes('..')) throw httpError(404, 'Arquivo não encontrado.');
     const signed = await issueSignedToken(Object.assign({ pathname, operations: ['get'] }, auth));
     const { presignedUrl } = await presignUrl(signed, { operation: 'get', pathname, access: 'private' });
     res.statusCode = 302;
@@ -100,13 +103,15 @@ export default handler(async (req, res) => {
     res.statusCode = 200;
     res.setHeader('Content-Type', info.type || 'application/octet-stream');
     res.setHeader('Cache-Control', 'public, max-age=31536000');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; sandbox");
     fs.createReadStream(path.join(DIR, file)).pipe(res);
     return;
   }
   if (req.method !== 'POST') throw httpError(405, 'Método não permitido.');
   await requireUser(req);
   const type = String(req.headers['content-type'] || 'application/octet-stream');
-  if (!/^(image|video|audio)\//.test(type)) throw httpError(415, 'Envie uma imagem, um vídeo ou um áudio.');
+  if (!/^(image|video|audio)\//.test(type) || /svg/i.test(type)) throw httpError(415, 'Envie uma imagem (JPG, PNG, WebP, GIF), um vídeo ou um áudio.');
   fs.mkdirSync(DIR, { recursive: true });
   const id = newId(16);
   const out = fs.createWriteStream(path.join(DIR, id));

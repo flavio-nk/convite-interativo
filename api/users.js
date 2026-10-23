@@ -2,11 +2,13 @@
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
 import { requireAdmin, publicUser, masterUser, hashPassword, newVersion, MASTER_ID } from './_lib/auth.js';
 import { hget, hset, hgetall } from './_lib/store.js';
+import { validId } from './_lib/guard.js';
 
 const KEY = 'users';
 const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 const USERNAME = /^[a-z0-9][a-z0-9._-]{2,29}$/;
+const COMMON = ['12345678', '123456789', '1234567890', 'senha123', 'senha1234', 'password', 'password1', 'qwerty123', '11111111', 'abc12345', 'convite123', 'mudar123', 'admin123', 'brasil123'];
 
 function validate(body, prev, all) {
   const out = {};
@@ -29,6 +31,9 @@ function validate(body, prev, all) {
     const pw = String(body.password);
     if (pw.length < 8) throw httpError(400, 'A senha precisa ter pelo menos 8 caracteres.');
     if (pw.length > 200) throw httpError(400, 'Senha longa demais.');
+    if (/^(.)\1+$/.test(pw) || pw.toLowerCase() === username || pw.toLowerCase() === email || COMMON.includes(pw.toLowerCase())) {
+      throw httpError(400, 'Senha fácil demais de adivinhar. Use uma combinação diferente de letras e números.');
+    }
     const h = hashPassword(pw);
     out.pwSalt = h.salt; out.pwHash = h.hash;
   } else if (!prev) {
@@ -39,7 +44,7 @@ function validate(body, prev, all) {
 
 export default handler(async (req, res) => {
   const me = await requireAdmin(req);
-  const id = query(req).get('id');
+  const id = validId(query(req).get('id'), 'Usuário');
 
   if (req.method === 'GET') {
     const all = Object.values(await hgetall(KEY)).map(publicUser)

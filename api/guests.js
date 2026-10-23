@@ -6,6 +6,9 @@
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
 import { requireUser, canManage } from './_lib/auth.js';
 import { hget, hset, hdel, hgetall } from './_lib/store.js';
+import { validId } from './_lib/guard.js';
+
+const MAX_GUESTS_PER_INVITE = 3000;
 
 const str = (v, max) => String(v == null ? '' : v).trim().slice(0, max);
 export const MAX_COMPANIONS = 20;
@@ -33,13 +36,13 @@ export const maxPeople = (g) => Math.max(1, (g.people || []).length) + (Number(g
 
 export default handler(async (req, res) => {
   const q = query(req);
-  const inviteId = q.get('invite');
+  const inviteId = validId(q.get('invite'), 'Convite');
   if (!inviteId) throw httpError(400, 'Informe o convite.');
   const user = await requireUser(req);
   const inv = await hget('invites', inviteId);
   if (!inv || !canManage(user, inv)) throw httpError(404, 'Convite não encontrado.');
   const key = 'guests:' + inviteId;
-  const id = q.get('id');
+  const id = validId(q.get('id'), 'Convite individual');
 
   if (req.method === 'GET') {
     const all = await hgetall(key);
@@ -55,6 +58,8 @@ export default handler(async (req, res) => {
     const items = Array.isArray(body.items) ? body.items : [body];
     if (!items.length) throw httpError(400, 'Nada para adicionar.');
     if (items.length > 500) throw httpError(400, 'Adicione no máximo 500 convites de uma vez.');
+    const existing = Object.keys(await hgetall(key)).length;
+    if (existing + items.length > MAX_GUESTS_PER_INVITE) throw httpError(403, 'Limite de ' + MAX_GUESTS_PER_INVITE + ' convites individuais por convite atingido.');
     const created = [];
     for (const it of items) {
       const g = cleanGuest(it || {}, null);

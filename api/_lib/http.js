@@ -50,9 +50,28 @@ export function send(res, status, data, headers = {}) {
   res.end(JSON.stringify(data));
 }
 
+// Bloqueia requisições que alteram dados vindas de outro site (CSRF).
+// Navegadores modernos mandam Sec-Fetch-Site; os demais, Origin.
+export function checkOrigin(req) {
+  if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) return;
+  const site = String(req.headers['sec-fetch-site'] || '');
+  if (site === 'cross-site') throw httpError(403, 'Requisição de outro site recusada.');
+  const origin = req.headers.origin;
+  if (origin && origin !== 'null') {
+    let host = '';
+    try { host = new URL(origin).host; } catch (e) { host = ''; }
+    const own = String(req.headers['x-forwarded-host'] || req.headers.host || '');
+    if (!host || host !== own) throw httpError(403, 'Requisição de outro site recusada.');
+  } else if (origin === 'null') {
+    throw httpError(403, 'Requisição de outro site recusada.');
+  }
+}
+
 export function handler(fn) {
   return async (req, res) => {
     try {
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      checkOrigin(req);
       await fn(req, res);
     } catch (e) {
       const isBlob = e && /^Blob/.test((e.constructor && e.constructor.name) || '');
