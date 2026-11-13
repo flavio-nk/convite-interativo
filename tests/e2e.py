@@ -1087,6 +1087,26 @@ def t_savedate(pg):
     inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
     mp = [b for p in inv['pages'] for b in p['blocks'] if b['type'] == 'mapa'][0]
     ok('Foto: tamanho reduzido salvo', (mp.get('photoEdit') or {}).get('zoom') == 0.6, mp.get('photoEdit'))
+    # altura do espaço da foto do local
+    pg_det = [p for p in inv['pages'] if any(b['type'] == 'mapa' for b in p['blocks'])][0]
+    below0 = {b['id']: b['pos']['y'] for b in pg_det['blocks'] if b.get('pos') and b['pos']['y'] > mp['pos']['y']} if mp.get('pos') else {}
+    ok('Mapa: controle de altura do espaço da foto (padrão 120 px)', count(pg, '#place-h') == 1 and pg.input_value('#place-h') == '120', pg.input_value('#place-h') if count(pg, '#place-h') else None)
+    pg.click('[aria-label="Alturas prontas"] button:has-text("Alta")'); pg.wait_for_timeout(1800)
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    pg_det = [p for p in inv['pages'] if any(b['type'] == 'mapa' for b in p['blocks'])][0]
+    mp = [b for b in pg_det['blocks'] if b['type'] == 'mapa'][0]
+    w = mp['pos']['w'] if mp.get('pos') else 334
+    ok('Mapa: altura "Alta" salva (180 px)', abs(w / mp.get('photoRatio', 0.0001) - 180) < 1.5, mp.get('photoRatio'))
+    moved = all(abs(b['pos']['y'] - below0[b['id']] - 60) <= 1 for b in pg_det['blocks'] if b['id'] in below0)
+    ok('Mapa: blocos abaixo descem junto com a foto', bool(below0) and moved, (below0, [(b['id'], b.get('pos')) for b in pg_det['blocks']]))
+    set_range(pg, '#place-h', 150); pg.wait_for_timeout(300)
+    pg.click('[aria-label="Diminuir a altura da foto"]'); pg.wait_for_timeout(1800)
+    ok('Mapa: barra e botão − ajustam a altura', pg.input_value('#place-h') == '140', pg.input_value('#place-h'))
+    pg.click('button:has-text("Editar foto do local")'); pg.wait_for_timeout(600)
+    fr = pg.locator('[data-testid="pe-frame"]').bounding_box()
+    ok('Mapa: editor de fotos usa a nova proporção do espaço', abs(fr['width'] / fr['height'] - w / 140) < 0.05, (fr, w))
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
     ok('Save the Date: foto de fundo da capa com véu de 40%', inv['pages'][0]['bg']['dim'] == 40 and inv['pages'][0]['bg']['url'], inv['pages'][0].get('bg'))
     inv['status'] = 'publicado'
     pg.evaluate("([id, inv]) => fetch('/api/invites?id=' + id, {method: 'PUT', headers: {'content-type': 'application/json'}, body: JSON.stringify(inv)})", [iid, inv])
@@ -1101,6 +1121,8 @@ def t_savedate(pg):
     loaded = g.evaluate("() => { const i = document.querySelector('img[alt^=\"Foto de \"]'); return !!i && i.complete && i.naturalWidth > 0; }")
     ok('Mapa: convidado vê a foto do local carregada', loaded)
     st = g.evaluate("() => document.querySelector('img[alt^=\"Foto de \"]').getAttribute('style') || ''")
+    bx = g.evaluate("() => { const i = document.querySelector('img[alt^=\"Foto de \"]').parentElement.getBoundingClientRect(); return [i.width, i.height]; }")
+    ok('Mapa: convidado vê o espaço da foto com a altura escolhida', abs(bx[0] / bx[1] - w / 140) < 0.05, bx)
     ok('Mapa: convidado vê a foto do local com a edição', 'brightness(1.2)' in st and 'width:' in st and 'width:100%' not in st.replace(' ', ''), st)
     ctx.close()
     # remover a foto volta ao ícone

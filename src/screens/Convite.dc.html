@@ -123,7 +123,7 @@ body{margin:0}
                 <sc-if value="{{b.isMapa}}" hint-placeholder-val="{{ false }}">
                   <div style="border-radius: 14px; overflow: hidden; border: 1px solid {{T.line}}; background: {{T.surface}}; text-align: left">
                     <sc-if value="{{b.hasPlacePhoto}}" hint-placeholder-val="{{ false }}">
-                      <div style="position: relative; overflow: hidden; aspect-ratio: 2.6; background: {{T.ph}}">
+                      <div style="position: relative; overflow: hidden; aspect-ratio: {{b.placeRatio}}; background: {{T.ph}}">
                         <img src="{{b.placePhoto}}" alt="{{b.placeAlt}}" loading="lazy" style="{{b.placeImgStyle}}">
                       </div>
                     </sc-if>
@@ -587,7 +587,8 @@ class Component extends DCLogic {
         o.placePhoto = /^(https?:|blob:|\/)/i.test(ph) ? ph : '';
         o.hasPlacePhoto = !!o.placePhoto; o.noPlacePhoto = !o.placePhoto;
         o.placeAlt = 'Foto de ' + (x.text || 'local do evento');
-        o.placeImgStyle = api.photo.style(x.photoEdit, api.photo.placeRatio);
+        o.placeRatio = String(api.photo.placeRatioOf(x));
+        o.placeImgStyle = api.photo.style(x.photoEdit, api.photo.placeRatioOf(x));
       }
       if (o.isBotao) {
         o.press = () => {

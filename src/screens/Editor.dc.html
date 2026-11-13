@@ -551,11 +551,25 @@ button:disabled{opacity:.5;cursor:not-allowed}
                     <sc-if value="{{sel.hasPlacePhoto}}" hint-placeholder-val="{{ false }}">
                       <div style="display: flex; flex-direction: column; gap: 8px">
                         <div style="display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; border: 1px solid #E4E1EC; background: #FFFFFF">
-                          <span style="position: relative; width: 78px; aspect-ratio: 2.6; border-radius: 8px; overflow: hidden; flex: none; background: #F1EFF6"><img src="{{sel.placePhoto}}" alt="" style="{{sel.placeImgStyle}}"></span>
+                          <span style="position: relative; width: 78px; aspect-ratio: {{sel.placeRatio}}; border-radius: 8px; overflow: hidden; flex: none; background: #F1EFF6"><img src="{{sel.placePhoto}}" alt="" style="{{sel.placeImgStyle}}"></span>
                           <span style="display: flex; flex-direction: column; line-height: 1.35; min-width: 0; font-size: 13px">
                             <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{sel.placeName}}</strong>
                             <span style="color: #5E5A6B">{{sel.placeStatus}}</span>
                           </span>
+                        </div>
+                        <div>
+                          <label class="lbl" for="place-h">Altura do espaço da foto · {{sel.placeH}} px</label>
+                          <div style="display: flex; align-items: center; gap: 8px">
+                            <button onClick="{{placeLower}}" aria-label="Diminuir a altura da foto" title="Mais baixa" style="flex: none; width: 36px; height: 36px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-size: 20px; line-height: 1; cursor: pointer">−</button>
+                            <input id="place-h" type="range" min="{{sel.placeHMin}}" max="{{sel.placeHMax}}" step="5" value="{{sel.placeH}}" onInput="{{onPlaceH}}" style="flex: 1; min-width: 0; min-height: 36px; accent-color: #5B3FD6">
+                            <button onClick="{{placeTaller}}" aria-label="Aumentar a altura da foto" title="Mais alta" style="flex: none; width: 36px; height: 36px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-size: 20px; line-height: 1; cursor: pointer">+</button>
+                          </div>
+                          <div role="group" aria-label="Alturas prontas" style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px">
+                            <sc-for list="{{sel.placePresets}}" as="pp" hint-placeholder-count="4">
+                              <button onClick="{{pp.pick}}" aria-pressed="{{pp.on}}" style="min-height: 32px; padding: 0 10px; border-radius: 999px; border: 1px solid {{pp.ring}}; background: {{pp.bg}}; color: #17151F; font-size: 13px; font-weight: 600; cursor: pointer">{{pp.label}}</button>
+                            </sc-for>
+                          </div>
+                          <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Os blocos abaixo acompanham a mudança de altura.</span>
                         </div>
                         <button onClick="{{editPlacePhoto}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14M18 22V8a2 2 0 0 0-2-2H2"></path></svg>
@@ -1495,6 +1509,42 @@ class Component extends DCLogic {
     this.patchPage(pid, (p) => Object.assign({}, p, { bg: bg ? Object.assign({}, p.bg || {}, bg) : null }));
   }
 
+  // ---------- foto do local: altura do espaço ----------
+  placeWidth(blk) { return blk && blk.pos && blk.pos.w ? blk.pos.w : 334; }
+
+  setPlaceHeight(bid, h) {
+    const st = this.state;
+    const page = st.pages.find((p) => p.blocks.some((x) => x.id === bid));
+    if (!page) return;
+    const blk = page.blocks.find((x) => x.id === bid);
+    const w = this.placeWidth(blk);
+    const nh = Math.max(60, Math.min(Math.round(w / 0.6), Math.round(h)));
+    const oldH = Math.round(w / api.photo.placeRatioOf(blk));
+    const delta = nh - oldH;
+    if (!delta) return;
+    const ratio = Math.round(w / nh * 10000) / 10000;
+    const y0 = blk.pos ? blk.pos.y : null;
+    this.patchPage(page.id, (p) => Object.assign({}, p, { blocks: p.blocks.map((x) => {
+      if (x.id === bid) return Object.assign({}, x, { photoRatio: ratio });
+      // páginas de posição livre: quem está abaixo do bloco acompanha a mudança de altura
+      if (p.free && y0 != null && x.pos && x.pos.y > y0) return Object.assign({}, x, { pos: Object.assign({}, x.pos, { y: Math.max(0, x.pos.y + delta) }) });
+      return x;
+    }) }));
+  }
+
+  placeHeightVals(s) {
+    const w = this.placeWidth(s);
+    const h = Math.round(w / api.photo.placeRatioOf(s));
+    const presets = [['Baixa', 90], ['Padrão', Math.round(w / api.photo.placeRatio)], ['Alta', 180], ['Quadrada', w]];
+    return {
+      placeH: String(h), placeHMin: '60', placeHMax: String(Math.min(Math.round(w / 0.6), 420)),
+      placePresets: presets.map((p) => {
+        const on = Math.abs(p[1] - h) <= 2;
+        return { label: p[0], on: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#D6D3E0', bg: on ? '#EFECFB' : '#FFFFFF', pick: () => this.setPlaceHeight(s.id, p[1]) };
+      })
+    };
+  }
+
   // ---------- editor de fotos ----------
   openPhotoEditor(kind, id) {
     const st = this.state;
@@ -1520,7 +1570,10 @@ class Component extends DCLogic {
 
   peRatio(pe) {
     if (!pe) return 1;
-    if (pe.kind === 'place') return api.photo.placeRatio;
+    if (pe.kind === 'place') {
+      const blk = this.state.pages.reduce((f, p) => f || p.blocks.find((x) => x.id === pe.id), null);
+      return api.photo.placeRatioOf(blk);
+    }
     return pe.kind === 'bg' ? api.photo.pageRatio : api.photo.ratio(pe.draft, this.state.theme.layout);
   }
 
@@ -2200,7 +2253,9 @@ class Component extends DCLogic {
         hasPlacePhoto: !!s.photoUrl, noPlacePhoto: !s.photoUrl, placePhoto: s.photoUrl || '',
         placeName: s.photoName || 'Foto do local',
         placeStatus: s.photoUploading ? 'Enviando' + (s.photoPct ? ' · ' + s.photoPct + '%' : '…') : (api.photo.isEdited(s.photoEdit) ? 'Foto editada. A original continua guardada.' : 'Sem edições'),
-        placeImgStyle: api.photo.style(s.photoEdit, api.photo.placeRatio),
+        placeImgStyle: api.photo.style(s.photoEdit, api.photo.placeRatioOf(s)),
+        ...this.placeHeightVals(s),
+        placeRatio: String(api.photo.placeRatioOf(s)),
         targetLocal: api.fmt.toLocalInput(s.target || ''), endText: s.endText == null ? 'O grande dia chegou!' : s.endText,
         action: s.action || 'pagina', dest: s.dest || '',
         isActionPage: (s.action || 'pagina') === 'pagina', isActionLink: s.action === 'link', isActionWa: s.action === 'whatsapp',
@@ -2355,6 +2410,9 @@ class Component extends DCLogic {
       editSelPhoto: () => { if (s) this.openPhotoEditor('block', s.id); },
       editBgPhoto: () => this.openPhotoEditor('bg', pid),
       editPlacePhoto: () => { if (s) this.openPhotoEditor('place', s.id); },
+      onPlaceH: (e) => { if (s) this.setPlaceHeight(s.id, Number(e.target.value)); },
+      placeLower: () => { if (s) this.setPlaceHeight(s.id, Math.round(this.placeWidth(s) / api.photo.placeRatioOf(s)) - 10); },
+      placeTaller: () => { if (s) this.setPlaceHeight(s.id, Math.round(this.placeWidth(s) / api.photo.placeRatioOf(s)) + 10); },
       photoToBg: () => {
         if (!s) return;
         const url = this.mediaUrl(s);

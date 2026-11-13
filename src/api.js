@@ -247,6 +247,8 @@ export const photo = {
   pageRatio: PAGE_RATIO,
   zoomMin: ZOOM_MIN, zoomMax: ZOOM_MAX,
   placeRatio: PLACE_RATIO,
+  // proporção (largura/altura) do espaço da foto do local num bloco de mapa
+  placeRatioOf(b) { const r = b && Number(b.photoRatio); return r && isFinite(r) ? clamp(r, 0.6, 6) : PLACE_RATIO; },
   // proporção do quadro de um bloco de foto, conforme o formato escolhido e o layout do tema
   ratio(edit, layout) {
     const fmtKey = edit && edit.frame;
