@@ -77,14 +77,24 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <h2 class="sec" style="margin-bottom: 10px">Páginas</h2>
         <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
           <sc-for list="{{pageList}}" as="p" hint-placeholder-count="4">
-            <li>
-              <button class="pg" onClick="{{p.pick}}" aria-current="{{p.current}}" style="width: 100%; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; border: 1px solid {{p.border}}; background: {{p.bg}}; color: #17151F; cursor: pointer; text-align: left">
+            <li draggable="true" onDragStart="{{p.dragStart}}" onDragOver="{{p.dragOver}}" onDragLeave="{{p.dragLeave}}" onDrop="{{p.drop}}" onDragEnd="{{p.dragEnd}}" data-page="{{p.id}}" style="display: flex; align-items: stretch; gap: 4px; border-radius: 10px; box-shadow: {{p.dropShadow}}; opacity: {{p.dragOpacity}}">
+              <button class="pg" onClick="{{p.pick}}" aria-current="{{p.current}}" title="Arraste para mudar a ordem" style="flex: 1 1 auto; min-width: 0; width: 100%; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; border: 1px solid {{p.border}}; background: {{p.bg}}; color: #17151F; cursor: pointer; text-align: left">
                 <span style="width: 26px; height: 26px; border-radius: 7px; background: {{p.numBg}}; color: {{p.numFg}}; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex: none">{{p.n}}</span>
                 <span style="display: flex; flex-direction: column; line-height: 1.25; min-width: 0">
                   <span style="font-weight: 600; font-size: 14px">{{p.name}}</span>
                   <span style="font-size: 12px; color: #5E5A6B">{{p.count}}</span>
                 </span>
               </button>
+              <sc-if value="{{p.canMove}}" hint-placeholder-val="{{ true }}">
+                <span style="display: flex; flex-direction: column; gap: 2px; flex: none">
+                  <button onClick="{{p.up}}" disabled="{{p.isFirst}}" aria-label="{{p.upLabel}}" title="Mover para cima" style="flex: 1; width: 28px; min-height: 22px; border-radius: 7px; border: 1px solid #E3E1EA; background: #FFFFFF; color: #3D3A4A; cursor: pointer; opacity: {{p.upOpacity}}; display: inline-flex; align-items: center; justify-content: center; padding: 0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"></path></svg>
+                  </button>
+                  <button onClick="{{p.down}}" disabled="{{p.isLast}}" aria-label="{{p.downLabel}}" title="Mover para baixo" style="flex: 1; width: 28px; min-height: 22px; border-radius: 7px; border: 1px solid #E3E1EA; background: #FFFFFF; color: #3D3A4A; cursor: pointer; opacity: {{p.downOpacity}}; display: inline-flex; align-items: center; justify-content: center; padding: 0">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg>
+                  </button>
+                </span>
+              </sc-if>
             </li>
           </sc-for>
         </ol>
@@ -1501,6 +1511,24 @@ class Component extends DCLogic {
     if (this.state.sel) this.moveBlock(this.state.sel, dir);
   }
 
+  movePage(id, to) {
+    const pages = this.state.pages.slice();
+    const from = pages.findIndex((p) => p.id === id);
+    if (from < 0 || to < 0 || to >= pages.length || to === from) return;
+    const [pg] = pages.splice(from, 1);
+    pages.splice(to, 0, pg);
+    this.setState({ pages, page: id, view: 'pages', toast: 'Página ' + pg.name + ' agora é a ' + (to + 1) + 'ª.' });
+    // quem usou as setas continua com o foco na mesma seta da página movida
+    setTimeout(() => {
+      try {
+        const row = document.querySelector('[data-page="' + id + '"]');
+        if (!row) return;
+        const a = row.querySelector('[aria-label*="' + (to < from ? 'cima' : 'baixo') + '"]');
+        (a && !a.disabled ? a : row.querySelector('button.pg')).focus();
+      } catch (e) {}
+    }, 30);
+  }
+
   patchPage(pid, fn) {
     this.setState((s) => ({ pages: s.pages.map((p) => (p.id === pid ? fn(p) : p)) }));
   }
@@ -2194,7 +2222,28 @@ class Component extends DCLogic {
         numFg: on ? '#FFFFFF' : '#3D3A4A',
         tabFg: on ? T.accent : T.fg,
         tabLine: on ? T.accent : 'transparent',
-        pick: () => { this.dragInfo = null; this.setState({ page: p.id, view: 'pages', drag: null, sel: p.blocks.length ? p.blocks[0].id : null }); }
+        pick: () => { this.dragInfo = null; this.setState({ page: p.id, view: 'pages', drag: null, sel: p.blocks.length ? p.blocks[0].id : null }); },
+        id: p.id,
+        canMove: st.pages.length > 1,
+        isFirst: i === 0, isLast: i === st.pages.length - 1,
+        upOpacity: i === 0 ? '0.35' : '1', downOpacity: i === st.pages.length - 1 ? '0.35' : '1',
+        upLabel: 'Mover a página ' + p.name + ' para cima', downLabel: 'Mover a página ' + p.name + ' para baixo',
+        up: () => this.movePage(p.id, i - 1),
+        down: () => this.movePage(p.id, i + 1),
+        dropShadow: st.pageDrop === p.id && st.pageDrag && st.pageDrag !== p.id ? (st.pages.findIndex((x) => x.id === st.pageDrag) < i ? '0 3px 0 0 #5B3FD6' : '0 -3px 0 0 #5B3FD6') : 'none',
+        dragOpacity: st.pageDrag === p.id ? '0.5' : '1',
+        dragStart: (e) => { try { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', p.id); } catch (err) {} this.setState({ pageDrag: p.id }); },
+        dragOver: (e) => { if (!st.pageDrag) return; e.preventDefault(); if (st.pageDrop !== p.id) this.setState({ pageDrop: p.id }); },
+        dragLeave: () => {},
+        drop: (e) => {
+          e.preventDefault();
+          const from = st.pageDrag;
+          this.setState({ pageDrag: null, pageDrop: null });
+          if (!from || from === p.id) return;
+          // a página arrastada ocupa a posição da página onde foi solta
+          this.movePage(from, i);
+        },
+        dragEnd: () => this.setState({ pageDrag: null, pageDrop: null })
       };
     });
 

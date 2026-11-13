@@ -1130,6 +1130,23 @@ def t_savedate(pg):
     inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
     mp = [b for p in inv['pages'] for b in p['blocks'] if b['type'] == 'mapa'][0]
     ok('Mapa: remover a foto volta ao ícone', not mp.get('photoUrl') and count(pg, '#place-file') == 1, mp)
+    # ordem das páginas
+    names = lambda: [x.strip() for x in pg.locator('aside button.pg span[style*="font-weight: 600"]').all_inner_texts()]
+    n0 = names()
+    ok('Páginas: setas de ordem em cada página', count(pg, '[aria-label^="Mover a página"][aria-label$="para cima"]') == len(n0) and pg.locator('[aria-label="Mover a página ' + n0[0] + ' para cima"]').is_disabled(), n0)
+    pg.click('[aria-label="Mover a página Detalhes para baixo"]'); pg.wait_for_timeout(300)
+    n1 = names()
+    ok('Páginas: seta para baixo troca a página com a seguinte', n1[:3] == [n0[0], n0[2], 'Detalhes'], n1)
+    pg.click('[aria-label="Mover a página Detalhes para cima"]'); pg.wait_for_timeout(300)
+    ok('Páginas: seta para cima desfaz', names() == n0, names())
+    last = n0[-1]
+    pg.locator('[data-page]').nth(len(n0) - 1).drag_to(pg.locator('[data-page]').nth(1)); pg.wait_for_timeout(400)
+    n2 = names()
+    ok('Páginas: arrastar muda a ordem', n2[1] == last and n2[0] == n0[0] and len(n2) == len(n0), n2)
+    pg.wait_for_timeout(1800)
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    ok('Páginas: nova ordem salva', [p['name'] for p in inv['pages']] == n2, [p['name'] for p in inv['pages']])
+    ok('Páginas: abas da prévia seguem a nova ordem', [t.strip() for t in pg.locator('nav[aria-label="Páginas do convite"] button').all_inner_texts()] == n2)
 
 
 def t_logout(pg):
