@@ -332,6 +332,12 @@ export const api = {
   listUsers: () => call('GET', '/api/users'),
   createUser: (data) => call('POST', '/api/users', data),
   saveUser: (id, data) => call('PUT', '/api/users?id=' + enc(id), data),
+
+  // cópias de segurança (só administradores)
+  listBackups: () => call('GET', '/api/backup'),
+  runBackup: () => call('POST', '/api/backup?action=run', {}),
+  restoreBackup: (src) => call('POST', '/api/backup?action=restore', src),
+  backupUrl: (name) => '/api/backup?action=download&name=' + enc(name),
   logout: () => call('POST', '/api/auth?action=logout', {}),
 
   listInvites: () => call('GET', '/api/invites'),

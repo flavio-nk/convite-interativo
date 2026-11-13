@@ -28,7 +28,7 @@ function maxFor(pathname) {
 // SVG fica de fora: pode conter scripts
 const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/heic', 'image/heif', 'video/*', 'audio/*'];
 
-function blobAuth(req) {
+export function blobAuth(req) {
   const token = blobToken();
   if (token) return { token };
   const storeId = blobStoreId();

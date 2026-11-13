@@ -129,6 +129,38 @@ button:disabled{opacity:.5;cursor:not-allowed}
       </sc-if>
       <div style="padding: 14px 20px; font-size: 13px; color: #5E5A6B">{{footer}}</div>
     </section>
+
+    <section aria-labelledby="bk-title" data-testid="backups" style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 14px; overflow: hidden">
+      <div style="padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #EEECF3">
+        <div>
+          <h2 id="bk-title" style="margin: 0; font-size: 18px">Cópias de segurança</h2>
+          <p style="margin: 2px 0 0; font-size: 13px; color: #5E5A6B">Cópia automática todo dia de madrugada, com usuários, convites, convidados, respostas e temas. Ficam as últimas {{bk.keep}}. As fotos, vídeos e músicas ficam em outro armazenamento e não entram aqui.</p>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px">
+          <label for="bk-file" class="btn" style="cursor: pointer">Restaurar de um arquivo</label>
+          <input id="bk-file" type="file" accept="application/json,.json" onChange="{{bk.onFile}}" style="position: absolute; width: 1px; height: 1px; opacity: 0">
+          <button class="btn pri" onClick="{{bk.run}}" disabled="{{bk.busy}}">{{bk.runLabel}}</button>
+        </div>
+      </div>
+      <div role="status" style="padding: 12px 20px; font-size: 14px; background: {{bk.lastBg}}; color: {{bk.lastFg}}; border-bottom: 1px solid #EEECF3">{{bk.lastText}}</div>
+      <ul style="list-style: none; margin: 0; padding: 0">
+        <sc-for list="{{bk.files}}" as="b" hint-placeholder-count="2">
+          <li data-backup="{{b.name}}" style="padding: 10px 20px; border-bottom: 1px solid #EEECF3; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px">
+            <div style="flex: 1 1 240px; min-width: 0">
+              <strong style="display: block; font-size: 14px">{{b.when}}</strong>
+              <span style="font-size: 12px; color: #5E5A6B">{{b.kind}} · {{b.size}}</span>
+            </div>
+            <div style="display: flex; gap: 6px">
+              <a class="sbtn" href="{{b.href}}" download="{{b.name}}" style="display: inline-flex; align-items: center; text-decoration: none">Baixar</a>
+              <button class="sbtn" onClick="{{b.restore}}" aria-label="Restaurar a cópia de {{b.when}}">Restaurar</button>
+            </div>
+          </li>
+        </sc-for>
+      </ul>
+      <sc-if value="{{bk.empty}}" hint-placeholder-val="{{ false }}">
+        <p style="margin: 0; padding: 20px; text-align: center; color: #5E5A6B">{{bk.emptyText}}</p>
+      </sc-if>
+    </section>
   </main>
 
   <sc-if value="{{modal.open}}" hint-placeholder-val="{{ false }}">
@@ -185,6 +217,24 @@ button:disabled{opacity:.5;cursor:not-allowed}
     </div>
   </sc-if>
 
+  <sc-if value="{{rs.open}}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{rs.backdrop}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(15, 14, 20, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
+      <div role="dialog" aria-modal="true" aria-labelledby="rs-title" data-testid="restaurar-modal" style="position: relative; width: min(520px, 100%); box-sizing: border-box; background: #FFFFFF; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35)">
+        <button type="button" class="xbtn" onClick="{{rs.close}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        <h2 id="rs-title" style="margin: 0; padding-right: 48px; font-size: 18px">Restaurar a cópia de {{rs.when}}?</h2>
+        <p style="margin: 0; font-size: 14px; color: #3D3A4A">Todos os dados atuais (usuários, convites, convidados, respostas e temas) serão <strong>substituídos</strong> pelos da cópia: {{rs.summary}}.</p>
+        <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #F5F4F8; font-size: 13px; color: #3D3A4A">Antes de restaurar, uma cópia do estado atual é salva automaticamente, para você poder voltar atrás.</p>
+        <sc-if value="{{rs.hasError}}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin: 0; color: #B42318; font-size: 14px">{{rs.error}}</p>
+        </sc-if>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; padding-top: 4px">
+          <button class="btn" onClick="{{rs.close}}">Cancelar</button>
+          <button class="btn" onClick="{{rs.confirm}}" disabled="{{rs.busy}}" style="border: 0; background: #B42318; color: #FFFFFF">{{rs.label}}</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 70; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 12px 18px; border-radius: 12px; background: #17151F; color: #FFFFFF; font-size: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3)">{{toast}}</div>
   </sc-if>
@@ -194,12 +244,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { users: null, error: '', tab: 'Todos', query: '', modal: null, toast: '' };
+    this.state = { users: null, error: '', tab: 'Todos', query: '', modal: null, toast: '', bk: null, bkBusy: false, restore: null };
   }
 
   componentDidMount() {
     this.load();
-    this.onEsc = (e) => { if (e.key === 'Escape' && this.state.modal) this.setState({ modal: null }); };
+    this.loadBackups();
+    this.onEsc = (e) => { if (e.key === 'Escape') { if (this.state.restore) this.setState({ restore: null }); else if (this.state.modal) this.setState({ modal: null }); } };
     window.addEventListener('keydown', this.onEsc);
   }
 
@@ -210,6 +261,67 @@ class Component extends DCLogic {
 
   load() {
     api.listUsers().then((users) => this.setState({ users })).catch((e) => this.setState({ users: [], error: e.message }));
+  }
+
+  loadBackups() {
+    api.listBackups().then((bk) => this.setState({ bk })).catch((e) => this.setState({ bk: { files: [], error: e.message } }));
+  }
+
+  // valores da seção de cópias e da confirmação de restauração
+  backupVals() {
+    const st = this.state;
+    const bk = st.bk;
+    const when = (iso) => { const d = new Date(iso); return d.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' às ' + d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }); };
+    const kb = (n) => n > 1048576 ? (n / 1048576).toFixed(1).replace('.', ',') + ' MB' : Math.max(1, Math.round(n / 1024)) + ' KB';
+    const sum = (s) => s ? [s.users + (s.users === 1 ? ' usuário' : ' usuários'), s.invites + (s.invites === 1 ? ' convite' : ' convites'), s.guests + ' convites individuais', s.rsvps + ' respostas', s.themes + ' temas'].join(', ') : '';
+    const kind = (n) => /-auto\./.test(n) ? 'Automática' : (/-antes-de-restaurar\./.test(n) ? 'Antes de restaurar' : 'Feita por um administrador');
+    const last = bk && bk.last;
+    const ageH = last ? (Date.now() - new Date(last.at).getTime()) / 3600000 : Infinity;
+    const files = (bk && bk.files) || [];
+    const r = st.restore;
+    return {
+      bk: {
+        keep: (bk && bk.keep) || 30,
+        busy: st.bkBusy, runLabel: st.bkBusy ? 'Salvando…' : 'Fazer cópia agora',
+        lastText: !bk ? 'Carregando…' : (bk.error ? 'Não foi possível ver as cópias: ' + bk.error : (last ? 'Última cópia: ' + when(last.at) + ' — ' + sum(last.summary) + '.' : 'Ainda não há cópias. A primeira automática sai esta madrugada; você pode fazer uma agora.')),
+        lastBg: bk && !bk.error && ageH < 36 ? '#E3F3EA' : '#FBEFD9', lastFg: bk && !bk.error && ageH < 36 ? '#1E6B43' : '#8A4B00',
+        files: files.map((f) => ({
+          name: f.name, when: when(f.createdAt), kind: kind(f.name), size: kb(f.size), href: api.backupUrl(f.name),
+          restore: () => this.setState({ restore: { name: f.name, when: when(f.createdAt), summary: 'a quantidade de registros aparece no arquivo', busy: false, error: '' } })
+        })),
+        empty: !!bk && !files.length, emptyText: 'Nenhuma cópia guardada ainda.',
+        run: () => {
+          this.setState({ bkBusy: true });
+          api.runBackup().then((x) => { this.setState({ bkBusy: false }); this.say('Cópia salva: ' + sum(x.summary) + '.'); this.loadBackups(); })
+            .catch((e) => { this.setState({ bkBusy: false }); this.say('Não foi possível fazer a cópia: ' + e.message); });
+        },
+        onFile: (e) => {
+          const f = e.target.files && e.target.files[0];
+          try { e.target.value = ''; } catch (err) {}
+          if (!f) return;
+          f.text().then((t) => {
+            let b;
+            try { b = JSON.parse(t); } catch (err) { this.say('Este arquivo não é uma cópia de segurança válida.'); return; }
+            if (!b || b.app !== 'convite-interativo') { this.say('Este arquivo não é uma cópia de segurança dos convites.'); return; }
+            this.setState({ restore: { backup: b, when: when(b.createdAt), summary: sum(b.summary), busy: false, error: '' } });
+          });
+        }
+      },
+      rs: {
+        open: !!r, when: r ? r.when : '', summary: r ? r.summary : '',
+        busy: !!(r && r.busy), label: r && r.busy ? 'Restaurando…' : 'Restaurar e substituir',
+        hasError: !!(r && r.error), error: r ? r.error : '',
+        close: () => this.setState({ restore: null }),
+        backdrop: (e) => { if (e.target === e.currentTarget) this.setState({ restore: null }); },
+        confirm: () => {
+          const cur = this.state.restore;
+          this.setState({ restore: Object.assign({}, cur, { busy: true, error: '' }) });
+          api.restoreBackup(cur.backup ? { backup: cur.backup } : { name: cur.name })
+            .then((x) => { this.setState({ restore: null }); this.say('Cópia restaurada: ' + sum(x.restored) + '.'); this.load(); this.loadBackups(); })
+            .catch((err) => this.setState({ restore: Object.assign({}, this.state.restore, { busy: false, error: err.message }) }));
+        }
+      }
+    };
   }
 
   say(msg) {
@@ -288,7 +400,7 @@ class Component extends DCLogic {
     const f = m ? m.form : {};
     const editingMe = editing && m.id === me.id;
     const loading = st.users === null;
-    return {
+    return Object.assign(this.backupVals(), {
       hdr: this.header(),
       stats: [
         { label: 'Usuários', value: String(users.length), note: 'incluindo a conta principal' },
@@ -360,7 +472,7 @@ class Component extends DCLogic {
           active: (e) => this.setForm({ active: !!e.target.checked })
         }
       }
-    };
+    });
   }
 }
 </script>

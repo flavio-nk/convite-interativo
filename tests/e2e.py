@@ -981,6 +981,50 @@ def t_media_limits(pg, browser):
     ok('Lista de convites não traz contagem de respostas (menos leituras no banco)', lst and all('rsvp' not in i for i in lst))
 
 
+def t_backup(pg, browser):
+    """Cópias de segurança: fazer agora, listar, baixar, restaurar (com cópia de segurança antes), permissões e agendamento."""
+    import json as _json, tempfile
+    J = "async ([m, u, b]) => { const r = await fetch(u, {method: m, headers: {'content-type': 'application/json'}, body: b}); let d = null; try { d = await r.json(); } catch (e) {} return [r.status, d]; }"
+    go(pg, 'Usuarios', 1500)
+    ok('Backup: seção de cópias no painel de administração', count(pg, '[data-testid="backups"]') == 1 and 'Cópias de segurança' in text(pg))
+    before = pg.evaluate("fetch('/api/invites').then(r => r.json()).then(l => l.length)")
+    pg.click('button:has-text("Fazer cópia agora")'); pg.wait_for_timeout(1500)
+    ok('Backup: cópia manual feita e listada', count(pg, 'li[data-backup]') == 1 and 'Cópia salva' in text(pg) and 'Última cópia' in text(pg), text(pg)[-500:])
+    name = pg.get_attribute('li[data-backup] >> nth=0', 'data-backup')
+    # baixar
+    with pg.expect_download() as dl:
+        pg.click('li[data-backup] a:has-text("Baixar")')
+    data = _json.load(open(dl.value.path(), encoding='utf-8'))
+    ok('Backup: arquivo baixado com os dados', data.get('app') == 'convite-interativo' and len(data['data']['invites']) == before and data['summary']['users'] >= 1, data.get('summary'))
+    # muda os dados e restaura a cópia
+    pg.evaluate(J, ['POST', '/api/invites', '{"title":"Criado depois da cópia"}'])
+    pg.click('li[data-backup="%s"] button:has-text("Restaurar")' % name); pg.wait_for_timeout(200)
+    ok('Backup: restaurar pede confirmação', count(pg, '[data-testid="restaurar-modal"]') == 1 and 'substituídos' in pg.inner_text('[data-testid="restaurar-modal"]'))
+    pg.click('[data-testid="restaurar-modal"] button:has-text("Restaurar e substituir")'); pg.wait_for_timeout(2000)
+    after = pg.evaluate("fetch('/api/invites').then(r => r.json()).then(l => l.map(i => i.title))")
+    ok('Backup: restauração volta ao estado da cópia', len(after) == before and 'Criado depois da cópia' not in after, [before, len(after)])
+    ok('Backup: cópia do estado anterior salva antes de restaurar', count(pg, 'li[data-backup*="antes-de-restaurar"]') == 1)
+    # restaurar a partir de um arquivo
+    pg.evaluate(J, ['POST', '/api/invites', '{"title":"Outro depois"}'])
+    pg.set_input_files('#bk-file', dl.value.path()); pg.wait_for_timeout(400)
+    ok('Backup: arquivo escolhido mostra o resumo antes de restaurar', count(pg, '[data-testid="restaurar-modal"]') == 1 and 'convites' in pg.inner_text('[data-testid="restaurar-modal"]'))
+    pg.click('[data-testid="restaurar-modal"] button:has-text("Restaurar e substituir")'); pg.wait_for_timeout(2000)
+    after = pg.evaluate("fetch('/api/invites').then(r => r.json()).then(l => l.map(i => i.title))")
+    ok('Backup: restauração a partir de arquivo', len(after) == before and 'Outro depois' not in after, len(after))
+    bad = os.path.join(tempfile.mkdtemp(), 'qualquer.json'); open(bad, 'w').write('{"x":1}')
+    pg.set_input_files('#bk-file', bad); pg.wait_for_timeout(400)
+    ok('Backup: arquivo que não é cópia é recusado', 'não é uma cópia de segurança' in text(pg) and count(pg, '[data-testid="restaurar-modal"]') == 0)
+    # agendamento diário: sem CRON_SECRET, no máximo uma cópia a cada 20 h
+    st, d = pg.evaluate(J, ['GET', '/api/backup?action=cron', None])
+    ok('Backup: agendamento não repete cópia recente', st == 200 and d.get('skipped') is True, d)
+    # permissões
+    gp = browser.new_context().new_page(); gp.goto(BASE); gp.wait_for_timeout(400)
+    st, _ = gp.evaluate(J, ['GET', '/api/backup', None])
+    st2, _ = gp.evaluate(J, ['GET', '/api/backup?action=download&name=' + name, None])
+    ok('Backup: sem login não lista nem baixa cópias', st == 401 and st2 == 401, [st, st2])
+    gp.context.close()
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -1008,7 +1052,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('backup', lambda: t_backup(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 
