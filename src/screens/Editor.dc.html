@@ -551,12 +551,16 @@ button:disabled{opacity:.5;cursor:not-allowed}
                     <sc-if value="{{sel.hasPlacePhoto}}" hint-placeholder-val="{{ false }}">
                       <div style="display: flex; flex-direction: column; gap: 8px">
                         <div style="display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: 12px; border: 1px solid #E4E1EC; background: #FFFFFF">
-                          <img src="{{sel.placePhoto}}" alt="" style="width: 72px; height: 48px; border-radius: 8px; object-fit: cover; flex: none; background: #F1EFF6">
+                          <span style="position: relative; width: 78px; aspect-ratio: 2.6; border-radius: 8px; overflow: hidden; flex: none; background: #F1EFF6"><img src="{{sel.placePhoto}}" alt="" style="{{sel.placeImgStyle}}"></span>
                           <span style="display: flex; flex-direction: column; line-height: 1.35; min-width: 0; font-size: 13px">
                             <strong style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{sel.placeName}}</strong>
                             <span style="color: #5E5A6B">{{sel.placeStatus}}</span>
                           </span>
                         </div>
+                        <button onClick="{{editPlacePhoto}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
+                          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14M18 22V8a2 2 0 0 0-2-2H2"></path></svg>
+                          Editar foto do local
+                        </button>
                         <div style="display: flex; flex-wrap: wrap; gap: 8px">
                           <label style="position: relative; flex: 1 1 auto; min-height: 40px; padding: 0 12px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
                             Trocar foto
@@ -1299,7 +1303,8 @@ class Component extends DCLogic {
           o.photoUrl = strip(x.photoUrl || '');
           if (!o.photoUrl) o.photoName = '';
           delete o.photoUploading; delete o.photoPct;
-          if (!o.photoUrl) { delete o.photoUrl; delete o.photoName; }
+          if (!o.photoUrl) { delete o.photoUrl; delete o.photoName; delete o.photoEdit; }
+          else if (!o.photoEdit) delete o.photoEdit;
         }
         return o;
       })
@@ -1493,6 +1498,10 @@ class Component extends DCLogic {
       const blk = st.pages.reduce((f, p) => f || p.blocks.find((x) => x.id === id), null);
       if (!blk) return;
       url = this.mediaUrl(blk); edit = blk.edit || {};
+    } else if (kind === 'place') {
+      const blk = st.pages.reduce((f, p) => f || p.blocks.find((x) => x.id === id), null);
+      if (!blk || !blk.photoUrl) return;
+      url = blk.photoUrl; edit = blk.photoEdit || {};
     } else {
       const pg = st.pages.find((p) => p.id === id);
       if (!pg || !pg.bg || !pg.bg.url) return;
@@ -1506,6 +1515,7 @@ class Component extends DCLogic {
 
   peRatio(pe) {
     if (!pe) return 1;
+    if (pe.kind === 'place') return api.photo.placeRatio;
     return pe.kind === 'bg' ? api.photo.pageRatio : api.photo.ratio(pe.draft, this.state.theme.layout);
   }
 
@@ -1526,6 +1536,7 @@ class Component extends DCLogic {
     if (!pe) return;
     const edit = Object.assign({}, pe.draft);
     if (pe.kind === 'block') this.patchBlock(pe.id, { edit });
+    else if (pe.kind === 'place') { delete edit.frame; this.patchBlock(pe.id, { photoEdit: edit }); }
     else this.patchPage(pe.id, (p) => Object.assign({}, p, { bg: Object.assign({}, p.bg, { edit }) }));
     this.peClose();
   }
@@ -1557,12 +1568,12 @@ class Component extends DCLogic {
     const tabDefs = [['ajustar', 'Cortar'], ['filtros', 'Filtros'], ['luz', 'Luz e cor']];
     return {
       open: true,
-      title: isBg ? 'Editar foto de fundo' : 'Editar foto',
-      isBlock: !isBg, url: pe.url,
+      title: isBg ? 'Editar foto de fundo' : (pe.kind === 'place' ? 'Editar foto do local' : 'Editar foto'),
+      isBlock: pe.kind === 'block', url: pe.url,
       ratio: String(Math.round(r * 10000) / 10000),
       imgStyle: api.photo.style(d, r),
       frameSize: r >= 1 ? 'width: min(100%, 560px)' : 'height: min(60vh, 560px)',
-      frameRadius: isBg ? '18px' : (T.photoR === '999px 999px 0 0' ? '999px 999px 0 0' : '4px'),
+      frameRadius: isBg ? '18px' : pe.kind === 'place' ? '14px 14px 0 0' : (T.photoR === '999px 999px 0 0' ? '999px 999px 0 0' : '4px'),
       frameBg: isBg ? T.bg : T.ph,
       cursor: this.peDrag ? 'grabbing' : 'grab',
       gridOpacity: this.peDrag ? '1' : '0.45',
@@ -1592,7 +1603,7 @@ class Component extends DCLogic {
       }),
       sliders,
       unedited: !api.photo.isEdited(d),
-      reset: () => this.peSet({ zoom: 1, rot: 0, quarter: 0, flipH: false, flipV: false, px: 0, py: 0, filter: 'nenhum', brightness: 100, contrast: 100, saturate: 100, blur: 0, frame: isBg ? undefined : 'tema' }),
+      reset: () => this.peSet({ zoom: 1, rot: 0, quarter: 0, flipH: false, flipV: false, px: 0, py: 0, filter: 'nenhum', brightness: 100, contrast: 100, saturate: 100, blur: 0, frame: pe.kind === 'block' ? 'tema' : undefined }),
       onLoad: (e) => {
         const im = e.currentTarget || e.target;
         if (!im || !im.naturalWidth || !im.naturalHeight) return;
@@ -2180,7 +2191,8 @@ class Component extends DCLogic {
         address: s.address || '', showRoutes: s.showRoutes !== false,
         hasPlacePhoto: !!s.photoUrl, noPlacePhoto: !s.photoUrl, placePhoto: s.photoUrl || '',
         placeName: s.photoName || 'Foto do local',
-        placeStatus: s.photoUploading ? 'Enviando' + (s.photoPct ? ' · ' + s.photoPct + '%' : '…') : 'Aparece no topo do bloco de local',
+        placeStatus: s.photoUploading ? 'Enviando' + (s.photoPct ? ' · ' + s.photoPct + '%' : '…') : (api.photo.isEdited(s.photoEdit) ? 'Foto editada. A original continua guardada.' : 'Sem edições'),
+        placeImgStyle: api.photo.style(s.photoEdit, api.photo.placeRatio),
         targetLocal: api.fmt.toLocalInput(s.target || ''), endText: s.endText == null ? 'O grande dia chegou!' : s.endText,
         action: s.action || 'pagina', dest: s.dest || '',
         isActionPage: (s.action || 'pagina') === 'pagina', isActionLink: s.action === 'link', isActionWa: s.action === 'whatsapp',
@@ -2334,6 +2346,7 @@ class Component extends DCLogic {
       onFotoFormat: (e) => this.patchSel({ edit: Object.assign({}, (s && s.edit) || {}, { frame: e.target.value, px: 0, py: 0 }) }),
       editSelPhoto: () => { if (s) this.openPhotoEditor('block', s.id); },
       editBgPhoto: () => this.openPhotoEditor('bg', pid),
+      editPlacePhoto: () => { if (s) this.openPhotoEditor('place', s.id); },
       photoToBg: () => {
         if (!s) return;
         const url = this.mediaUrl(s);
@@ -2409,7 +2422,7 @@ class Component extends DCLogic {
         const bid = st.sel;
         const local = URL.createObjectURL(f);
         try { e.target.value = ''; } catch (err) {}
-        this.patchBlock(bid, { photoUrl: local, photoName: f.name, photoUploading: true, photoPct: 0 });
+        this.patchBlock(bid, { photoUrl: local, photoName: f.name, photoUploading: true, photoPct: 0, photoEdit: null });
         const mine = () => { const b = this.state.pages.reduce((a, p) => a || p.blocks.find((x) => x.id === bid), null); return b && b.photoUrl === local; };
         api.upload(f, (pct) => { if (mine()) this.patchBlock(bid, { photoPct: pct }); })
           .then((r) => { if (mine()) this.patchBlock(bid, { photoUrl: r.url, photoUploading: false, photoPct: 0 }); })
@@ -2418,7 +2431,7 @@ class Component extends DCLogic {
             this.setState({ toast: 'Não foi possível enviar a foto: ' + err.message });
           });
       },
-      removePlacePhoto: () => this.patchSel({ photoUrl: '', photoName: '', photoUploading: false, photoPct: 0 }),
+      removePlacePhoto: () => this.patchSel({ photoUrl: '', photoName: '', photoUploading: false, photoPct: 0, photoEdit: null }),
       onMediaUrl: (e) => this.patchSel({ url: e.target.value, edit: s && s.edit && s.edit.frame ? { frame: s.edit.frame } : null }),
       onBackClick: () => {
         this.previewStop();

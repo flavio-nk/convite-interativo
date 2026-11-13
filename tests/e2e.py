@@ -1059,6 +1059,16 @@ def t_savedate(pg):
     ok('Mapa: foto do local salva (sem endereço temporário)', mp.get('photoUrl', '').startswith(('http', '/')) and 'photoUploading' not in mp, mp)
     ok('Mapa: editor mostra Trocar e Remover foto', count(pg, '#place-file-swap') == 1 and count(pg, 'button:has-text("Remover foto")') == 1)
     ok('Mapa: prévia mostra a foto no lugar do ícone', count(pg, 'img[alt^="Foto de "]') >= 1)
+    pg.click('button:has-text("Editar foto do local")'); pg.wait_for_timeout(700)
+    ok('Mapa: editor de fotos abre com a foto do local', count(pg, '[role=dialog] [data-testid="pe-frame"] img') == 1 and 'Editar foto do local' in pg.inner_text('[role=dialog]') and count(pg, '#pe-format') == 0)
+    set_range(pg, '#pe-zoom', 150)
+    pg.click('button[role=tab]:has-text("Luz e cor")'); set_range(pg, '#pe-bri', 120)
+    pg.click('button:has-text("Aplicar")'); pg.wait_for_timeout(1800)
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    mp = [b for p in inv['pages'] for b in p['blocks'] if b['type'] == 'mapa'][0]
+    pe = mp.get('photoEdit') or {}
+    ok('Mapa: edição da foto do local salva (zoom e brilho)', pe.get('zoom') == 1.5 and pe.get('brightness') == 120 and 'frame' not in pe, pe)
+    ok('Mapa: painel indica foto editada', 'Foto editada' in pg.inner_text('body'))
     ok('Save the Date: foto de fundo da capa com véu de 40%', inv['pages'][0]['bg']['dim'] == 40 and inv['pages'][0]['bg']['url'], inv['pages'][0].get('bg'))
     inv['status'] = 'publicado'
     pg.evaluate("([id, inv]) => fetch('/api/invites?id=' + id, {method: 'PUT', headers: {'content-type': 'application/json'}, body: JSON.stringify(inv)})", [iid, inv])
@@ -1072,6 +1082,8 @@ def t_savedate(pg):
     g.click('nav button:has-text("Detalhes")'); g.wait_for_timeout(1200)
     loaded = g.evaluate("() => { const i = document.querySelector('img[alt^=\"Foto de \"]'); return !!i && i.complete && i.naturalWidth > 0; }")
     ok('Mapa: convidado vê a foto do local carregada', loaded)
+    st = g.evaluate("() => document.querySelector('img[alt^=\"Foto de \"]').getAttribute('style') || ''")
+    ok('Mapa: convidado vê a foto do local com a edição', 'brightness(1.2)' in st and 'width:' in st, st)
     ctx.close()
     # remover a foto volta ao ícone
     pg.click('button:has-text("Remover foto")'); pg.wait_for_timeout(1800)

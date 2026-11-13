@@ -192,6 +192,8 @@ const FILTERS = [
   ['rosado', 'Rosado', 'sepia(0.2) saturate(1.2) hue-rotate(-20deg) brightness(1.05)']
 ];
 export const PAGE_RATIO = 390 / 844;
+// faixa de foto do bloco de mapa (foto do local): largura padrão do bloco / 120 px
+export const PLACE_RATIO = 2.6;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const num = (v, d) => (typeof v === 'number' && isFinite(v) ? v : d);
 
@@ -241,6 +243,7 @@ export const photo = {
   formats: FORMATS.map((f) => ({ key: f[0], label: f[1] })),
   filters: FILTERS.map((f) => ({ key: f[0], label: f[1], css: f[2] })),
   pageRatio: PAGE_RATIO,
+  placeRatio: PLACE_RATIO,
   // proporção do quadro de um bloco de foto, conforme o formato escolhido e o layout do tema
   ratio(edit, layout) {
     const fmtKey = edit && edit.frame;
