@@ -51,10 +51,23 @@ function parse(v) {
   try { return JSON.parse(v); } catch (e) { return v; }
 }
 
+// Traduz o erro do Redis numa causa provável (sem senhas nem endereços), para facilitar o diagnóstico.
+export function dbReason(e) {
+  const m = String((e && (e.code || '')) + ' ' + (e && e.message || '')).toLowerCase();
+  if (/max (daily |monthly )?(request|command)s? limit|limit exceeded|quota/.test(m)) return 'limite de uso do plano do banco atingido';
+  if (/oom|maxmemory|out of memory|max.*data size|storage limit/.test(m)) return 'banco de dados cheio (limite de espaço do plano)';
+  if (/wrongpass|noauth|invalid password|auth|unauthorized|401|403/.test(m)) return 'senha/credencial do banco recusada (variável desatualizada)';
+  if (/enotfound|getaddrinfo|eai_again/.test(m)) return 'endereço do banco não existe mais (banco removido ou variável desatualizada)';
+  if (/econnrefused|econnreset|socket closed|connection.*closed|etimedout|timeout|timed out/.test(m)) return 'banco não respondeu (fora do ar, pausado ou bloqueando a conexão)';
+  if (/archived|inactive|disabled|suspend|paused/.test(m)) return 'banco pausado ou arquivado pelo provedor';
+  return 'erro não identificado (' + m.replace(/rediss?:\/\/[^\s]+/g, '[url]').slice(0, 80) + ')';
+}
+
 function wrap(e) {
   if (e && e.status) return e;
   console.error(e);
-  return httpError(503, 'Não foi possível acessar o banco de dados. Confira se ele está ativo e conectado ao projeto no Vercel.');
+  const err = httpError(503, 'Não foi possível acessar o banco de dados. Causa provável: ' + dbReason(e) + '.');
+  return err;
 }
 
 export async function hget(key, field) {
