@@ -122,9 +122,14 @@ body{margin:0}
 
                 <sc-if value="{{b.isMapa}}" hint-placeholder-val="{{ false }}">
                   <div style="border-radius: 14px; overflow: hidden; border: 1px solid {{T.line}}; background: {{T.surface}}; text-align: left">
-                    <div aria-hidden="true" style="height: 120px; background: {{T.ph}}; display: flex; align-items: center; justify-content: center; color: {{T.accent}}">
-                      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
-                    </div>
+                    <sc-if value="{{b.hasPlacePhoto}}" hint-placeholder-val="{{ false }}">
+                      <img src="{{b.placePhoto}}" alt="{{b.placeAlt}}" loading="lazy" style="display: block; width: 100%; height: 120px; object-fit: cover; background: {{T.ph}}">
+                    </sc-if>
+                    <sc-if value="{{b.noPlacePhoto}}" hint-placeholder-val="{{ true }}">
+                      <div aria-hidden="true" style="height: 120px; background: {{T.ph}}; display: flex; align-items: center; justify-content: center; color: {{T.accent}}">
+                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
+                      </div>
+                    </sc-if>
                     <div style="padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px">
                       <div>
                         <div style="font-weight: 700; font-size: calc(16px * var(--k, 1))">{{b.text}}</div>
@@ -576,6 +581,10 @@ class Component extends DCLogic {
         o.gmaps = 'https://www.google.com/maps/search/?api=1&query=' + q;
         o.waze = 'https://waze.com/ul?q=' + q + '&navigate=yes';
         o.showRoutes = x.showRoutes !== false && !!q;
+        const ph = String(x.photoUrl || '');
+        o.placePhoto = /^(https?:|blob:|\/)/i.test(ph) ? ph : '';
+        o.hasPlacePhoto = !!o.placePhoto; o.noPlacePhoto = !o.placePhoto;
+        o.placeAlt = 'Foto de ' + (x.text || 'local do evento');
       }
       if (o.isBotao) {
         o.press = () => {

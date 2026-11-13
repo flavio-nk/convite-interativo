@@ -1048,7 +1048,17 @@ def t_savedate(pg):
     ok('Save the Date: tema com moldura fina e textos em Cormorant', inv['theme']['layout'] == 'fina' and inv['theme']['bodyKey'] == 'cormorant' and inv['theme']['fontKey'] == 'greatvibes' and inv['kicker'] == 'Casamento', inv['theme'])
     pg.set_input_files('#bg-file', FIX + 'paisagem.jpg')
     pg.wait_for_function("() => !document.body.innerText.includes('Enviando')", timeout=15000); pg.wait_for_timeout(1500)
+    # foto do local no bloco de mapa
+    pg.click('button.pg:has-text("Detalhes")'); pg.wait_for_timeout(200)
+    pg.click('[aria-label^="Bloco Mapa"]'); pg.wait_for_timeout(200)
+    ok('Mapa: campo para escolher a foto do local', count(pg, '#place-file') == 1)
+    pg.set_input_files('#place-file', FIX + 'paisagem.jpg')
+    pg.wait_for_function("() => !document.body.innerText.includes('Enviando')", timeout=15000); pg.wait_for_timeout(1800)
     inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    mp = [b for p in inv['pages'] for b in p['blocks'] if b['type'] == 'mapa'][0]
+    ok('Mapa: foto do local salva (sem endereço temporário)', mp.get('photoUrl', '').startswith(('http', '/')) and 'photoUploading' not in mp, mp)
+    ok('Mapa: editor mostra Trocar e Remover foto', count(pg, '#place-file-swap') == 1 and count(pg, 'button:has-text("Remover foto")') == 1)
+    ok('Mapa: prévia mostra a foto no lugar do ícone', count(pg, 'img[alt^="Foto de "]') >= 1)
     ok('Save the Date: foto de fundo da capa com véu de 40%', inv['pages'][0]['bg']['dim'] == 40 and inv['pages'][0]['bg']['url'], inv['pages'][0].get('bg'))
     inv['status'] = 'publicado'
     pg.evaluate("([id, inv]) => fetch('/api/invites?id=' + id, {method: 'PUT', headers: {'content-type': 'application/json'}, body: JSON.stringify(inv)})", [iid, inv])
@@ -1059,7 +1069,15 @@ def t_savedate(pg):
       const frame = [...document.querySelectorAll('div[aria-hidden=true]')].find(d => getComputedStyle(d).borderTopWidth === '1px' && getComputedStyle(d).position === 'absolute');
       return [t ? getComputedStyle(t).fontFamily : '', !!frame, !!document.querySelector('[data-testid=page-bg]')]; }""")
     ok('Save the Date: convite com moldura fina, foto de fundo e nomes em Cormorant', 'Cormorant' in info[0] and info[1] and info[2], info)
+    g.click('nav button:has-text("Detalhes")'); g.wait_for_timeout(1200)
+    loaded = g.evaluate("() => { const i = document.querySelector('img[alt^=\"Foto de \"]'); return !!i && i.complete && i.naturalWidth > 0; }")
+    ok('Mapa: convidado vê a foto do local carregada', loaded)
     ctx.close()
+    # remover a foto volta ao ícone
+    pg.click('button:has-text("Remover foto")'); pg.wait_for_timeout(1800)
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    mp = [b for p in inv['pages'] for b in p['blocks'] if b['type'] == 'mapa'][0]
+    ok('Mapa: remover a foto volta ao ícone', not mp.get('photoUrl') and count(pg, '#place-file') == 1, mp)
 
 
 def t_logout(pg):
