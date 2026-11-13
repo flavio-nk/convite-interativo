@@ -57,7 +57,7 @@ body{margin:0}
         <main key="{{pageKey}}" class="{{L.mainClass}}" style="{{L.main}}">
           <div data-page-inner="1" style="{{L.inner}}">
             <sc-if value="{{L.hasDecor}}" hint-placeholder-val="{{ false }}">
-              <div aria-hidden="true" style="position: absolute; left: 20px; right: 20px; top: 22px; bottom: 28px; border: {{T.frame}}; border-left: {{T.band}}; pointer-events: none"></div>
+              <div aria-hidden="true" style="position: absolute; inset: {{T.frameInset}}; border: {{T.frame}}; border-left: {{T.band}}; pointer-events: none"></div>
             </sc-if>
             <sc-for list="{{blocks}}" as="b" hint-placeholder-count="5">
               <div key="{{b.key}}" data-bid="{{b.id}}" class="{{b.animClass}}" style="{{b.wrap}}">

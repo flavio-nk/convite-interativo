@@ -1036,6 +1036,32 @@ def t_backup(pg, browser):
     gp.context.close()
 
 
+def t_savedate(pg):
+    """Tema Save the Date: capa pronta, moldura fina, fonte cursiva no título e serifada nos textos."""
+    go(pg, 'Temas', 1300)
+    ok('Save the Date: tema na galeria (Casamento, Moldura fina)', count(pg, '[aria-label="Tema Save the Date"]') == 1 and 'Moldura fina' in pg.inner_text('[aria-label="Tema Save the Date"]'))
+    pg.click('[aria-label="Tema Save the Date"]'); pg.click('button:has-text("Usar este tema")'); pg.wait_for_timeout(2500)
+    iid = pg.url.split('#/Editor/')[1]
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    cap = inv['pages'][0]
+    ok('Save the Date: capa pronta com os textos do modelo', [b['text'] for b in cap['blocks']][:4] == ['Save the Date', 'NOME & NOME', '──────  ◆  ──────', 'DD . MM . AAAA'] and cap.get('free') is True, [b['text'] for b in cap['blocks']])
+    ok('Save the Date: tema com moldura fina e textos em Cormorant', inv['theme']['layout'] == 'fina' and inv['theme']['bodyKey'] == 'cormorant' and inv['theme']['fontKey'] == 'greatvibes' and inv['kicker'] == 'Casamento', inv['theme'])
+    pg.set_input_files('#bg-file', FIX + 'paisagem.jpg')
+    pg.wait_for_function("() => !document.body.innerText.includes('Enviando')", timeout=15000); pg.wait_for_timeout(1500)
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    ok('Save the Date: foto de fundo da capa com véu de 40%', inv['pages'][0]['bg']['dim'] == 40 and inv['pages'][0]['bg']['url'], inv['pages'][0].get('bg'))
+    inv['status'] = 'publicado'
+    pg.evaluate("([id, inv]) => fetch('/api/invites?id=' + id, {method: 'PUT', headers: {'content-type': 'application/json'}, body: JSON.stringify(inv)})", [iid, inv])
+    ctx = pg.context.browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + iid); g.wait_for_timeout(2000)
+    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(3000)
+    info = g.evaluate("""() => { const t = [...document.querySelectorAll('[data-bid]')].find(e => e.innerText.includes('NOME & NOME'));
+      const frame = [...document.querySelectorAll('div[aria-hidden=true]')].find(d => getComputedStyle(d).borderTopWidth === '1px' && getComputedStyle(d).position === 'absolute');
+      return [t ? getComputedStyle(t).fontFamily : '', !!frame, !!document.querySelector('[data-testid=page-bg]')]; }""")
+    ok('Save the Date: convite com moldura fina, foto de fundo e nomes em Cormorant', 'Cormorant' in info[0] and info[1] and info[2], info)
+    ctx.close()
+
+
 def t_logout(pg):
     go(pg, 'Main', 1200)
     pg.click('button:has-text("Sair")'); pg.wait_for_timeout(900)
@@ -1063,7 +1089,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('backup', lambda: t_backup(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

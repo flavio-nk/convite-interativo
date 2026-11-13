@@ -803,6 +803,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
                 <option value="foto-topo">Foto no topo</option>
                 <option value="foto-fundo">Foto de fundo</option>
                 <option value="moldura">Moldura</option>
+                <option value="fina">Moldura fina</option>
                 <option value="dividido">Dividido</option>
                 <option value="editorial">Editorial</option>
                 <option value="arco">Arco</option>
@@ -1047,6 +1048,22 @@ class Component extends DCLogic {
   }
 
   newPages(b, it) {
+    const pages = this.basePages(b, it);
+    if (it && it.starter === 'savedate') {
+      // Capa no estilo "Save the Date": foto do casal como fundo da página, letra cursiva, nomes em versalete e data
+      // posições fixas (tela de 390 px): texto no alto, deixando o casal livre na foto
+      pages[0] = { id: 'capa', name: 'Capa', free: true, bg: { url: '', dim: 40 }, blocks: [
+        b('c1', 'titulo', { text: 'Save the Date', anim: 'surgir', fontSize: 54, pos: { x: 20, y: 44, w: 350 } }),
+        b('c2', 'texto', { text: 'NOME & NOME', anim: 'surgir', fontSize: 24, pos: { x: 20, y: 124, w: 350 } }),
+        b('c3', 'texto', { text: '──────  ◆  ──────', fontSize: 12, pos: { x: 95, y: 164, w: 200 } }),
+        b('c4', 'texto', { text: 'DD . MM . AAAA', anim: 'deslizar', fontSize: 30, pos: { x: 20, y: 186, w: 350 } }),
+        b('c5', 'botao', { text: 'Ver detalhes', pos: { x: 115, y: 690, w: 160 } })
+      ] };
+    }
+    return pages;
+  }
+
+  basePages(b, it) {
     return [
       { id: 'capa', name: 'Capa', blocks: [
         b('c1', 'foto', { label: 'Foto principal', anim: 'surgir' }),
@@ -1222,7 +1239,7 @@ class Component extends DCLogic {
     const b = this.mk;
     const theme = Object.assign({}, this.baseTheme(), inv.theme || {});
     const base = Object.assign({}, theme, inv.themeBase || inv.theme || {});
-    const pages = inv.pages && inv.pages.length ? inv.pages : this.newPages(b, { sample: inv.coverTitle || 'Título do evento' });
+    const pages = inv.pages && inv.pages.length ? inv.pages : this.newPages(b, { sample: inv.coverTitle || 'Título do evento', starter: inv.theme && inv.theme.starter });
     const music = Object.assign({ kind: 'nenhuma', preset: 'valsa', fileUrl: '', fileName: '', link: '', volume: 70, loop: true }, inv.music || {});
     const maxId = pages.reduce((mx, p) => p.blocks.reduce((m2, x) => Math.max(m2, parseInt(String(x.id).replace(/\D/g, ''), 10) || 0), mx), 100);
     this.createdAt = inv.createdAt;
@@ -2000,6 +2017,7 @@ class Component extends DCLogic {
       'foto-topo': ['240px', 'calc(100% + 40px)', '-24px -20px 0', '0', 'none', '0'],
       'foto-fundo': ['320px', 'calc(100% + 40px)', '-24px -20px 0', '0', 'none', '0'],
       moldura: ['190px', '100%', '0', '0', 'none', '0'],
+      fina: ['190px', '100%', '0', '0', 'none', '0'],
       dividido: ['200px', '100%', '0', '4px', 'none', '0'],
       editorial: ['190px', '100%', '0', '0', 'none', '0'],
       arco: ['230px', '72%', '0 auto', '999px 999px 0 0', 'none', '0'],
@@ -2013,14 +2031,14 @@ class Component extends DCLogic {
       font: f[0], weight: f[1],
       titleSize: (L === 'editorial' ? f[2] + 8 : f[2]) + 'px',
       fstyle: th.italic ? 'italic' : 'normal',
-      body: "'Plus Jakarta Sans', system-ui, sans-serif",
+      body: api.BODY_FONTS[th.bodyKey] || api.BODY_FONTS.jakarta,
       radius: radii[th.radiusKey],
       line: 'color-mix(in srgb, ' + th.fg + ' 24%, ' + th.bg + ')',
       surface: 'color-mix(in srgb, ' + th.fg + ' 9%, ' + th.bg + ')',
       align: (L === 'editorial' || L === 'dividido') ? 'left' : 'center',
-      frame: L === 'moldura' ? '5px double ' + th.accent : '0',
-      band: L === 'dividido' ? '10px solid ' + th.accent : (L === 'moldura' ? '5px double ' + th.accent : '0'),
-      framePad: L === 'moldura' ? '14px' : (L === 'dividido' ? '0 0 0 12px' : '0'),
+      frame: L === 'moldura' ? '5px double ' + th.accent : (L === 'fina' ? '1px solid color-mix(in srgb, ' + th.fg + ' 82%, transparent)' : '0'),
+      band: L === 'dividido' ? '10px solid ' + th.accent : (L === 'moldura' ? '5px double ' + th.accent : (L === 'fina' ? '1px solid color-mix(in srgb, ' + th.fg + ' 82%, transparent)' : '0')),
+      framePad: L === 'moldura' ? '14px' : (L === 'fina' ? '18px' : (L === 'dividido' ? '0 0 0 12px' : '0')),
       photoH: photo[0], photoW: photo[1], photoM: photo[2], photoR: photo[3], photoRot: photo[4], photoBorder: photo[5],
       modified, unmodified: !modified
     };
@@ -2194,7 +2212,8 @@ class Component extends DCLogic {
     try { vw = window.innerWidth; vh = window.innerHeight; } catch (e) {}
     const ps = Math.max(0.3, Math.min(1, (vh - 90) / 844, (vw - 24) / 390));
     const bgObj = cur.bg && cur.bg.url ? cur.bg : null;
-    const bgDim = bgObj ? (typeof bgObj.dim === 'number' ? bgObj.dim : 35) : 35;
+    // véu: o da foto atual ou, sem foto, o sugerido pela página (ex.: capa do tema Save the Date)
+    const bgDim = cur.bg && typeof cur.bg.dim === 'number' ? cur.bg.dim : 35;
     const pageBg = {
       has: !!bgObj, none: !bgObj,
       url: bgObj ? bgObj.url : '',

@@ -66,6 +66,7 @@ button,select{font-family:inherit}
           <option value="foto-topo">Foto no topo</option>
           <option value="foto-fundo">Foto de fundo</option>
           <option value="moldura">Moldura</option>
+          <option value="fina">Moldura fina</option>
           <option value="dividido">Dividido</option>
           <option value="editorial">Editorial</option>
           <option value="arco">Arco</option>
@@ -100,7 +101,7 @@ button,select{font-family:inherit}
       <sc-for list="{{themes}}" as="t" hint-placeholder-count="12">
         <button class="tcard" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" aria-label="Tema {{t.name}}" style="text-align: left; padding: 10px; border-radius: 18px; border: 2px solid {{t.ring}}; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; flex-direction: column; gap: 12px; position: relative">
           <span style="display: block; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #ECEAF2">
-            <dc-import name="CapaPreview" layout="{{t.layout}}" bg="{{t.bg}}" fg="{{t.fg}}" accent="{{t.accent}}" ph="{{t.ph}}" btn-fg="{{t.btnFg}}" font="{{t.font}}" weight="{{t.weight}}" fstyle="{{t.fstyle}}" kicker="{{t.kicker}}" titulo="{{t.sample}}" data="{{t.date}}" btn-radius="{{t.radius}}" title-scale="{{t.ts}}" aspect="4 / 5" hint-size="100%,260px"></dc-import>
+            <dc-import name="CapaPreview" layout="{{t.layout}}" bg="{{t.bg}}" fg="{{t.fg}}" accent="{{t.accent}}" ph="{{t.ph}}" btn-fg="{{t.btnFg}}" font="{{t.font}}" body-font="{{t.bodyFont}}" weight="{{t.weight}}" fstyle="{{t.fstyle}}" kicker="{{t.kicker}}" titulo="{{t.sample}}" data="{{t.date}}" btn-radius="{{t.radius}}" title-scale="{{t.ts}}" aspect="4 / 5" hint-size="100%,260px"></dc-import>
           </span>
           <sc-if value="{{t.selected}}" hint-placeholder-val="{{ false }}">
             <span style="position: absolute; top: 18px; right: 18px; width: 28px; height: 28px; border-radius: 50%; background: #5B3FD6; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
@@ -210,7 +211,7 @@ class Component extends DCLogic {
       font: fam[c.fontKey] || fam.cormorant, weight: wt[c.fontKey] || '500', fstyle: c.italic ? 'italic' : 'normal',
       layout: c.layout || 'centro', anim: c.anim || 'envelope', radius: rad[c.radiusKey] || '999px',
       kicker: c.cat || 'Seu evento', sample: 'Título do evento', date: 'Data do evento', ts: c.titleScale || 1, custom: true,
-      fontKey: c.fontKey, radiusKey: c.radiusKey
+      fontKey: c.fontKey, radiusKey: c.radiusKey, bodyKey: c.bodyKey || 'jakarta'
     };
   }
   toPayload(x) {
@@ -223,7 +224,8 @@ class Component extends DCLogic {
     return {
       name: x.name, baseName: x.name, cat: x.custom ? x.kicker : x.cat, bg: x.bg, fg: x.fg, accent: x.accent, btnFg: x.btnFg, paper: x.paper, ph: x.ph,
       fontKey, italic: x.fstyle === 'italic', layout: x.layout, radiusKey, anim: x.anim,
-      kicker: x.kicker, sample: x.sample, date: x.date, titleScale: x.ts
+      kicker: x.kicker, sample: x.sample, date: x.date, titleScale: x.ts,
+      bodyKey: x.bodyKey || 'jakarta', starter: x.starter || '', openKicker: x.openKicker || ''
     };
   }
   themes() {
@@ -234,6 +236,7 @@ class Component extends DCLogic {
     const t = (id, name, cat, desc, bg, fg, accent, paper, ph, btnFg, font, weight, fstyle, layout, anim, radius, kicker, sample, date, ts, custom) =>
       ({ id, name, cat, desc, bg, fg, accent, paper, ph, btnFg, font, weight, fstyle, layout, anim, radius, kicker, sample, date, ts: ts || 1, custom: !!custom });
     return [
+      Object.assign(t('savedate', 'Save the Date', 'Casamento', 'Foto do casal de fundo, moldura fina, letra cursiva e nomes em versalete.', '#2A211A', '#FBF8F2', '#E3D3B5', '#3A2E24', '#5A4835', '#2A211A', GV, '400', 'normal', 'fina', 'neblina', '2px', 'Save the Date', 'Ana & Pedro', '05 . 06 . 2027', 1.3), { bodyKey: 'cormorant', starter: 'savedate', openKicker: 'Casamento' }),
       t('jardim', 'Jardim', 'Casamento', 'Verde profundo, dourado e tipografia clássica.', '#1F3329', '#F3EEE4', '#CDAE6B', '#E9E1D0', '#2B4538', '#1F3329', CG, '500', 'normal', 'arco', 'envelope', '999px', 'Casamento', 'Ana & Pedro', '17 · 04 · 2027'),
       t('terracota', 'Terracota', 'Casamento', 'Barro, areia e serifas elegantes, clima rústico.', '#F4E7DC', '#5A2E1F', '#A8482A', '#C9673F', '#E3CBB8', '#FFF6EF', PF, '600', 'normal', 'foto-topo', 'envelope', '999px', 'Casamento', 'Lia & Davi', '22 · 05 · 2027'),
       t('noite', 'Noite estrelada', 'Casamento', 'Azul-noite profundo com detalhes dourados.', '#0F1A3A', '#EDE6D6', '#D8B868', '#16244F', '#1C2B55', '#0F1A3A', BM, '500', 'normal', 'centro', 'cortina', '999px', 'Casamento', 'Clara & Hugo', '09 · 10 · 2027'),
@@ -264,11 +267,11 @@ class Component extends DCLogic {
     ];
   }
   renderVals() {
-    const layoutLabels = { centro: 'Centralizado', 'foto-topo': 'Foto no topo', 'foto-fundo': 'Foto de fundo', moldura: 'Moldura', dividido: 'Dividido', editorial: 'Editorial', arco: 'Arco', polaroid: 'Polaroid' };
+    const layoutLabels = { centro: 'Centralizado', 'foto-topo': 'Foto no topo', 'foto-fundo': 'Foto de fundo', moldura: 'Moldura', fina: 'Moldura fina', dividido: 'Dividido', editorial: 'Editorial', arco: 'Arco', polaroid: 'Polaroid' };
     const animLabels = { envelope: 'Carta', cortina: 'Cortina', portas: 'Portas', lacre: 'Lacre de cera', presente: 'Presente', livro: 'Livro', iris: 'Íris', neblina: 'Neblina', nenhuma: 'Sem abertura' };
     const st = this.state;
     const changeFor = (this.props.route && this.props.route.params && this.props.route.params.invite) || '';
-    const all = this.themes().concat((st.custom || []).map((c) => this.fromCustom(c))).map((x) => Object.assign({}, x, { layoutLabel: layoutLabels[x.layout], animLabel: animLabels[x.anim] }));
+    const all = this.themes().concat((st.custom || []).map((c) => this.fromCustom(c))).map((x) => Object.assign({}, x, { layoutLabel: layoutLabels[x.layout], animLabel: animLabels[x.anim], bodyFont: api.BODY_FONTS[x.bodyKey] || api.BODY_FONTS.jakarta }));
     const catNames = ['Todos', 'Casamento', 'Aniversário', 'Infantil', 'Corporativo', 'Formatura', 'Religioso', 'Temático', 'Temas criados'];
     const cats = catNames.map((label) => {
       const on = label === st.cat;
@@ -321,7 +324,7 @@ class Component extends DCLogic {
             .catch((e) => this.setState({ busy: false, error: e.message }));
           return;
         }
-        api.createInvite({ title: 'Novo convite · ' + sel.name, kicker: theme.kicker, coverTitle: 'Título do evento', status: 'rascunho', theme, themeBase: theme })
+        api.createInvite({ title: 'Novo convite · ' + sel.name, kicker: theme.openKicker || theme.kicker, coverTitle: 'Título do evento', status: 'rascunho', theme, themeBase: theme })
           .then((inv) => api.navigate('Editor/' + inv.id))
           .catch((e) => this.setState({ busy: false, error: e.message }));
       },

@@ -82,6 +82,7 @@ button,input,select{font-family:inherit}
           <div>
             <label class="lbl" for="t-base">Começar a partir de</label>
             <select class="fld" id="t-base" value="{{base}}" onChange="{{onBase}}">
+              <option value="savedate">Save the Date</option>
               <option value="jardim">Jardim</option>
               <option value="terracota">Terracota</option>
               <option value="noite">Noite estrelada</option>
@@ -313,6 +314,7 @@ class Component extends DCLogic {
   presets() {
     const p = (bg, fg, accent, btnFg, paper, ph, fontKey, layout, anim, extra) => Object.assign({ bg, fg, accent, btnFg, paper, ph, fontKey, layout, anim }, extra || {});
     return {
+      savedate: p('#2A211A', '#FBF8F2', '#E3D3B5', '#2A211A', '#3A2E24', '#5A4835', 'greatvibes', 'fina', 'neblina', { radiusKey: 'reto', italic: false, bodyKey: 'cormorant', titleScale: 1.3 }),
       jardim: p('#1F3329', '#F3EEE4', '#CDAE6B', '#1F3329', '#E9E1D0', '#2B4538', 'cormorant', 'arco', 'envelope', { radiusKey: 'pilula', italic: false }),
       terracota: p('#F4E7DC', '#5A2E1F', '#A8482A', '#FFF6EF', '#C9673F', '#E3CBB8', 'playfair', 'foto-topo', 'envelope', { radiusKey: 'pilula', italic: false }),
       noite: p('#0F1A3A', '#EDE6D6', '#D8B868', '#0F1A3A', '#16244F', '#1C2B55', 'bodoni', 'centro', 'cortina', { radiusKey: 'pilula', italic: false }),
@@ -367,7 +369,7 @@ class Component extends DCLogic {
       kicker: st.cat, sample: 'Título do evento', date: 'Data do evento'
     };
 
-    const layoutDefs = [['centro', 'Centralizado'], ['foto-topo', 'Foto no topo'], ['foto-fundo', 'Foto de fundo'], ['moldura', 'Moldura'], ['dividido', 'Dividido'], ['editorial', 'Editorial'], ['arco', 'Arco'], ['polaroid', 'Polaroid']];
+    const layoutDefs = [['centro', 'Centralizado'], ['foto-topo', 'Foto no topo'], ['foto-fundo', 'Foto de fundo'], ['moldura', 'Moldura'], ['fina', 'Moldura fina'], ['dividido', 'Dividido'], ['editorial', 'Editorial'], ['arco', 'Arco'], ['polaroid', 'Polaroid']];
     const layouts = layoutDefs.map((d) => {
       const on = d[0] === st.layout;
       return { id: d[0], label: d[1], pressed: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', pick: () => this.setState({ layout: d[0], saved: false }) };
@@ -407,7 +409,7 @@ class Component extends DCLogic {
       name: st.name, cat: st.cat, base: st.base,
       saved: st.saved,
       onName: set('name'), onCat: set('cat'),
-      onBase: (e) => { const k = e.target.value; this.setState(Object.assign({ base: k, saved: false }, this.presets()[k])); },
+      onBase: (e) => { const k = e.target.value; this.setState(Object.assign({ base: k, saved: false, bodyKey: 'jakarta', titleScale: 1 }, this.presets()[k])); },
       bg: st.bg, fg: st.fg, accent: st.accent, btnFg: st.btnFg, paper: st.paper, ph: st.ph,
       colors, paletteGroups, randomPalette, layouts, anims, shapes,
       modeLabel: st.editing ? 'Editar tema' : 'Criar tema',

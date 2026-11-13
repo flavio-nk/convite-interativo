@@ -119,6 +119,13 @@ const FONTS = {
   josefin: ["'Josefin Sans', sans-serif", '700', 34], jakarta: ["'Plus Jakarta Sans', sans-serif", '800', 32]
 };
 
+// Fonte dos textos (o título usa a fonte do tema)
+export const BODY_FONTS = {
+  jakarta: "'Plus Jakarta Sans', system-ui, sans-serif",
+  josefin: "'Josefin Sans', sans-serif",
+  cormorant: "'Cormorant Garamond', Georgia, serif"
+};
+
 // Valores visuais derivados de um tema (mesma regra do editor).
 export function themeTokens(th) {
   th = th || {};
@@ -130,25 +137,29 @@ export function themeTokens(th) {
     'foto-topo': ['240px', 'calc(100% + 40px)', '-24px -20px 0', '0', 'none', '0'],
     'foto-fundo': ['320px', 'calc(100% + 40px)', '-24px -20px 0', '0', 'none', '0'],
     moldura: ['190px', '100%', '0', '0', 'none', '0'],
+    fina: ['190px', '100%', '0', '0', 'none', '0'],
     dividido: ['200px', '100%', '0', '4px', 'none', '0'],
     editorial: ['190px', '100%', '0', '0', 'none', '0'],
     arco: ['230px', '72%', '0 auto', '999px 999px 0 0', 'none', '0'],
     polaroid: ['210px', '78%', '6px auto 10px', '2px', 'rotate(-3deg)', '8px solid #FFFFFF']
   }[L] || ['200px', '100%', '0', '10px', 'none', '0'];
   const bg = th.bg || '#1F3329', fg = th.fg || '#F3EEE4', accent = th.accent || '#CDAE6B';
+  // "Moldura fina": filete claro e fino a alguns px da borda, como nos convites impressos
+  const thin = '1px solid color-mix(in srgb, ' + fg + ' 82%, transparent)';
   return {
     bg, fg, accent, btnFg: th.btnFg || '#1F3329', paper: th.paper || '#E9E1D0', ph: th.ph || '#2B4538',
     layout: L, anim: th.anim || 'envelope',
     font: f[0], weight: f[1], titleSize: (L === 'editorial' ? f[2] + 8 : f[2]) + 'px',
     fstyle: th.italic ? 'italic' : 'normal',
-    body: "'Plus Jakarta Sans', system-ui, sans-serif",
+    body: BODY_FONTS[th.bodyKey] || BODY_FONTS.jakarta,
     radius: radii[th.radiusKey] || '999px',
     line: 'color-mix(in srgb, ' + fg + ' 24%, ' + bg + ')',
     surface: 'color-mix(in srgb, ' + fg + ' 9%, ' + bg + ')',
     align: (L === 'editorial' || L === 'dividido') ? 'left' : 'center',
-    frame: L === 'moldura' ? '5px double ' + accent : '0',
-    band: L === 'dividido' ? '10px solid ' + accent : (L === 'moldura' ? '5px double ' + accent : '0'),
-    framePad: L === 'moldura' ? '14px' : (L === 'dividido' ? '0 0 0 12px' : '0'),
+    frame: L === 'moldura' ? '5px double ' + accent : (L === 'fina' ? thin : '0'),
+    band: L === 'dividido' ? '10px solid ' + accent : (L === 'moldura' ? '5px double ' + accent : (L === 'fina' ? thin : '0')),
+    framePad: L === 'moldura' ? '14px' : (L === 'fina' ? '18px' : (L === 'dividido' ? '0 0 0 12px' : '0')),
+    frameInset: L === 'fina' ? '14px 14px 16px' : '22px 20px 28px',
     photoRatio: LAYOUT_RATIOS[L] || LAYOUT_RATIOS.centro,
     photoH: photo[0], photoW: photo[1], photoM: photo[2], photoR: photo[3], photoRot: photo[4], photoBorder: photo[5]
   };
@@ -158,7 +169,7 @@ export function themeTokens(th) {
 // A foto original nunca é alterada: as edições ficam salvas junto do bloco e
 // são aplicadas na exibição. Proporção do quadro = largura / altura.
 const LAYOUT_RATIOS = {
-  centro: 350 / 200, 'foto-topo': 390 / 240, 'foto-fundo': 390 / 320, moldura: 312 / 190,
+  centro: 350 / 200, 'foto-topo': 390 / 240, 'foto-fundo': 390 / 320, moldura: 312 / 190, fina: 314 / 190,
   dividido: 328 / 200, editorial: 350 / 190, arco: 252 / 230, polaroid: 257 / 194
 };
 const FORMATS = [
@@ -312,6 +323,7 @@ export function setFrameColor(bg) {
 export const api = {
   fmt,
   themeTokens,
+  BODY_FONTS,
   themeHint,
   setFrameColor,
   NEUTRAL_THEME,
