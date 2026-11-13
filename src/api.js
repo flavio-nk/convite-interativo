@@ -195,6 +195,8 @@ export const PAGE_RATIO = 390 / 844;
 // faixa de foto do bloco de mapa (foto do local): largura padrão do bloco / 120 px
 export const PLACE_RATIO = 2.6;
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+// tamanho da foto no quadro: abaixo de 1 a foto fica menor que o quadro (sobra borda na cor da área de foto)
+export const ZOOM_MIN = 0.5, ZOOM_MAX = 4;
 const num = (v, d) => (typeof v === 'number' && isFinite(v) ? v : d);
 
 function filterCss(e) {
@@ -219,7 +221,7 @@ function photoGeom(e, r) {
   const ct = Math.cos(th), st = Math.sin(th);
   const c = Math.abs(ct), s = Math.abs(st);
   const Wp = W * c + H * s, Hp = W * s + H * c; // quadro visto no eixo da foto
-  const k = Math.max(Wp / a, Hp) * (1.02 + num(e.blur, 0) * 0.01) * Math.max(1, num(e.zoom, 1));
+  const k = Math.max(Wp / a, Hp) * (1.02 + num(e.blur, 0) * 0.01) * clamp(num(e.zoom, 1), ZOOM_MIN, ZOOM_MAX);
   const iw = k * a, ih = k;
   return { a, W, H, deg, ct, st, Wp, Hp, iw, ih, slackX: (iw - Wp) / 2, slackY: (ih - Hp) / 2 };
 }
@@ -243,6 +245,7 @@ export const photo = {
   formats: FORMATS.map((f) => ({ key: f[0], label: f[1] })),
   filters: FILTERS.map((f) => ({ key: f[0], label: f[1], css: f[2] })),
   pageRatio: PAGE_RATIO,
+  zoomMin: ZOOM_MIN, zoomMax: ZOOM_MAX,
   placeRatio: PLACE_RATIO,
   // proporção do quadro de um bloco de foto, conforme o formato escolhido e o layout do tema
   ratio(edit, layout) {
@@ -258,8 +261,9 @@ export const photo = {
     const g = photoGeom(e, r);
     const lx = dx * g.ct + dy * g.st, ly = -dx * g.st + dy * g.ct;
     const out = Object.assign({}, e);
-    if (g.slackX > 1e-6) out.px = clamp(num(e.px, 0) + lx / g.slackX, -1, 1);
-    if (g.slackY > 1e-6) out.py = clamp(num(e.py, 0) + ly / g.slackY, -1, 1);
+    // com a foto menor que o quadro a folga é negativa: a foto passeia dentro do quadro
+    if (Math.abs(g.slackX) > 1e-6) out.px = clamp(num(e.px, 0) + lx / g.slackX, -1, 1);
+    if (Math.abs(g.slackY) > 1e-6) out.py = clamp(num(e.py, 0) + ly / g.slackY, -1, 1);
     return out;
   },
   isEdited(e) {

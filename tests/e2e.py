@@ -1069,6 +1069,24 @@ def t_savedate(pg):
     pe = mp.get('photoEdit') or {}
     ok('Mapa: edição da foto do local salva (zoom e brilho)', pe.get('zoom') == 1.5 and pe.get('brightness') == 120 and 'frame' not in pe, pe)
     ok('Mapa: painel indica foto editada', 'Foto editada' in pg.inner_text('body'))
+    # diminuir a foto (abaixo de 100%)
+    pg.click('button:has-text("Editar foto do local")'); pg.wait_for_timeout(700)
+    for _ in range(12): pg.click('[aria-label="Diminuir a foto"]')
+    pg.wait_for_timeout(200)
+    ok('Foto: botão − diminui até 50%', 'Tamanho da foto · 50%' in pg.inner_text('[role=dialog]'), pg.inner_text('[role=dialog]')[:200])
+    fr = pg.locator('[data-testid="pe-frame"]').bounding_box(); im = pg.locator('[data-testid="pe-frame"] img').bounding_box()
+    ok('Foto: com zoom abaixo de 100% a foto fica menor que o quadro', im['width'] < fr['width'] - 2 and im['height'] < fr['height'] + 1, (fr, im))
+    x0 = im['x']
+    pg.mouse.move(fr['x'] + fr['width'] / 2, fr['y'] + fr['height'] / 2); pg.mouse.down()
+    pg.mouse.move(fr['x'] + fr['width'] / 2 + 80, fr['y'] + fr['height'] / 2, steps=5); pg.mouse.up(); pg.wait_for_timeout(150)
+    im2 = pg.locator('[data-testid="pe-frame"] img').bounding_box()
+    ok('Foto: foto reduzida acompanha o arraste dentro do quadro', im2['x'] > x0 + 5 and im2['x'] + im2['width'] <= fr['x'] + fr['width'] + 1, (x0, im2, fr))
+    pg.click('[aria-label="Ampliar a foto"]'); pg.wait_for_timeout(150)
+    ok('Foto: botão + amplia', 'Tamanho da foto · 60%' in pg.inner_text('[role=dialog]'))
+    pg.click('button:has-text("Aplicar")'); pg.wait_for_timeout(1800)
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    mp = [b for p in inv['pages'] for b in p['blocks'] if b['type'] == 'mapa'][0]
+    ok('Foto: tamanho reduzido salvo', (mp.get('photoEdit') or {}).get('zoom') == 0.6, mp.get('photoEdit'))
     ok('Save the Date: foto de fundo da capa com véu de 40%', inv['pages'][0]['bg']['dim'] == 40 and inv['pages'][0]['bg']['url'], inv['pages'][0].get('bg'))
     inv['status'] = 'publicado'
     pg.evaluate("([id, inv]) => fetch('/api/invites?id=' + id, {method: 'PUT', headers: {'content-type': 'application/json'}, body: JSON.stringify(inv)})", [iid, inv])
@@ -1083,7 +1101,7 @@ def t_savedate(pg):
     loaded = g.evaluate("() => { const i = document.querySelector('img[alt^=\"Foto de \"]'); return !!i && i.complete && i.naturalWidth > 0; }")
     ok('Mapa: convidado vê a foto do local carregada', loaded)
     st = g.evaluate("() => document.querySelector('img[alt^=\"Foto de \"]').getAttribute('style') || ''")
-    ok('Mapa: convidado vê a foto do local com a edição', 'brightness(1.2)' in st and 'width:' in st, st)
+    ok('Mapa: convidado vê a foto do local com a edição', 'brightness(1.2)' in st and 'width:' in st and 'width:100%' not in st.replace(' ', ''), st)
     ctx.close()
     # remover a foto volta ao ícone
     pg.click('button:has-text("Remover foto")'); pg.wait_for_timeout(1800)
