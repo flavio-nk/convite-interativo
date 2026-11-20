@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Novo convite</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#F4F3F8}
+a{color:#4A32C4}a:hover{color:#2F1F8F}
+button,input,select{font-family:inherit}
+.nv-in{width:100%;box-sizing:border-box;min-height:48px;padding:0 14px;border-radius:11px;border:1px solid #D6D3E0;background:#FFFFFF;color:#17151F;font-size:16px}
+.nv-in:focus{outline:2px solid #5B3FD6;outline-offset:1px;border-color:#5B3FD6}
+.nv-type:hover{border-color:#B9B4CC}
+.nv-type:focus-visible,.nv-btn:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
+.nv-lbl{display:block;font-weight:700;font-size:14px;margin-bottom:6px;color:#17151F}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F4F3F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA">
+    <div style="max-width: 1200px; margin: 0 auto; padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 24px">
+      <a href="Main.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; color: #3D3A4A; font-weight: 600; font-size: 14px; text-decoration: none">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+        Meus convites
+      </a>
+      <ol aria-label="Etapas" style="flex: 1 1 auto; display: flex; justify-content: center; flex-wrap: wrap; gap: 6px 22px; margin: 0; padding: 0; list-style: none; font-size: 14px">
+        <li aria-current="step" style="display: flex; align-items: center; gap: 8px; font-weight: 700"><span style="width: 26px; height: 26px; border-radius: 50%; background: #5B3FD6; color: #FFFFFF; display: inline-flex; align-items: center; justify-content: center; font-size: 13px">1</span>Sobre o evento</li>
+        <li style="display: flex; align-items: center; gap: 8px; color: #5E5A6B"><span style="width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #C9C4DB; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; box-sizing: border-box">2</span>Tema</li>
+        <li style="display: flex; align-items: center; gap: 8px; color: #5E5A6B"><span style="width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid #C9C4DB; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; box-sizing: border-box">3</span>Personalizar</li>
+      </ol>
+      <span style="width: 120px" aria-hidden="true"></span>
+    </div>
+  </header>
+
+  <main style="max-width: 760px; margin: 0 auto; padding: 32px 20px 56px; display: flex; flex-direction: column; gap: 24px">
+    <div>
+      <h1 style="margin: 0; font-size: 30px; font-weight: 800; letter-spacing: -0.02em">Conte sobre o evento</h1>
+      <p style="margin: 8px 0 0; color: #5E5A6B; font-size: 15px">Com isso o convite já nasce com os seus dados. Só o tipo é obrigatório: o resto você completa quando quiser.</p>
+    </div>
+
+    <fieldset style="margin: 0; padding: 0; border: 0; min-width: 0">
+      <legend style="font-weight: 700; font-size: 15px; margin-bottom: 12px; padding: 0">Que tipo de evento?</legend>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px">
+        <sc-for list="{{types}}" as="t" hint-placeholder-count="8">
+          <button class="nv-type" onClick="{{t.pick}}" aria-pressed="{{t.on}}" style="min-height: 76px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 14px; border: {{t.border}}; background: {{t.bg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B3FD6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"></path></svg>
+            {{t.label}}
+          </button>
+        </sc-for>
+      </div>
+    </fieldset>
+
+    <section aria-label="Dados do evento" style="display: flex; flex-direction: column; gap: 18px; padding: 22px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E1EA">
+      <div>
+        <label class="nv-lbl" for="nv-names">{{namesLabel}}</label>
+        <input class="nv-in" id="nv-names" value="{{names}}" onInput="{{onNames}}" placeholder="{{namesPh}}" maxlength="80">
+        <span style="display: block; margin-top: 6px; font-size: 13px; color: #5E5A6B">Aparece em destaque na capa do convite.</span>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px">
+        <div>
+          <label class="nv-lbl" for="nv-day">Data</label>
+          <input class="nv-in" id="nv-day" type="date" value="{{day}}" onInput="{{onDay}}" onChange="{{onDay}}">
+        </div>
+        <div>
+          <label class="nv-lbl" for="nv-time">Horário</label>
+          <input class="nv-in" id="nv-time" type="time" step="300" value="{{time}}" onInput="{{onTime}}" onChange="{{onTime}}">
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px">
+        <div>
+          <label class="nv-lbl" for="nv-place">Local <span style="font-weight: 500; color: #5E5A6B">(opcional)</span></label>
+          <input class="nv-in" id="nv-place" value="{{place}}" onInput="{{onPlace}}" placeholder="Ex.: Espaço Villa Jardim" maxlength="120">
+        </div>
+        <div>
+          <label class="nv-lbl" for="nv-addr">Endereço <span style="font-weight: 500; color: #5E5A6B">(opcional)</span></label>
+          <input class="nv-in" id="nv-addr" value="{{address}}" onInput="{{onAddress}}" placeholder="Rua, número, cidade" maxlength="200">
+        </div>
+      </div>
+      <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 15px; cursor: pointer">
+        <input id="nv-rsvp" type="checkbox" checked="{{rsvp}}" onChange="{{toggleRsvp}}" style="width: 20px; height: 20px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
+        <span><strong>Quero receber confirmações de presença</strong><br><span style="font-size: 13px; color: #5E5A6B">O convite ganha uma página para o convidado responder se vai e com quantas pessoas.</span></span>
+      </label>
+    </section>
+
+    <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
+      <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{error}}</p>
+    </sc-if>
+
+    <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+      <a href="Main.dc.html" style="min-height: 46px; display: inline-flex; align-items: center; padding: 0 6px; color: #3D3A4A; font-weight: 600; text-decoration: none">Cancelar</a>
+      <button class="nv-btn" onClick="{{next}}" style="min-height: 50px; display: inline-flex; align-items: center; gap: 8px; padding: 0 24px; border-radius: 12px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 16px; cursor: pointer">
+        Escolher o visual
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+      </button>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"$preview":{"width":1280,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    let saved = null;
+    try { saved = JSON.parse(sessionStorage.getItem('ci:novo') || 'null'); } catch (e) {}
+    this.state = Object.assign({ kind: '', names: '', day: '', time: '', place: '', address: '', rsvp: true, error: '' }, saved || {}, { error: '' });
+  }
+
+  static kinds() {
+    return [
+      ['casamento', 'Casamento', 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z'],
+      ['aniversario', 'Aniversário', 'M4 21h16M5 21v-7h14v7M12 14V9M12 6.5a1.5 1.5 0 0 0 1.5-1.5c0-1-1.5-3-1.5-3s-1.5 2-1.5 3A1.5 1.5 0 0 0 12 6.5Z'],
+      ['infantil', 'Festa infantil', 'M12 3a6 6 0 0 0-6 6c0 3.3 2.7 6 6 6s6-2.7 6-6a6 6 0 0 0-6-6ZM12 15v6M9.5 21h5'],
+      ['cha', 'Chá de bebê', 'M9 12h.01M15 12h.01M10 16c1.3 1 2.7 1 4 0M5 12a7 7 0 1 0 14 0 7 7 0 0 0-14 0Z'],
+      ['formatura', 'Formatura', 'M2 9l10-5 10 5-10 5-10-5ZM6 11v5c3 2 9 2 12 0v-5M22 9v6'],
+      ['corporativo', 'Corporativo', 'M3 7h18v13H3zM8 7V4h8v3M3 12h18'],
+      ['religioso', 'Religioso', 'M12 3v18M7 8h10'],
+      ['outro', 'Outro', 'M12 5v14M5 12h14']
+    ];
+  }
+
+  save(patch) {
+    const next = Object.assign({}, this.state, patch);
+    this.setState(patch);
+    try { const o = Object.assign({}, next); delete o.error; sessionStorage.setItem('ci:novo', JSON.stringify(o)); } catch (e) {}
+  }
+
+  renderVals() {
+    const st = this.state;
+    const labels = { casamento: 'Nomes do casal', aniversario: 'Nome do aniversariante', infantil: 'Nome da criança', cha: 'Nome do bebê (ou dos pais)', formatura: 'Nome da turma ou do formando', corporativo: 'Nome do evento', religioso: 'Nome do evento ou da pessoa homenageada' };
+    const phs = { casamento: 'Ex.: Amanda & Flávio', aniversario: 'Ex.: Carla', infantil: 'Ex.: Lara', cha: 'Ex.: Theo', formatura: 'Ex.: Medicina 2027', corporativo: 'Ex.: Encontro de parceiros', religioso: 'Ex.: Batizado da Alice' };
+    return {
+      types: Component.kinds().map((k) => {
+        const on = st.kind === k[0];
+        return { label: k[1], icon: k[2], on: on ? 'true' : 'false', border: on ? '2px solid #5B3FD6' : '1px solid #E3E1EA', bg: on ? '#EFECFB' : '#FFFFFF', pick: () => this.save({ kind: k[0], error: '' }) };
+      }),
+      namesLabel: labels[st.kind] || 'Nome do convite',
+      namesPh: phs[st.kind] || 'Ex.: Festa de fim de ano',
+      names: st.names, day: st.day, time: st.time, place: st.place, address: st.address, rsvp: st.rsvp,
+      onNames: (e) => this.save({ names: e.target.value }),
+      onDay: (e) => this.save({ day: e.target.value, time: st.time || (e.target.value ? '19:00' : '') }),
+      onTime: (e) => this.save({ time: e.target.value }),
+      onPlace: (e) => this.save({ place: e.target.value }),
+      onAddress: (e) => this.save({ address: e.target.value }),
+      toggleRsvp: () => this.save({ rsvp: !st.rsvp }),
+      hasError: !!st.error, error: st.error,
+      next: () => {
+        if (!st.kind) {
+          this.setState({ error: 'Escolha o tipo de evento para continuar.' });
+          try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {}
+          return;
+        }
+        this.save({ error: '' });
+        api.navigate('Temas?novo=1');
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

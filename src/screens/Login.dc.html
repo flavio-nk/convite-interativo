@@ -50,6 +50,10 @@ body{margin:0;background:#F5F4F8}
       <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FBEFD9; color: #6B3A00; font-size: 13px">A senha ainda não foi definida. No Vercel, abra o projeto › Settings › Environment Variables, crie a variável <strong>ADMIN_PASSWORD</strong> com a senha desejada e faça um novo deploy.</p>
     </sc-if>
     <button type="submit" disabled="{{busy}}" style="min-height: 48px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 16px; cursor: pointer">{{buttonLabel}}</button>
+    <button type="button" onClick="{{toggleForgot}}" aria-expanded="{{forgotAttr}}" style="align-self: center; min-height: 40px; padding: 0 8px; border: 0; background: transparent; color: #4A32C4; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: underline">Esqueci minha senha</button>
+    <sc-if value="{{forgot}}" hint-placeholder-val="{{ false }}">
+      <p role="status" data-testid="forgot-help" style="margin: 0; padding: 12px 14px; border-radius: 10px; background: #F4F1FE; color: #2F1F8F; font-size: 14px; line-height: 1.5">Peça a um administrador da plataforma para criar uma nova senha para você (em <strong>Usuários › Editar</strong>). Depois de entrar, você pode continuar de onde parou: nada se perde.</p>
+    </sc-if>
   </form>
 </div>
 </x-dc>
@@ -71,6 +75,8 @@ class Component extends DCLogic {
       hasError: !!st.error,
       error: st.error,
       setupHint: me.passwordConfigured === false,
+      forgot: !!st.forgot, forgotAttr: st.forgot ? 'true' : 'false',
+      toggleForgot: () => this.setState({ forgot: !st.forgot }),
       busy: st.busy,
       buttonLabel: st.busy ? 'Entrando…' : 'Entrar',
       submit: (e) => {

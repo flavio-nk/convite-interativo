@@ -38,50 +38,55 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <sc-if value="{{ready}}" hint-placeholder-val="{{ true }}">
 <div style="min-height: 100vh; background: #ECEBF1; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5; display: flex; flex-direction: column">
 
-  <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA">
-    <div style="padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px">
-      <a href="Main.dc.html" onClick="{{onBackClick}}" aria-label="Voltar para Meus convites" style="width: 44px; height: 44px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #17151F">
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA; position: sticky; top: 0; z-index: 30">
+    <div style="padding: 8px 14px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px">
+      <a href="Main.dc.html" onClick="{{onBackClick}}" aria-label="Voltar para Meus convites" style="width: 44px; height: 44px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; color: #17151F; flex: none">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg>
       </a>
-      <div style="flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column">
+      <div style="flex: 1 1 200px; min-width: 0; display: flex; flex-direction: column">
         <label for="inv-title" style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0)">Nome do convite</label>
-        <input id="inv-title" value="{{title}}" onChange="{{onTitle}}" style="border: 0; padding: 2px 0; font-size: 18px; font-weight: 700; color: #17151F; background: transparent; min-width: 0">
-        <span style="font-size: 13px; color: #5E5A6B">{{statusLine}}</span>
+        <input id="inv-title" value="{{title}}" onChange="{{onTitle}}" style="border: 0; padding: 2px 0; font-size: 17px; font-weight: 700; color: #17151F; background: transparent; min-width: 0; text-overflow: ellipsis">
+        <span data-testid="save-status" style="font-size: 12px; color: {{saveColor}}">{{statusLine}}</span>
       </div>
-      <button type="button" class="datechip" onClick="{{ev.openPanel}}" aria-label="{{ev.chipAria}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px {{ev.chipBorder}} {{ev.chipRing}}; background: {{ev.chipBg}}; color: {{ev.chipFg}}; font-weight: 600; font-size: 14px; cursor: pointer; white-space: nowrap">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg>
-        {{ev.chipLabel}}
+      <div role="group" aria-label="Histórico de alterações" style="display: flex; gap: 4px">
+        <button onClick="{{undo}}" disabled="{{cantUndo}}" aria-label="Desfazer" title="Desfazer (Ctrl+Z)" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #E3E1EA; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 14 4 9l5-5"></path><path d="M4 9h11a5 5 0 0 1 0 10h-4"></path></svg></button>
+        <button onClick="{{redo}}" disabled="{{cantRedo}}" aria-label="Refazer" title="Refazer (Ctrl+Shift+Z)" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #E3E1EA; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 14 5-5-5-5"></path><path d="M20 9H9a5 5 0 0 0 0 10h4"></path></svg></button>
+      </div>
+      <button type="button" data-testid="ready-chip" onClick="{{rd.open}}" aria-label="{{rd.aria}}" style="display: inline-flex; align-items: center; gap: 10px; min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid {{rd.ring}}; background: {{rd.bg}}; color: {{rd.fg}}; font-weight: 600; font-size: 13px; cursor: pointer; white-space: nowrap">
+        <span aria-hidden="true" style="display: flex; gap: 3px">
+          <sc-for list="{{rd.bars}}" as="bar" hint-placeholder-count="5"><span style="width: 12px; height: 6px; border-radius: 3px; background: {{bar.c}}"></span></sc-for>
+        </span>
+        {{rd.label}}
       </button>
       <div style="display: flex; flex-wrap: wrap; gap: 8px">
-        <button onClick="{{openPreview}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">
+        <button onClick="{{openPreview}}" title="Ver o convite como o convidado vê" style="display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-          Pré-visualizar
+          <span>{{previewBtnLabel}}</span>
         </button>
-        <button onClick="{{togglePublish}}" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: {{publishBg}}; color: {{publishFg}}; font-weight: 600; font-size: 15px; cursor: pointer">{{publishLabel}}</button>
+        <button data-testid="publish-btn" onClick="{{openPublish}}" style="min-height: 40px; padding: 0 18px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">{{publishLabel}}</button>
       </div>
     </div>
-    <sc-if value="{{published}}" hint-placeholder-val="{{ false }}">
-      <div role="status" style="background: #E3F3EA; color: #1E6B43; padding: 10px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; font-size: 14px">
-        <strong>Convite publicado.</strong>
-        <span>Link para os convidados: <span style="font-family: ui-monospace, monospace; color: #14472D; word-break: break-all">{{guestLink}}</span></span>
-        <button onClick="{{copyLink}}" style="min-height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9BCBB1; background: #FFFFFF; color: #1E6B43; font-weight: 600; font-size: 14px; cursor: pointer">Copiar link</button>
-        <a href="{{guestHref}}" target="_blank" rel="noopener" style="min-height: 36px; padding: 0 14px; border-radius: 8px; border: 1px solid #9BCBB1; background: #FFFFFF; color: #1E6B43; font-weight: 600; font-size: 14px; display: inline-flex; align-items: center; text-decoration: none">Abrir convite</a>
-      </div>
-    </sc-if>
   </header>
 
   <div style="flex: 1 1 auto; display: flex; flex-wrap: wrap; align-items: stretch">
 
-    <aside aria-label="Páginas e blocos" style="flex: 1 1 240px; background: #FFFFFF; border-right: 1px solid #E3E1EA; padding: 20px 16px; box-sizing: border-box; display: flex; flex-direction: column; gap: 24px">
+    <aside aria-label="Páginas" data-testid="pages-panel" style="{{lay.leftStyle}}">
+      <sc-if value="{{lay.narrow}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px">
+          <strong style="font-size: 16px">Páginas do convite</strong>
+          <button onClick="{{closeSheet}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: #17151F; color: #FFFFFF; font-weight: 700; font-size: 13px; cursor: pointer">Pronto</button>
+        </div>
+      </sc-if>
       <section>
         <h2 class="sec" style="margin-bottom: 10px">Páginas</h2>
-        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px">
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px">
           <sc-for list="{{pageList}}" as="p" hint-placeholder-count="4">
-            <li draggable="true" onDragStart="{{p.dragStart}}" onDragOver="{{p.dragOver}}" onDragLeave="{{p.dragLeave}}" onDrop="{{p.drop}}" onDragEnd="{{p.dragEnd}}" data-page="{{p.id}}" style="display: flex; align-items: stretch; gap: 4px; border-radius: 10px; box-shadow: {{p.dropShadow}}; opacity: {{p.dragOpacity}}">
-              <button class="pg" onClick="{{p.pick}}" aria-current="{{p.current}}" title="Arraste para mudar a ordem" style="flex: 1 1 auto; min-width: 0; width: 100%; min-height: 48px; display: flex; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; border: 1px solid {{p.border}}; background: {{p.bg}}; color: #17151F; cursor: pointer; text-align: left">
-                <span style="width: 26px; height: 26px; border-radius: 7px; background: {{p.numBg}}; color: {{p.numFg}}; display: inline-flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex: none">{{p.n}}</span>
+            <li draggable="true" onDragStart="{{p.dragStart}}" onDragOver="{{p.dragOver}}" onDragLeave="{{p.dragLeave}}" onDrop="{{p.drop}}" onDragEnd="{{p.dragEnd}}" data-page="{{p.id}}" style="display: flex; align-items: stretch; gap: 4px; border-radius: 12px; box-shadow: {{p.dropShadow}}; opacity: {{p.dragOpacity}}">
+              <button class="pg" onClick="{{p.pick}}" aria-current="{{p.current}}" title="Arraste para mudar a ordem" style="flex: 1 1 auto; min-width: 0; width: 100%; min-height: 64px; display: flex; align-items: center; gap: 8px; padding: 6px 8px 6px 4px; border-radius: 12px; border: {{p.ring}}; background: {{p.bg}}; color: #17151F; cursor: grab; text-align: left">
+                <span aria-hidden="true" style="color: #A19CB3; font-size: 13px; letter-spacing: -3px; padding: 0 4px 0 2px">⋮⋮</span>
+                <span aria-hidden="true" style="width: 34px; height: 54px; flex: none; border-radius: 6px; background: {{T.bg}}; color: {{T.fg}}; border: 1px solid #E3E1EA; display: flex; align-items: center; justify-content: center; overflow: hidden; padding: 2px; box-sizing: border-box; font-family: {{T.font}}; font-size: 8px; line-height: 1.1; text-align: center">{{p.thumb}}</span>
                 <span style="display: flex; flex-direction: column; line-height: 1.25; min-width: 0">
-                  <span style="font-weight: 600; font-size: 14px">{{p.name}}</span>
+                  <span style="font-weight: 600; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{p.n}}. {{p.name}}</span>
                   <span style="font-size: 12px; color: #5E5A6B">{{p.count}}</span>
                 </span>
               </button>
@@ -100,51 +105,61 @@ button:disabled{opacity:.5;cursor:not-allowed}
         </ol>
         <button onClick="{{addPage}}" style="margin-top: 8px; width: 100%; min-height: 44px; border-radius: 10px; border: 1px dashed #B9B4CC; background: transparent; color: #3B26A8; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
-          Adicionar página
+          Nova página
         </button>
-      </section>
-
-      <section>
-        <h2 class="sec" style="margin-bottom: 4px">Adicionar bloco</h2>
-        <p style="margin: 0 0 10px; font-size: 13px; color: #5E5A6B">Entra no fim da página {{pageName}}.</p>
-        <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
-          <sc-for list="{{palette}}" as="t" hint-placeholder-count="9">
-            <button class="addb" onClick="{{t.add}}" style="min-height: 64px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 10px; border: 1px solid #E3E1EA; background: #FFFFFF; color: #17151F; font-size: 13px; font-weight: 600; cursor: pointer">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"></path></svg>
-              {{t.label}}
-            </button>
-          </sc-for>
-        </div>
+        <p style="margin: 8px 0 0; font-size: 12px; color: #5E5A6B">Arraste uma página pela alça ⋮⋮ (ou use as setas) para mudar a ordem.</p>
       </section>
     </aside>
 
-    <main style="flex: 999 1 420px; min-width: 0; padding: 20px 16px 40px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 12px">
-      <div role="group" aria-label="Modo da prévia" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #DEDCE6; width: 300px; box-sizing: border-box">
-        <button onClick="{{viewPages}}" aria-pressed="{{pagesPressed}}" style="min-height: 38px; border-radius: 9px; border: 0; background: {{pagesTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Conteúdo</button>
-        <button onClick="{{viewOpening}}" aria-pressed="{{openPressed}}" style="min-height: 38px; border-radius: 9px; border: 0; background: {{openTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Abertura</button>
-      </div>
-      <sc-if value="{{isPagesView}}" hint-placeholder-val="{{ true }}">
-        <div style="width: 360px; max-width: 100%; display: flex; flex-direction: column; gap: 8px">
-          <div role="group" aria-label="Ajudas de alinhamento" style="display: flex; flex-wrap: wrap; gap: 6px">
-            <sc-for list="{{cv.toggles}}" as="tg" hint-placeholder-count="3">
-              <button aria-pressed="{{tg.pressed}}" onClick="{{tg.toggle}}" disabled="{{tg.disabled}}" title="{{tg.title}}" style="flex: 1 1 auto; min-height: 34px; padding: 0 10px; border-radius: 999px; border: 1px solid {{tg.ring}}; background: {{tg.bg}}; color: {{tg.fg}}; font-weight: 600; font-size: 13px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tg.icon}}"></path></svg>
-                {{tg.label}}
-              </button>
-            </sc-for>
-          </div>
-          <div role="status" data-testid="check" style="padding: 8px 12px; border-radius: 10px; background: {{cv.checkBg}}; color: {{cv.checkFg}}; font-size: 13px; display: flex; flex-direction: column; gap: 4px">
-            <strong style="font-size: 13px">{{cv.checkTitle}}</strong>
-            <sc-for list="{{cv.issues}}" as="is" hint-placeholder-count="2">
-              <button onClick="{{is.pick}}" style="align-self: flex-start; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: underline; cursor: pointer">{{is.text}}</button>
-            </sc-for>
-            <sc-if value="{{cv.hasInfo}}" hint-placeholder-val="{{ false }}">
-              <span style="opacity: 0.85">{{cv.info}}</span>
-            </sc-if>
-          </div>
+    <main style="flex: 999 1 420px; min-width: 0; padding: {{lay.mainPad}}; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 12px">
+      <sc-if value="{{isOpeningView}}" hint-placeholder-val="{{ false }}">
+        <div role="status" style="width: 360px; max-width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 14px; border-radius: 12px; background: #EFECFB; color: #2F1F8F; font-size: 13px; box-sizing: border-box">
+          <span style="flex: 1">Mostrando a abertura (convite fechado). Toque no celular para testar.</span>
+          <button onClick="{{viewPages}}" style="min-height: 36px; padding: 0 12px; border-radius: 9px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 13px; cursor: pointer">Voltar às páginas</button>
         </div>
       </sc-if>
-      <div style="font-size: 14px; color: #5E5A6B; text-align: center; max-width: 360px">{{previewCaption}}</div>
+      <sc-if value="{{isPagesView}}" hint-placeholder-val="{{ true }}">
+        <div style="width: 360px; max-width: 100%; display: flex; flex-direction: column; gap: 8px">
+          <span style="font-size: 13px; color: #5E5A6B; text-align: center">{{previewCaption}}</span>
+          <div style="position: relative; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px">
+          <button data-testid="add-block" onClick="{{toggleAdd}}" aria-expanded="{{addOpenAttr}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 0; background: #17151F; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+            Adicionar bloco
+          </button>
+          <sc-if value="{{addOpen}}" hint-placeholder-val="{{ false }}">
+            <div role="dialog" aria-label="Escolha o bloco" onKeyDown="{{addKey}}" style="{{addStyle}}">
+              <sc-for list="{{palette}}" as="t" hint-placeholder-count="9">
+                <button class="addb" onClick="{{t.add}}" aria-label="{{t.label}}" style="display: flex; gap: 10px; align-items: flex-start; padding: 10px; border-radius: 10px; border: 1px solid #EEEDF3; background: #FAF9FC; color: #17151F; text-align: left; cursor: pointer">
+                  <span aria-hidden="true" style="width: 32px; height: 32px; flex: none; border-radius: 8px; background: #EFECFB; color: #5B3FD6; display: inline-flex; align-items: center; justify-content: center">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="{{t.icon}}"></path></svg>
+                  </span>
+                  <span style="display: flex; flex-direction: column; line-height: 1.3; min-width: 0"><strong style="font-size: 13px">{{t.label}}</strong><span style="font-size: 12px; color: #5E5A6B">{{t.desc}}</span></span>
+                </button>
+              </sc-for>
+            </div>
+          </sc-if>
+            <button data-testid="layout-tools" onClick="{{toggleLayout}}" aria-expanded="{{layoutOpenAttr}}" style="min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 13px; cursor: pointer">Ajustes de layout ▾</button>
+            <sc-if value="{{layoutOpen}}" hint-placeholder-val="{{ false }}">
+              <div role="group" aria-label="Ajudas de alinhamento" style="position: absolute; right: 0; top: 40px; z-index: 12; width: 260px; padding: 8px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E3E1EA; box-shadow: 0 12px 32px rgba(23,21,31,0.16); display: flex; flex-direction: column; gap: 6px">
+                <sc-for list="{{cv.toggles}}" as="tg" hint-placeholder-count="3">
+                  <button aria-pressed="{{tg.pressed}}" onClick="{{tg.toggle}}" disabled="{{tg.disabled}}" title="{{tg.title}}" style="min-height: 40px; padding: 0 10px; border-radius: 9px; border: 1px solid {{tg.ring}}; background: {{tg.bg}}; color: {{tg.fg}}; font-weight: 600; font-size: 13px; cursor: pointer; display: flex; align-items: center; gap: 8px; text-align: left">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tg.icon}}"></path></svg>
+                    <span style="display: flex; flex-direction: column; line-height: 1.25"><span>{{tg.label}}</span><span style="font-weight: 500; font-size: 11px; color: #5E5A6B">{{tg.title}}</span></span>
+                  </button>
+                </sc-for>
+              </div>
+            </sc-if>
+          </div>
+          <sc-if value="{{cv.hasIssues}}" hint-placeholder-val="{{ false }}">
+            <div role="status" data-testid="check" style="padding: 8px 12px; border-radius: 10px; background: {{cv.checkBg}}; color: {{cv.checkFg}}; font-size: 13px; display: flex; flex-direction: column; gap: 4px">
+              <strong style="font-size: 13px">{{cv.checkTitle}}</strong>
+              <sc-for list="{{cv.issues}}" as="is" hint-placeholder-count="2">
+                <button onClick="{{is.pick}}" style="align-self: flex-start; padding: 0; border: 0; background: transparent; color: inherit; font: inherit; text-align: left; text-decoration: underline; cursor: pointer">{{is.text}}</button>
+              </sc-for>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
 
       <div style="position: relative; width: 360px; max-width: 100%; height: 740px; border: 10px solid #17151F; border-radius: 44px; background: {{T.bg}}; overflow: hidden; display: flex; flex-direction: column; box-sizing: border-box">
         <sc-if value="{{isPagesView}}" hint-placeholder-val="{{ true }}">
@@ -169,7 +184,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
                   </sc-if>
 
                   <sc-for list="{{cv.boxes}}" as="bx" hint-placeholder-count="5">
-                    <div class="blk" role="button" tabindex="0" aria-label="{{bx.aria}}" aria-pressed="{{bx.pressed}}" data-ovl="{{bx.id}}" onPointerDown="{{bx.down}}" onKeyDown="{{bx.key}}" style="{{bx.style}}">
+                    <div class="blk" role="button" tabindex="0" aria-label="{{bx.aria}}" aria-pressed="{{bx.pressed}}" data-ovl="{{bx.id}}" onPointerDown="{{bx.down}}" onDblClick="{{bx.dbl}}" onKeyDown="{{bx.key}}" style="{{bx.style}}">
                       <sc-if value="{{bx.hasAnim}}" hint-placeholder-val="{{ false }}">
                         <span style="position: absolute; top: -11px; right: 8px; padding: 1px 8px; border-radius: 999px; background: #5B3FD6; color: #FFFFFF; font: 700 12px 'Plus Jakarta Sans', sans-serif; pointer-events: none">{{bx.animLabel}}</span>
                       </sc-if>
@@ -204,8 +219,11 @@ button:disabled{opacity:.5;cursor:not-allowed}
                   <sc-if value="{{cv.hasTip}}" hint-placeholder-val="{{ false }}">
                     <span aria-hidden="true" style="{{cv.tipStyle}}">{{cv.tip}}</span>
                   </sc-if>
+                  <sc-if value="{{cv.hasInline}}" hint-placeholder-val="{{ false }}">
+                    <textarea data-testid="inline-edit" aria-label="Editar texto do bloco" value="{{cv.inline.text}}" onInput="{{cv.inline.onInput}}" onKeyDown="{{cv.inline.onKey}}" onBlur="{{cv.inline.commit}}" onPointerDown="{{cv.inline.stop}}" style="{{cv.inline.style}}"></textarea>
+                  </sc-if>
                   <sc-if value="{{noBlocks}}" hint-placeholder-val="{{ false }}">
-                    <p style="position: absolute; left: 30px; right: 30px; top: 140px; margin: 0; text-align: center; color: {{T.fg}}; opacity: 0.8; font: 500 15px 'Plus Jakarta Sans', sans-serif">Página vazia. Adicione blocos pelo painel à esquerda.</p>
+                    <p style="position: absolute; left: 30px; right: 30px; top: 140px; margin: 0; text-align: center; color: {{T.fg}}; opacity: 0.8; font: 500 15px 'Plus Jakarta Sans', sans-serif">Página vazia. Use “Adicionar bloco” logo abaixo do celular.</p>
                   </sc-if>
                 </div>
               </div>
@@ -227,252 +245,37 @@ button:disabled{opacity:.5;cursor:not-allowed}
       </div>
     </main>
 
-    <aside aria-label="Propriedades" style="flex: 1 1 320px; background: #FFFFFF; border-left: 1px solid #E3E1EA; padding: 16px 20px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+    <aside aria-label="Propriedades" data-testid="props-panel" style="{{lay.rightStyle}}">
+      <sc-if value="{{lay.narrow}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; justify-content: flex-end">
+          <button onClick="{{closeSheet}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 0; background: #17151F; color: #FFFFFF; font-weight: 700; font-size: 13px; cursor: pointer">Pronto</button>
+        </div>
+      </sc-if>
       <div role="tablist" aria-label="Painel" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; border-radius: 12px; background: #F1EFF6">
-        <button role="tab" onClick="{{panelBlock}}" aria-selected="{{blockSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{blockTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Bloco</button>
-        <button role="tab" onClick="{{panelTheme}}" aria-selected="{{themeSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{themeTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
-          Tema
+        <button role="tab" onClick="{{panelBlock}}" aria-selected="{{blockSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{blockTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Conteúdo</button>
+        <button role="tab" onClick="{{panelLook}}" aria-selected="{{lookSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{lookTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
+          Aparência
           <sc-if value="{{T.modified}}" hint-placeholder-val="{{ false }}"><span aria-label="personalizado" style="width: 8px; height: 8px; border-radius: 50%; background: #5B3FD6"></span></sc-if>
-        </button>
-        <button role="tab" onClick="{{panelOpening}}" aria-selected="{{openingSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{openingTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Abertura</button>
-        <button role="tab" onClick="{{panelMusic}}" aria-selected="{{musicSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{musicTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 6px">
-          Música
-          <sc-if value="{{mus.active}}" hint-placeholder-val="{{ true }}"><span aria-label="ativada" style="width: 8px; height: 8px; border-radius: 50%; background: #1E7A4C"></span></sc-if>
         </button>
         <button role="tab" onClick="{{panelEvent}}" aria-selected="{{eventSelected}}" style="min-height: 40px; border-radius: 9px; border: 0; background: {{eventTabBg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Evento</button>
       </div>
-
-      <sc-if value="{{isOpeningPanel}}" hint-placeholder-val="{{ false }}">
-        <div style="display: flex; flex-direction: column; gap: 14px">
-          <div>
-            <h2 style="margin: 0; font-size: 17px; font-weight: 700">Tela de abertura</h2>
-            <p style="margin: 4px 0 0; font-size: 13px; color: #5E5A6B">O convite chega fechado. Isto é o que o convidado vê antes de abrir. A prévia ao lado mostra o resultado: toque no celular para testar.</p>
-          </div>
-          <div>
-            <label class="lbl" for="op-anim">Animação</label>
-            <select class="fld" id="op-anim" value="{{T.anim}}" onChange="{{onOpenAnim}}">
-              <option value="envelope">Carta se abrindo</option>
-              <option value="cortina">Cortina</option>
-              <option value="portas">Portas duplas</option>
-              <option value="lacre">Lacre de cera</option>
-              <option value="presente">Caixa de presente</option>
-              <option value="livro">Capa de livro</option>
-              <option value="iris">Íris</option>
-              <option value="neblina">Neblina</option>
-              <option value="nenhuma">Sem abertura (já abre o convite)</option>
-            </select>
-          </div>
-          <sc-if value="{{hasOpeningAnim}}" hint-placeholder-val="{{ true }}">
-            <div style="display: flex; flex-direction: column; gap: 14px">
-              <div>
-                <label class="lbl" for="op-trigger">Como o convidado abre</label>
-                <select class="fld" id="op-trigger" value="{{op.trigger}}" onChange="{{op.onTrigger}}">
-                  <option value="toque">Toque em qualquer lugar</option>
-                  <option value="botao">Tocando no botão</option>
-                  <option value="deslizar">Deslizando para cima</option>
-                </select>
-              </div>
-              <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #E3E1EA; border-radius: 12px">
-                <input type="color" id="op-paper" value="{{T.paper}}" onChange="{{op.onPaper}}" style="width: 40px; height: 40px; padding: 0; border: 0; background: transparent; cursor: pointer; flex: none">
-                <label for="op-paper" style="display: flex; flex-direction: column; line-height: 1.3; cursor: pointer">
-                  <span style="font-size: 14px; font-weight: 600">Cor da abertura</span>
-                  <span style="font-size: 12px; color: #5E5A6B">Papel, cortina, portas ou capa</span>
-                </label>
-              </div>
-              <div>
-                <label class="lbl" for="op-headline">Texto no topo</label>
-                <input class="fld" id="op-headline" value="{{op.headline}}" onChange="{{op.onHeadline}}" placeholder="Deixe vazio para não mostrar">
-              </div>
-              <div>
-                <label class="lbl" for="op-kicker">Chamada (acima do título)</label>
-                <input class="fld" id="op-kicker" value="{{kicker}}" onChange="{{onKicker}}" placeholder="Ex.: Casamento">
-              </div>
-              <div>
-                <label class="lbl" for="op-title">Título</label>
-                <input class="fld" id="op-title" value="{{op.title}}" onChange="{{op.onTitle}}" placeholder="{{op.titlePlaceholder}}">
-                <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Vazio: usa o título da página Capa.</span>
-              </div>
-              <div>
-                <label class="lbl" for="op-subtitle">Linha abaixo do título</label>
-                <input class="fld" id="op-subtitle" value="{{op.subtitle}}" onChange="{{op.onSubtitle}}" placeholder="{{op.subtitlePlaceholder}}">
-                <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Vazio: usa a data do evento (aba Evento).</span>
-              </div>
-              <sc-if value="{{op.usesInitials}}" hint-placeholder-val="{{ true }}">
-                <div>
-                  <label class="lbl" for="op-initials">Iniciais no selo</label>
-                  <input class="fld" id="op-initials" maxlength="5" value="{{op.initials}}" onChange="{{op.onInitials}}" placeholder="{{op.initialsPlaceholder}}">
-                </div>
-              </sc-if>
-              <div>
-                <label class="lbl" for="op-hint">Texto do botão de abrir</label>
-                <input class="fld" id="op-hint" value="{{op.hint}}" onChange="{{op.onHint}}" placeholder="{{op.hintPlaceholder}}">
-              </div>
-            </div>
-          </sc-if>
-          <button onClick="{{replayOpening}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
-            Ver abertura na prévia
-          </button>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{isEventPanel}}" hint-placeholder-val="{{ false }}">
-        <div style="display: flex; flex-direction: column; gap: 14px">
-          <div>
-            <h2 style="margin: 0; font-size: 17px; font-weight: 700">Dados do evento</h2>
-            <p style="margin: 4px 0 0; font-size: 13px; color: #5E5A6B">Aparecem na abertura do convite, na contagem regressiva e no painel.</p>
-          </div>
-          <div>
-            <label class="lbl" for="ev-kicker">Chamada (ex.: Casamento, Aniversário)</label>
-            <input class="fld" id="ev-kicker" value="{{kicker}}" onChange="{{onKicker}}">
-          </div>
-          <fieldset style="margin: 0; padding: 14px; border: 1px solid #E3E1EA; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; min-width: 0">
-            <legend style="padding: 0 6px; font-size: 14px; font-weight: 700">Quando é o evento?</legend>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px">
-              <div>
-                <label class="lbl" for="ev-day">Data</label>
-                <input class="fld" id="ev-day" type="date" value="{{ev.day}}" onInput="{{ev.onDay}}" onChange="{{ev.onDay}}">
-              </div>
-              <div>
-                <label class="lbl" for="ev-time">Horário</label>
-                <input class="fld" id="ev-time" type="time" step="300" value="{{ev.time}}" onInput="{{ev.onTime}}" onChange="{{ev.onTime}}">
-              </div>
-            </div>
-            <div>
-              <span id="ev-quick-l" style="display: block; font-size: 12px; font-weight: 600; color: #5E5A6B; margin-bottom: 6px">Horários comuns</span>
-              <div role="group" aria-labelledby="ev-quick-l" data-testid="ev-quick" style="display: flex; flex-wrap: wrap; gap: 6px">
-                <sc-for list="{{ev.quick}}" as="q" hint-placeholder-count="7">
-                  <button type="button" onClick="{{q.pick}}" aria-pressed="{{q.pressed}}" style="min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid {{q.ring}}; background: {{q.bg}}; color: {{q.fg}}; font-weight: 600; font-size: 13px; cursor: pointer">{{q.label}}</button>
-                </sc-for>
-              </div>
-            </div>
-            <div role="status" data-testid="ev-summary" style="padding: 10px 12px; border-radius: 10px; background: {{ev.sumBg}}; color: {{ev.sumFg}}; font-size: 14px; line-height: 1.45">
-              <strong style="display: block">{{ev.sumTitle}}</strong>
-              <span style="font-size: 13px">{{ev.sumNote}}</span>
-            </div>
-            <sc-if value="{{ev.has}}" hint-placeholder-val="{{ false }}">
-              <button type="button" onClick="{{ev.clear}}" style="align-self: flex-start; min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #3D3A4A; font-weight: 600; font-size: 13px; cursor: pointer">Remover data</button>
-            </sc-if>
-          </fieldset>
-          <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #F5F4F8; font-size: 13px; color: #3D3A4A">O nome principal do convite é o bloco Título da página Capa. Edite-o na aba Bloco.</p>
-
-          <section aria-labelledby="pers-title" style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 16px">
-            <h2 id="pers-title" style="margin: 0; font-size: 16px; font-weight: 700">Convite personalizado por convidado</h2>
-            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer">
-              <input id="pers-on" type="checkbox" checked="{{pers.enabled}}" onChange="{{pers.toggle}}" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
-              <span><strong>Personalizar o convite para cada convidado</strong><br><span style="color: #5E5A6B; font-size: 13px">Cada convidado recebe um link próprio, com o nome dele. Na confirmação de presença, ele escreve o nome de quem vai, até o número de pessoas que você definir para aquele convite.</span></span>
-            </label>
-            <sc-if value="{{pers.enabled}}" hint-placeholder-val="{{ false }}">
-              <div style="display: flex; flex-direction: column; gap: 12px">
-                <button onClick="{{pers.manage}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">{{pers.manageLabel}}</button>
-                <div>
-                  <label class="lbl" for="pers-greeting">Nome do convidado na abertura</label>
-                  <input class="fld" id="pers-greeting" value="{{pers.greeting}}" onChange="{{pers.onGreeting}}" placeholder="Convite para {nome}">
-                  <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Aparece no próprio convite fechado (no envelope, na cortina, na capa…), na fonte e nas cores do tema. {nome} vira o nome do convite; o texto antes dele aparece como um rótulo pequeno. Veja na aba Abertura.</span>
-                </div>
-                <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #EFECFB; color: #2F1F8F; font-size: 13px">Dica: em qualquer texto do convite, escreva <strong>{nome}</strong> para mostrar o nome do convidado. Ex.: “Querida {nome}, contamos com você!”</p>
-                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer">
-                  <input id="pers-generic" type="checkbox" checked="{{pers.generic}}" onChange="{{pers.toggleGeneric}}" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
-                  <span>Aceitar respostas também pelo link geral<br><span style="color: #5E5A6B; font-size: 13px">Desmarcado, só quem tem um link individual consegue confirmar presença.</span></span>
-                </label>
-              </div>
-            </sc-if>
-          </section>
-        </div>
-      </sc-if>
-
-      <sc-if value="{{isMusicPanel}}" hint-placeholder-val="{{ false }}">
-        <div style="display: flex; flex-direction: column; gap: 18px">
-          <div>
-            <h2 style="margin: 0; font-size: 17px; font-weight: 700">Música do convite</h2>
-            <p style="margin: 4px 0 0; font-size: 13px; color: #5E5A6B">Começa a tocar quando o convidado abre o convite. Ele pode pausar a qualquer momento pelo botão de som.</p>
-          </div>
-
-          <input id="mus-file" type="file" accept="audio/*" onChange="{{onFile}}" class="sr-file">
-
-          <sc-if value="{{mus.empty}}" hint-placeholder-val="{{ true }}">
-            <div data-testid="mus-drop" onDragOver="{{mus.dragOver}}" onDragLeave="{{mus.dragLeave}}" onDrop="{{mus.drop}}" style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 26px 18px; border-radius: 14px; border: 2px dashed {{mus.dropRing}}; background: {{mus.dropBg}}; text-align: center">
-              <span style="width: 52px; height: 52px; border-radius: 50%; background: #EEEAFB; color: #43299F; display: flex; align-items: center; justify-content: center">
-                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
-              </span>
-              <strong style="font-size: 15px">Convite sem música</strong>
-              <span style="font-size: 13px; color: #5E5A6B; max-width: 280px">Para ter música, envie um arquivo de áudio. Ele começa a tocar quando o convidado abre o convite.</span>
-              <label for="mus-file" class="mus-pick" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"></path></svg>
-                Enviar música
-              </label>
-              <span style="font-size: 12px; color: #5E5A6B">ou arraste o arquivo para cá · MP3, M4A, OGG ou WAV, até 10 MB</span>
-            </div>
-          </sc-if>
-
-          <sc-if value="{{mus.hasTrack}}" hint-placeholder-val="{{ false }}">
-            <div data-testid="mus-track" style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 14px; border: 1px solid #E3E1EA; background: #FAF9FC">
-              <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
-                <button onClick="{{listenCustom}}" disabled="{{mus.cannotPreview}}" aria-label="{{mus.listenAria}}" style="width: 48px; height: 48px; flex: none; border-radius: 50%; border: 0; background: #5B3FD6; color: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="{{mus.customIcon}}"></path></svg>
-                </button>
-                <div style="min-width: 0; display: flex; flex-direction: column">
-                  <strong style="font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{mus.trackName}}</strong>
-                  <span style="font-size: 12px; color: #5E5A6B">{{mus.trackNote}}</span>
-                </div>
-              </div>
-              <div style="display: flex; flex-wrap: wrap; gap: 8px">
-                <label for="mus-file" class="mus-pick" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Trocar música</label>
-                <button onClick="{{removeMusic}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; font-weight: 600; font-size: 14px; cursor: pointer">Remover música</button>
-              </div>
-            </div>
-          </sc-if>
-
-          <sc-if value="{{mus.previewError}}" hint-placeholder-val="{{ false }}">
-            <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 13px">Não foi possível tocar este áudio. Confira se o arquivo enviado é mesmo de áudio.</p>
-          </sc-if>
-
-          <sc-if value="{{mus.active}}" hint-placeholder-val="{{ true }}">
-            <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 16px">
-              <div>
-                <label class="lbl" for="mus-vol">Volume · {{mus.volume}}%</label>
-                <input id="mus-vol" type="range" min="0" max="100" step="5" value="{{mus.volume}}" onChange="{{onVolume}}" style="width: 100%; min-height: 40px; accent-color: #5B3FD6">
-              </div>
-              <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked="{{mus.loop}}" onChange="{{toggleLoop}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Repetir a música enquanto o convite estiver aberto</label>
-              <button onClick="{{testInInvite}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Testar no convite</button>
-              <span style="font-size: 12px; color: #5E5A6B; text-align: center">Abre a prévia fechada: toque no celular para abrir e ouvir.</span>
-            </div>
-          </sc-if>
-        </div>
-      </sc-if>
 
       <sc-if value="{{isBlockPanel}}" hint-placeholder-val="{{ true }}">
         <div style="display: flex; flex-direction: column; gap: 20px">
           <sc-if value="{{hasSel}}" hint-placeholder-val="{{ true }}">
             <section style="display: flex; flex-direction: column; gap: 16px">
               <div style="display: flex; align-items: center; gap: 10px">
-                <span style="width: 36px; height: 36px; border-radius: 10px; background: #EFECFB; color: #3B26A8; display: flex; align-items: center; justify-content: center">
+                <span style="width: 36px; height: 36px; border-radius: 10px; background: #EFECFB; color: #3B26A8; display: flex; align-items: center; justify-content: center; flex: none">
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{sel.icon}}"></path></svg>
                 </span>
-                <div style="display: flex; flex-direction: column; line-height: 1.25">
+                <div style="flex: 1; display: flex; flex-direction: column; line-height: 1.25; min-width: 0">
                   <span style="font-size: 12px; color: #5E5A6B; font-weight: 600">Bloco selecionado</span>
                   <span style="font-size: 17px; font-weight: 700">{{sel.typeLabel}}</span>
                 </div>
+                <button onClick="{{dupBlock}}" aria-label="Duplicar bloco" title="Duplicar bloco" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="8" width="12" height="12" rx="2"></rect><path d="M16 8V5a1 1 0 0 0-1-1H5a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3"></path></svg></button>
+                <button onClick="{{removeBlock}}" aria-label="Excluir bloco" title="Excluir bloco" style="width: 40px; height: 40px; border-radius: 10px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; cursor: pointer; display: inline-flex; align-items: center; justify-content: center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg></button>
               </div>
 
-              <sc-if value="{{pos.show}}" hint-placeholder-val="{{ false }}">
-                <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: #F7F6FB">
-                  <span class="lbl" style="margin: 0">Posição na página</span>
-                  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
-                    <div><label class="lbl" for="pos-x" style="font-size: 12px">X (px)</label><input class="fld" id="pos-x" type="number" value="{{pos.x}}" onChange="{{pos.onX}}"></div>
-                    <div><label class="lbl" for="pos-y" style="font-size: 12px">Y (px)</label><input class="fld" id="pos-y" type="number" value="{{pos.y}}" onChange="{{pos.onY}}"></div>
-                    <div><label class="lbl" for="pos-w" style="font-size: 12px">Largura</label><input class="fld" id="pos-w" type="number" min="40" max="390" value="{{pos.w}}" onChange="{{pos.onW}}"></div>
-                  </div>
-                  <div role="group" aria-label="Alinhar bloco" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
-                    <sc-for list="{{pos.aligns}}" as="al" hint-placeholder-count="4">
-                      <button onClick="{{al.run}}" aria-label="{{al.label}}" title="{{al.label}}" style="min-height: 40px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; align-items: center; justify-content: center">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{al.icon}}"></path></svg>
-                      </button>
-                    </sc-for>
-                  </div>
-                  <span style="font-size: 12px; color: #5E5A6B">Arraste o bloco na prévia. Setas do teclado movem 1 px (com Shift, 10 px). Segure Alt para soltar sem encaixar nas guias.</span>
-                </div>
-              </sc-if>
 
               <sc-if value="{{sel.isMedia}}" hint-placeholder-val="{{ true }}">
                 <div style="display: flex; flex-direction: column; gap: 12px">
@@ -703,7 +506,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
               </sc-if>
 
               <div>
-                <label class="lbl" for="blk-anim">Animação de entrada do bloco</label>
+                <label class="lbl" for="blk-anim">Ao aparecer na tela</label>
                 <select class="fld" id="blk-anim" value="{{sel.anim}}" onChange="{{onAnim}}">
                   <option value="nenhuma">Nenhuma</option>
                   <option value="surgir">Surgir suavemente</option>
@@ -712,17 +515,40 @@ button:disabled{opacity:.5;cursor:not-allowed}
                 </select>
               </div>
 
-              <div style="display: flex; flex-wrap: wrap; gap: 8px; border-top: 1px solid #EEECF3; padding-top: 16px">
-                <button onClick="{{moveUp}}" aria-label="{{moveUpLabel}}" title="{{moveUpLabel}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>
-                </button>
-                <button onClick="{{moveDown}}" aria-label="{{moveDownLabel}}" title="{{moveDownLabel}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
-                </button>
-                <button onClick="{{removeBlock}}" style="margin-left: auto; min-height: 44px; padding: 0 14px; border-radius: 10px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 6px">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"></path></svg>
-                  Excluir bloco
-                </button>
+              <div style="border-top: 1px solid #EEECF3; padding-top: 12px">
+                <button data-testid="adv-toggle" onClick="{{toggleAdv}}" aria-expanded="{{advOpenAttr}}" style="width: 100%; min-height: 40px; padding: 0 4px; border: 0; background: transparent; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: space-between">Posição exata e camadas (avançado) <span aria-hidden="true">{{advArrow}}</span></button>
+                <sc-if value="{{advOpen}}" hint-placeholder-val="{{ false }}">
+                  <div style="display: flex; flex-direction: column; gap: 12px; padding-top: 8px">
+              <sc-if value="{{pos.show}}" hint-placeholder-val="{{ false }}">
+                    <div style="display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: #F7F6FB">
+                      <span class="lbl" style="margin: 0">Posição na página</span>
+                      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+                        <div><label class="lbl" for="pos-x" style="font-size: 12px">X (px)</label><input class="fld" id="pos-x" type="number" value="{{pos.x}}" onChange="{{pos.onX}}"></div>
+                        <div><label class="lbl" for="pos-y" style="font-size: 12px">Y (px)</label><input class="fld" id="pos-y" type="number" value="{{pos.y}}" onChange="{{pos.onY}}"></div>
+                        <div><label class="lbl" for="pos-w" style="font-size: 12px">Largura</label><input class="fld" id="pos-w" type="number" min="40" max="390" value="{{pos.w}}" onChange="{{pos.onW}}"></div>
+                      </div>
+                      <div role="group" aria-label="Alinhar bloco" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px">
+                        <sc-for list="{{pos.aligns}}" as="al" hint-placeholder-count="4">
+                          <button onClick="{{al.run}}" aria-label="{{al.label}}" title="{{al.label}}" style="min-height: 40px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{al.icon}}"></path></svg>
+                          </button>
+                        </sc-for>
+                      </div>
+                      <span style="font-size: 12px; color: #5E5A6B">Arraste o bloco na prévia. Setas do teclado movem 1 px (com Shift, 10 px). Segure Alt para soltar sem encaixar nas guias.</span>
+                    </div>
+                  </sc-if>
+    
+                    <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+                      <span style="font-size: 13px; color: #3D3A4A; flex: 1 1 140px">Camada (quando blocos se sobrepõem)</span>
+                      <button onClick="{{moveUp}}" aria-label="{{moveUpLabel}}" title="{{moveUpLabel}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6"></path></svg>
+                      </button>
+                      <button onClick="{{moveDown}}" aria-label="{{moveDownLabel}}" title="{{moveDownLabel}}" style="width: 44px; height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; cursor: pointer; display: inline-flex; align-items: center; justify-content: center">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14M6 13l6 6 6-6"></path></svg>
+                      </button>
+                    </div>
+                  </div>
+                </sc-if>
               </div>
             </section>
           </sc-if>
@@ -731,8 +557,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
             <p style="margin: 0; padding: 20px; border-radius: 12px; background: #F5F4F8; color: #5E5A6B; font-size: 14px">Selecione um bloco na prévia para editar o conteúdo, a mídia e a animação.</p>
           </sc-if>
 
-          <section style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 18px">
-            <h2 class="sec">Página</h2>
+          <section style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 12px">
+            <button data-testid="page-toggle" onClick="{{togglePageSec}}" aria-expanded="{{pageSecAttr}}" style="width: 100%; min-height: 44px; padding: 0 4px; border: 0; background: transparent; color: #17151F; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <span style="display: flex; flex-direction: column; line-height: 1.3"><strong style="font-size: 14px">Esta página: {{pageName}}</strong><span style="font-size: 12px; color: #5E5A6B">Nome no menu, foto de fundo e excluir página</span></span>
+              <span aria-hidden="true">{{pageSecArrow}}</span>
+            </button>
+            <sc-if value="{{pageSecOpen}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 12px">
             <div>
               <label class="lbl" for="pg-name">Nome no menu do convite</label>
               <input class="fld" id="pg-name" value="{{pageName}}" onChange="{{onPageName}}">
@@ -780,20 +611,23 @@ button:disabled{opacity:.5;cursor:not-allowed}
                 </div>
               </sc-if>
             </div>
-            <div>
-              <label class="lbl" for="pg-trans">Transição ao entrar</label>
-              <select class="fld" id="pg-trans">
-                <option>Deslizar para o lado</option>
-                <option>Esmaecer</option>
-                <option>Sem transição</option>
-              </select>
-            </div>
             <button onClick="{{removePage}}" style="align-self: flex-start; min-height: 40px; padding: 0; border: 0; background: transparent; color: #B42318; font-weight: 600; font-size: 14px; cursor: pointer">Excluir esta página</button>
+              </div>
+            </sc-if>
           </section>
         </div>
       </sc-if>
 
-      <sc-if value="{{isThemePanel}}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{isLookPanel}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <p style="margin: 0; font-size: 13px; color: #5E5A6B">Vale para o convite inteiro.</p>
+          <div style="border: 1px solid #E3E1EA; border-radius: 14px; overflow: hidden">
+            <button data-testid="ap-tema" onClick="{{ap.tema.toggle}}" aria-expanded="{{ap.tema.attr}}" style="width: 100%; min-height: 56px; padding: 8px 14px; border: 0; background: {{ap.tema.bg}}; color: #17151F; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <span style="display: flex; flex-direction: column; line-height: 1.3"><strong style="font-size: 15px">Tema, cores e letras</strong><span style="font-size: 12px; color: #5E5A6B">{{ap.temaSub}}</span></span>
+              <span aria-hidden="true" style="font-size: 14px">{{ap.tema.arrow}}</span>
+            </button>
+            <sc-if value="{{ap.tema.open}}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 4px 14px 16px">
         <div style="display: flex; flex-direction: column; gap: 18px">
           <div style="display: flex; align-items: center; gap: 12px">
             <span aria-hidden="true" style="display: flex; width: 44px; height: 44px; border-radius: 10px; overflow: hidden; border: 1px solid #E3E1EA; flex: none">
@@ -876,21 +710,284 @@ button:disabled{opacity:.5;cursor:not-allowed}
             </div>
           </section>
 
-          <section style="display: flex; flex-direction: column; gap: 8px">
-            <h2 class="sec">Abertura do convite</h2>
-            <p style="margin: 0; font-size: 13px; color: #5E5A6B">Animação, textos e forma de abrir ficam na aba Abertura.</p>
-            <button onClick="{{panelOpening}}" style="min-height: 40px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Configurar abertura</button>
-          </section>
+          
 
           <section style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #EEECF3; padding-top: 16px">
             <button onClick="{{saveAsTheme}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Salvar como novo tema</button>
             <button onClick="{{resetTheme}}" disabled="{{T.unmodified}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Restaurar tema {{T.baseName}}</button>
             <button onClick="{{changeTheme}}" style="align-self: center; min-height: 40px; padding: 0 8px; border: 0; background: transparent; color: #4A32C4; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: underline">Trocar tema base</button>
           </section>
+        </div></div>
+            </sc-if>
+          </div>
+          <div style="border: 1px solid #E3E1EA; border-radius: 14px; overflow: hidden">
+            <button data-testid="ap-abertura" onClick="{{ap.abertura.toggle}}" aria-expanded="{{ap.abertura.attr}}" style="width: 100%; min-height: 56px; padding: 8px 14px; border: 0; background: {{ap.abertura.bg}}; color: #17151F; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <span style="display: flex; flex-direction: column; line-height: 1.3"><strong style="font-size: 15px">Abertura do convite</strong><span style="font-size: 12px; color: #5E5A6B">{{ap.aberturaSub}}</span></span>
+              <span aria-hidden="true" style="font-size: 14px">{{ap.abertura.arrow}}</span>
+            </button>
+            <sc-if value="{{ap.abertura.open}}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 4px 14px 16px">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <p style="margin: 0; font-size: 13px; color: #5E5A6B">O convite chega fechado. Isto é o que o convidado vê antes de abrir; a prévia mostra o resultado.</p>
+          <div>
+            <label class="lbl" for="op-anim">Animação</label>
+            <select class="fld" id="op-anim" value="{{T.anim}}" onChange="{{onOpenAnim}}">
+              <option value="envelope">Carta se abrindo</option>
+              <option value="cortina">Cortina</option>
+              <option value="portas">Portas duplas</option>
+              <option value="lacre">Lacre de cera</option>
+              <option value="presente">Caixa de presente</option>
+              <option value="livro">Capa de livro</option>
+              <option value="iris">Íris</option>
+              <option value="neblina">Neblina</option>
+              <option value="nenhuma">Sem abertura (já abre o convite)</option>
+            </select>
+          </div>
+          <sc-if value="{{hasOpeningAnim}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 14px">
+              <div>
+                <label class="lbl" for="op-trigger">Como o convidado abre</label>
+                <select class="fld" id="op-trigger" value="{{op.trigger}}" onChange="{{op.onTrigger}}">
+                  <option value="toque">Toque em qualquer lugar</option>
+                  <option value="botao">Tocando no botão</option>
+                  <option value="deslizar">Deslizando para cima</option>
+                </select>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid #E3E1EA; border-radius: 12px">
+                <input type="color" id="op-paper" value="{{T.paper}}" onChange="{{op.onPaper}}" style="width: 40px; height: 40px; padding: 0; border: 0; background: transparent; cursor: pointer; flex: none">
+                <label for="op-paper" style="display: flex; flex-direction: column; line-height: 1.3; cursor: pointer">
+                  <span style="font-size: 14px; font-weight: 600">Cor da abertura</span>
+                  <span style="font-size: 12px; color: #5E5A6B">Papel, cortina, portas ou capa</span>
+                </label>
+              </div>
+              <div>
+                <label class="lbl" for="op-headline">Texto no topo</label>
+                <input class="fld" id="op-headline" value="{{op.headline}}" onChange="{{op.onHeadline}}" placeholder="Deixe vazio para não mostrar">
+              </div>
+              <div>
+                <label class="lbl" for="op-kicker">Chamada (acima do título)</label>
+                <input class="fld" id="op-kicker" value="{{kicker}}" onChange="{{onKicker}}" placeholder="Ex.: Casamento">
+              </div>
+              <div>
+                <label class="lbl" for="op-title">Título</label>
+                <input class="fld" id="op-title" value="{{op.title}}" onChange="{{op.onTitle}}" placeholder="{{op.titlePlaceholder}}">
+                <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Vazio: usa o título da página Capa.</span>
+              </div>
+              <div>
+                <label class="lbl" for="op-subtitle">Linha abaixo do título</label>
+                <input class="fld" id="op-subtitle" value="{{op.subtitle}}" onChange="{{op.onSubtitle}}" placeholder="{{op.subtitlePlaceholder}}">
+                <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Vazio: usa a data do evento (aba Evento).</span>
+              </div>
+              <sc-if value="{{op.usesInitials}}" hint-placeholder-val="{{ true }}">
+                <div>
+                  <label class="lbl" for="op-initials">Iniciais no selo</label>
+                  <input class="fld" id="op-initials" maxlength="5" value="{{op.initials}}" onChange="{{op.onInitials}}" placeholder="{{op.initialsPlaceholder}}">
+                </div>
+              </sc-if>
+              <div>
+                <label class="lbl" for="op-hint">Texto do botão de abrir</label>
+                <input class="fld" id="op-hint" value="{{op.hint}}" onChange="{{op.onHint}}" placeholder="{{op.hintPlaceholder}}">
+              </div>
+            </div>
+          </sc-if>
+          <button onClick="{{replayOpening}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 5v14l11-7z"></path></svg>
+            Ver abertura na prévia
+          </button>
+        </div></div>
+            </sc-if>
+          </div>
+          <div style="border: 1px solid #E3E1EA; border-radius: 14px; overflow: hidden">
+            <button data-testid="ap-musica" onClick="{{ap.musica.toggle}}" aria-expanded="{{ap.musica.attr}}" style="width: 100%; min-height: 56px; padding: 8px 14px; border: 0; background: {{ap.musica.bg}}; color: #17151F; text-align: left; cursor: pointer; display: flex; align-items: center; justify-content: space-between; gap: 8px">
+              <span style="display: flex; flex-direction: column; line-height: 1.3"><strong style="font-size: 15px">Música de fundo</strong><span style="font-size: 12px; color: #5E5A6B">{{mus.summary}}</span></span>
+              <span aria-hidden="true" style="font-size: 14px">{{ap.musica.arrow}}</span>
+            </button>
+            <sc-if value="{{ap.musica.open}}" hint-placeholder-val="{{ false }}">
+              <div style="padding: 4px 14px 16px">
+        <div style="display: flex; flex-direction: column; gap: 18px">
+          <p style="margin: 0; font-size: 13px; color: #5E5A6B">Começa a tocar quando o convidado abre o convite. Ele pode pausar pelo botão de som.</p>
+
+          <input id="mus-file" type="file" accept="audio/*" onChange="{{onFile}}" class="sr-file">
+
+          <sc-if value="{{mus.empty}}" hint-placeholder-val="{{ true }}">
+            <div data-testid="mus-drop" onDragOver="{{mus.dragOver}}" onDragLeave="{{mus.dragLeave}}" onDrop="{{mus.drop}}" style="display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 26px 18px; border-radius: 14px; border: 2px dashed {{mus.dropRing}}; background: {{mus.dropBg}}; text-align: center">
+              <span style="width: 52px; height: 52px; border-radius: 50%; background: #EEEAFB; color: #43299F; display: flex; align-items: center; justify-content: center">
+                <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+              </span>
+              <strong style="font-size: 15px">Convite sem música</strong>
+              <span style="font-size: 13px; color: #5E5A6B; max-width: 280px">Para ter música, envie um arquivo de áudio. Ele começa a tocar quando o convidado abre o convite.</span>
+              <label for="mus-file" class="mus-pick" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 16V4M6 10l6-6 6 6M4 20h16"></path></svg>
+                Enviar música
+              </label>
+              <span style="font-size: 12px; color: #5E5A6B">ou arraste o arquivo para cá · MP3, M4A, OGG ou WAV, até 10 MB</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{mus.hasTrack}}" hint-placeholder-val="{{ false }}">
+            <div data-testid="mus-track" style="display: flex; flex-direction: column; gap: 12px; padding: 14px; border-radius: 14px; border: 1px solid #E3E1EA; background: #FAF9FC">
+              <div style="display: flex; align-items: center; gap: 12px; min-width: 0">
+                <button onClick="{{listenCustom}}" disabled="{{mus.cannotPreview}}" aria-label="{{mus.listenAria}}" style="width: 48px; height: 48px; flex: none; border-radius: 50%; border: 0; background: #5B3FD6; color: #FFFFFF; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="{{mus.customIcon}}"></path></svg>
+                </button>
+                <div style="min-width: 0; display: flex; flex-direction: column">
+                  <strong style="font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{mus.trackName}}</strong>
+                  <span style="font-size: 12px; color: #5E5A6B">{{mus.trackNote}}</span>
+                </div>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                <label for="mus-file" class="mus-pick" style="display: inline-flex; align-items: center; min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Trocar música</label>
+                <button onClick="{{removeMusic}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; font-weight: 600; font-size: 14px; cursor: pointer">Remover música</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{mus.previewError}}" hint-placeholder-val="{{ false }}">
+            <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 13px">Não foi possível tocar este áudio. Confira se o arquivo enviado é mesmo de áudio.</p>
+          </sc-if>
+
+          <sc-if value="{{mus.active}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 16px">
+              <div>
+                <label class="lbl" for="mus-vol">Volume · {{mus.volume}}%</label>
+                <input id="mus-vol" type="range" min="0" max="100" step="5" value="{{mus.volume}}" onChange="{{onVolume}}" style="width: 100%; min-height: 40px; accent-color: #5B3FD6">
+              </div>
+              <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked="{{mus.loop}}" onChange="{{toggleLoop}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Repetir a música enquanto o convite estiver aberto</label>
+              <button onClick="{{testInInvite}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Testar no convite</button>
+              <span style="font-size: 12px; color: #5E5A6B; text-align: center">Abre a prévia fechada: toque no celular para abrir e ouvir.</span>
+            </div>
+          </sc-if>
+        </div></div>
+            </sc-if>
+          </div>
         </div>
       </sc-if>
+
+      <sc-if value="{{isEventPanel}}" hint-placeholder-val="{{ false }}">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <div>
+            <h2 style="margin: 0; font-size: 17px; font-weight: 700">Dados do evento</h2>
+            <p style="margin: 4px 0 0; font-size: 13px; color: #5E5A6B">Aparecem na abertura do convite, na contagem regressiva e no painel.</p>
+          </div>
+          <div>
+            <label class="lbl" for="ev-kicker">Chamada (ex.: Casamento, Aniversário)</label>
+            <input class="fld" id="ev-kicker" value="{{kicker}}" onChange="{{onKicker}}">
+          </div>
+          <fieldset style="margin: 0; padding: 14px; border: 1px solid #E3E1EA; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; min-width: 0">
+            <legend style="padding: 0 6px; font-size: 14px; font-weight: 700">Quando é o evento?</legend>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px">
+              <div>
+                <label class="lbl" for="ev-day">Data</label>
+                <input class="fld" id="ev-day" type="date" value="{{ev.day}}" onInput="{{ev.onDay}}" onChange="{{ev.onDay}}">
+              </div>
+              <div>
+                <label class="lbl" for="ev-time">Horário</label>
+                <input class="fld" id="ev-time" type="time" step="300" value="{{ev.time}}" onInput="{{ev.onTime}}" onChange="{{ev.onTime}}">
+              </div>
+            </div>
+            <div>
+              <span id="ev-quick-l" style="display: block; font-size: 12px; font-weight: 600; color: #5E5A6B; margin-bottom: 6px">Horários comuns</span>
+              <div role="group" aria-labelledby="ev-quick-l" data-testid="ev-quick" style="display: flex; flex-wrap: wrap; gap: 6px">
+                <sc-for list="{{ev.quick}}" as="q" hint-placeholder-count="7">
+                  <button type="button" onClick="{{q.pick}}" aria-pressed="{{q.pressed}}" style="min-height: 36px; padding: 0 12px; border-radius: 999px; border: 1px solid {{q.ring}}; background: {{q.bg}}; color: {{q.fg}}; font-weight: 600; font-size: 13px; cursor: pointer">{{q.label}}</button>
+                </sc-for>
+              </div>
+            </div>
+            <div role="status" data-testid="ev-summary" style="padding: 10px 12px; border-radius: 10px; background: {{ev.sumBg}}; color: {{ev.sumFg}}; font-size: 14px; line-height: 1.45">
+              <strong style="display: block">{{ev.sumTitle}}</strong>
+              <span style="font-size: 13px">{{ev.sumNote}}</span>
+            </div>
+            <sc-if value="{{ev.has}}" hint-placeholder-val="{{ false }}">
+              <button type="button" onClick="{{ev.clear}}" style="align-self: flex-start; min-height: 36px; padding: 0 12px; border-radius: 8px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #3D3A4A; font-weight: 600; font-size: 13px; cursor: pointer">Remover data</button>
+            </sc-if>
+          </fieldset>
+          <sc-if value="{{dl.has}}" hint-placeholder-val="{{ true }}">
+            <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border: 1px solid #E3E1EA; border-radius: 12px">
+              <label class="lbl" for="ev-deadline" style="margin: 0; font-size: 14px; font-weight: 700; color: #17151F">Prazo para responder</label>
+              <input class="fld" id="ev-deadline" type="date" value="{{dl.value}}" onChange="{{dl.onChange}}">
+              <span style="font-size: 12px; color: #5E5A6B">{{dl.note}}</span>
+            </div>
+          </sc-if>
+          <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #F5F4F8; font-size: 13px; color: #3D3A4A">O nome principal do convite é o título da primeira página. Clique nele na prévia (duplo clique edita o texto ali mesmo).</p>
+
+          <section aria-labelledby="pers-title" style="display: flex; flex-direction: column; gap: 12px; border-top: 1px solid #EEECF3; padding-top: 16px">
+            <h2 id="pers-title" style="margin: 0; font-size: 16px; font-weight: 700">Convite personalizado por convidado</h2>
+            <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer">
+              <input id="pers-on" type="checkbox" checked="{{pers.enabled}}" onChange="{{pers.toggle}}" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
+              <span><strong>Personalizar o convite para cada convidado</strong><br><span style="color: #5E5A6B; font-size: 13px">Cada convidado recebe um link próprio, com o nome dele. Na confirmação de presença, ele escreve o nome de quem vai, até o número de pessoas que você definir para aquele convite.</span></span>
+            </label>
+            <sc-if value="{{pers.enabled}}" hint-placeholder-val="{{ false }}">
+              <div style="display: flex; flex-direction: column; gap: 12px">
+                <button onClick="{{pers.manage}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">{{pers.manageLabel}}</button>
+                <div>
+                  <label class="lbl" for="pers-greeting">Nome do convidado na abertura</label>
+                  <input class="fld" id="pers-greeting" value="{{pers.greeting}}" onChange="{{pers.onGreeting}}" placeholder="Convite para {nome}">
+                  <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Aparece no próprio convite fechado (no envelope, na cortina, na capa…), na fonte e nas cores do tema. {nome} vira o nome do convite; o texto antes dele aparece como um rótulo pequeno. Veja na aba Abertura.</span>
+                </div>
+                <p style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #EFECFB; color: #2F1F8F; font-size: 13px">Dica: em qualquer texto do convite, escreva <strong>{nome}</strong> para mostrar o nome do convidado. Ex.: “Querida {nome}, contamos com você!”</p>
+                <label style="display: flex; align-items: flex-start; gap: 10px; font-size: 14px; cursor: pointer">
+                  <input id="pers-generic" type="checkbox" checked="{{pers.generic}}" onChange="{{pers.toggleGeneric}}" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
+                  <span>Aceitar respostas também pelo link geral<br><span style="color: #5E5A6B; font-size: 13px">Desmarcado, só quem tem um link individual consegue confirmar presença.</span></span>
+                </label>
+              </div>
+            </sc-if>
+          </section>
+        </div></sc-if>
     </aside>
   </div>
+
+  <sc-if value="{{lay.narrow}}" hint-placeholder-val="{{ false }}">
+    <nav aria-label="Ferramentas do editor" style="position: fixed; left: 0; right: 0; bottom: 0; z-index: 35; height: 64px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); background: #FFFFFF; border-top: 1px solid #E3E1EA; padding-bottom: env(safe-area-inset-bottom)">
+      <sc-for list="{{lay.tools}}" as="tl" hint-placeholder-count="4">
+        <button onClick="{{tl.run}}" aria-pressed="{{tl.on}}" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; border: 0; background: transparent; color: {{tl.fg}}; font-size: 11px; font-weight: 700; cursor: pointer">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{tl.icon}}"></path></svg>
+          {{tl.label}}
+        </button>
+      </sc-for>
+    </nav>
+  </sc-if>
+
+  <sc-if value="{{pub.open}}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-labelledby="pub-title" onKeyDown="{{pub.onKey}}" style="position: fixed; inset: 0; z-index: 55; background: rgba(15, 14, 20, 0.6); display: flex; align-items: flex-start; justify-content: center; padding: 24px 12px; box-sizing: border-box; overflow-y: auto">
+      <div style="position: relative; width: 100%; max-width: 620px; margin: auto 0; background: #FFFFFF; border-radius: 18px; box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35); overflow: hidden">
+        <button type="button" class="xbtn" onClick="{{pub.close}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        <div style="padding: 20px 60px 6px 22px">
+          <p style="margin: 0; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; color: #5B3FD6">{{pub.step}}</p>
+          <h2 id="pub-title" style="margin: 4px 0 0; font-size: 22px; font-weight: 800">{{pub.title}}</h2>
+        </div>
+        <sc-if value="{{pub.isReview}}" hint-placeholder-val="{{ true }}">
+          <div style="padding: 8px 22px 22px; display: flex; flex-direction: column; gap: 12px">
+            <p style="margin: 0; font-size: 14px; color: #5E5A6B">Conferimos o convite antes de ele chegar aos convidados.</p>
+            <ul data-testid="review-list" style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 8px">
+              <sc-for list="{{pub.items}}" as="it" hint-placeholder-count="5">
+                <li style="display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: center; padding: 11px 14px; border-radius: 12px; background: {{it.bg}}; border: 1px solid {{it.ring}}">
+                  <span aria-hidden="true" style="width: 20px; text-align: center; color: {{it.iconColor}}; font-weight: 800">{{it.icon}}</span>
+                  <span style="flex: 1 1 240px; font-size: 14px"><strong>{{it.label}}</strong><span style="color: #3D3A4A"> · {{it.detail}}</span></span>
+                  <sc-if value="{{it.hasFix}}" hint-placeholder-val="{{ false }}">
+                    <button onClick="{{it.fix}}" style="min-height: 34px; padding: 0 12px; border-radius: 9px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #3B26A8; font-weight: 700; font-size: 13px; cursor: pointer">{{it.fixLabel}}</button>
+                  </sc-if>
+                </li>
+              </sc-for>
+            </ul>
+            <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 10px; padding-top: 4px">
+              <button onClick="{{pub.close}}" style="min-height: 46px; padding: 0 18px; border-radius: 11px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Voltar e editar</button>
+              <button data-testid="pub-confirm" onClick="{{pub.publish}}" style="min-height: 46px; padding: 0 20px; border-radius: 11px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">{{pub.publishLabel}}</button>
+            </div>
+          </div>
+        </sc-if>
+        <sc-if value="{{pub.isShare}}" hint-placeholder-val="{{ false }}">
+          <div style="padding: 8px 22px 22px; display: flex; flex-direction: column; gap: 14px">
+            <p style="margin: 0; font-size: 14px; color: #5E5A6B">{{pub.shareIntro}}</p>
+            <dc-import name="Compartilhar" invite="{{pub.invite}}" on-slug-change="{{pub.onSlug}}" hint-size="100%,360px"></dc-import>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding-top: 12px; border-top: 1px solid #EEEDF3">
+              <button onClick="{{pub.guests}}" style="min-height: 42px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 700; font-size: 14px; cursor: pointer">Ver convidados e respostas →</button>
+              <button onClick="{{pub.unpublish}}" style="min-height: 42px; padding: 0 6px; border: 0; background: transparent; color: #B42318; font-weight: 600; font-size: 13px; cursor: pointer; text-decoration: underline">Tirar o convite do ar</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
 
   <sc-if value="{{pe.open}}" hint-placeholder-val="{{ false }}">
     <div role="dialog" aria-modal="true" aria-labelledby="pe-title" onKeyDown="{{pe.onKey}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(15, 14, 20, 0.72); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
@@ -1066,6 +1163,9 @@ class Component extends DCLogic {
       music: { kind: 'nenhuma', preset: 'valsa', fileUrl: '', fileName: '', link: '', volume: 70, loop: true },
       previewing: '',
       previewError: false,
+      apSec: 'tema', addOpen: false, layoutOpen: false, advOpen: false, pageSecOpen: false,
+      pub: null, slug: '', sheet: '', inline: null, histN: 0, redoN: 0,
+      narrow: typeof window !== 'undefined' && window.innerWidth < 900,
       pages: it ? this.newPages(b, it) : [
         { id: 'capa', name: 'Capa', blocks: [
           b('c1', 'foto', { label: 'Foto do casal', anim: 'surgir' }),
@@ -1109,15 +1209,18 @@ class Component extends DCLogic {
   }
 
   newPages(b, it) {
+    const su = (it && it.setup) || {};
     const pages = this.basePages(b, it);
     if (it && it.starter === 'savedate') {
       // Capa no estilo "Save the Date": foto do casal como fundo da página, letra cursiva, nomes em versalete e data
       // posições fixas (tela de 390 px): texto no alto, deixando o casal livre na foto
+      const names = String(su.names || '').trim();
+      const dots = it.eventDate ? api.fmt.dots(it.eventDate).replace(/ · /g, ' . ') : '';
       pages[0] = { id: 'capa', name: 'Capa', free: true, bg: { url: '', dim: 40 }, blocks: [
         b('c1', 'titulo', { text: 'Save the Date', anim: 'surgir', fontSize: 54, pos: { x: 20, y: 44, w: 350 } }),
-        b('c2', 'texto', { text: 'NOME & NOME', anim: 'surgir', fontSize: 24, pos: { x: 20, y: 124, w: 350 } }),
+        b('c2', 'texto', { text: names ? names.toUpperCase() : 'NOME & NOME', anim: 'surgir', fontSize: 24, pos: { x: 20, y: 124, w: 350 } }),
         b('c3', 'texto', { text: '──────  ◆  ──────', fontSize: 12, pos: { x: 95, y: 164, w: 200 } }),
-        b('c4', 'texto', { text: 'DD . MM . AAAA', anim: 'deslizar', fontSize: 30, pos: { x: 20, y: 186, w: 350 } }),
+        b('c4', 'texto', { text: dots || 'DD . MM . AAAA', anim: 'deslizar', fontSize: 30, pos: { x: 20, y: 186, w: 350 } }),
         b('c5', 'botao', { text: 'Ver detalhes', pos: { x: 115, y: 690, w: 160 } })
       ] };
     }
@@ -1125,18 +1228,34 @@ class Component extends DCLogic {
   }
 
   basePages(b, it) {
-    return [
+    it = it || {};
+    const su = it.setup || {};
+    const kind = su.kind || '';
+    const phrases = {
+      casamento: 'convidam para a celebração do seu casamento', aniversario: 'Venha comemorar comigo!', infantil: 'Venha brincar e comemorar com a gente!',
+      cha: 'Venha celebrar a chegada do nosso bebê!', formatura: 'Celebre essa conquista com a gente!', corporativo: 'Contamos com a sua presença.',
+      religioso: 'Participe deste momento especial conosco.'
+    };
+    const ev = it.eventDate || null;
+    const when = ev ? api.fmt.long(ev).replace(/, às /, '\nÀs ') : 'Data e horário do evento';
+    // prazo de resposta sugerido: 30 dias antes do evento (se ainda der tempo)
+    let deadline = null;
+    if (ev) {
+      const d = new Date(ev); d.setDate(d.getDate() - 30); d.setHours(23, 59, 0, 0);
+      if (d.getTime() > Date.now() + 2 * 86400000) deadline = d.toISOString();
+    }
+    const pages = [
       { id: 'capa', name: 'Capa', blocks: [
         b('c1', 'foto', { label: 'Foto principal', anim: 'surgir' }),
-        b('c2', 'titulo', { text: it.sample || 'Título do evento', anim: 'deslizar' }),
-        b('c3', 'texto', { text: 'Escreva aqui a frase do convite' }),
+        b('c2', 'titulo', { text: String(su.names || '').trim() || it.sample || 'Título do evento', anim: 'deslizar' }),
+        b('c3', 'texto', { text: phrases[kind] || (su.names ? 'Você está convidado!' : 'Escreva aqui a frase do convite') }),
         b('c4', 'contagem', {}),
         b('c5', 'botao', { text: 'Ver detalhes' })
       ] },
       { id: 'detalhes', name: 'Detalhes', blocks: [
         b('d1', 'titulo', { text: 'Quando e onde' }),
-        b('d2', 'texto', { text: 'Data e horário do evento' }),
-        b('d3', 'mapa', { text: 'Nome do local' }),
+        b('d2', 'texto', { text: when }),
+        b('d3', 'mapa', { text: String(su.place || '').trim() || 'Nome do local', address: String(su.address || '').trim() }),
         b('d4', 'orientacoes', { text: 'Traje\nEstacionamento\nOutras orientações' }),
         b('d5', 'botao', { text: 'Saiba mais' })
       ] },
@@ -1144,13 +1263,16 @@ class Component extends DCLogic {
         b('g1', 'titulo', { text: 'Galeria' }),
         b('g2', 'foto', { label: 'Foto 1' }),
         b('g3', 'foto', { label: 'Foto 2' })
-      ] },
-      { id: 'presenca', name: 'Presença', blocks: [
-        b('p1', 'titulo', { text: 'Confirme sua presença' }),
-        b('p2', 'texto', { text: 'Responda até [data limite]' }),
-        b('p3', 'rsvp', {})
       ] }
     ];
+    if (su.rsvp !== false) {
+      pages.push({ id: 'presenca', name: 'Presença', blocks: [
+        b('p1', 'titulo', { text: 'Confirme sua presença' }),
+        b('p2', 'texto', { text: 'Responda até {prazo}' }),
+        b('p3', 'rsvp', deadline ? { deadline } : {})
+      ] });
+    }
+    return pages;
   }
 
   palettes() {
@@ -1273,6 +1395,7 @@ class Component extends DCLogic {
     const local = URL.createObjectURL(f);
     this.setMusic({ kind: 'arquivo', fileUrl: local, fileName: f.name, uploading: true });
     api.upload(f).then((r) => {
+      this.histMute = true;
       this.setState((s) => ({ music: Object.assign({}, s.music, { fileUrl: r.url, uploading: false }) }));
     }).catch((err) => {
       // volta para a música que havia antes (ou nenhuma)
@@ -1286,6 +1409,22 @@ class Component extends DCLogic {
   }
 
   componentDidMount() {
+    this.undoStack = []; this.redoStack = [];
+    this.onResize = () => { const n = window.innerWidth < 900; if (n !== this.state.narrow) this.setState({ narrow: n, sheet: '' }); };
+    window.addEventListener('resize', this.onResize);
+    this.onKeyDown = (e) => {
+      // Esc fecha os menus abertos (adicionar bloco, ajustes de layout)
+      if (e.key === 'Escape' && (this.state.addOpen || this.state.layoutOpen) && !this.state.pub && !this.state.pe) { this.setState({ addOpen: false, layoutOpen: false }); return; }
+      if (!(e.ctrlKey || e.metaKey) || this.state.pe || this.state.inline) return;
+      const k = String(e.key || '').toLowerCase();
+      if (k !== 'z' && k !== 'y') return;
+      const t = e.target;
+      // dentro de um campo de texto, o desfazer é o do próprio campo
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      e.preventDefault();
+      if (k === 'y' || e.shiftKey) this.redo(); else this.undo();
+    };
+    window.addEventListener('keydown', this.onKeyDown);
     this.measTimer = setInterval(() => this.scheduleMeasure(), 500);
     this.scheduleMeasure();
     if (!this.inviteId) return;
@@ -1298,9 +1437,10 @@ class Component extends DCLogic {
 
   applyInvite(inv) {
     const b = this.mk;
+    this.loadedAt = Date.now();
     const theme = Object.assign({}, this.baseTheme(), inv.theme || {});
     const base = Object.assign({}, theme, inv.themeBase || inv.theme || {});
-    const pages = inv.pages && inv.pages.length ? inv.pages : this.newPages(b, { sample: inv.coverTitle || 'Título do evento', starter: inv.theme && inv.theme.starter });
+    const pages = inv.pages && inv.pages.length ? inv.pages : this.newPages(b, { sample: inv.coverTitle || 'Título do evento', starter: inv.theme && inv.theme.starter, setup: inv.setup || null, eventDate: inv.eventDate || null });
     const music = Object.assign({ kind: 'nenhuma', preset: 'valsa', fileUrl: '', fileName: '', link: '', volume: 70, loop: true }, inv.music || {});
     const maxId = pages.reduce((mx, p) => p.blocks.reduce((m2, x) => Math.max(m2, parseInt(String(x.id).replace(/\D/g, ''), 10) || 0), mx), 100);
     this.createdAt = inv.createdAt;
@@ -1309,7 +1449,7 @@ class Component extends DCLogic {
       published: inv.status === 'publicado', theme, themeBase: base, music, pages,
       opening: Object.assign({ headline: 'Você recebeu um convite', title: '', subtitle: '', hint: '', trigger: 'toque', initials: '' }, inv.opening || {}),
       personal: Object.assign({ enabled: false, greeting: 'Convite para {nome}', generic: true }, inv.personal || {}),
-      page: pages[0].id, sel: pages[0].blocks.length ? pages[0].blocks[0].id : null, next: maxId + 1,
+      page: pages[0].id, sel: pages[0].blocks.length ? pages[0].blocks[0].id : null, next: maxId + 1, slug: inv.slug || '',
       saveState: inv.pages && inv.pages.length ? 'saved' : 'idle'
     });
     if (!inv.pages || !inv.pages.length) this.scheduleSave(50);
@@ -1383,7 +1523,7 @@ class Component extends DCLogic {
       chipBg: has ? '#FFFFFF' : '#EEEAFB', chipFg: has ? '#17151F' : '#43299F',
       chipRing: has ? '#D6D3E0' : '#B9ABF0', chipBorder: has ? 'solid' : 'dashed',
       openPanel: () => {
-        this.setState({ panel: 'evento' });
+        this.setState({ panel: 'evento', sheet: this.state.narrow ? 'panel' : '' });
         setTimeout(() => { try { const el = document.getElementById('ev-day'); if (el) { el.scrollIntoView({ block: 'center', behavior: 'smooth' }); el.focus(); } } catch (e) {} }, 60);
       }
     };
@@ -1428,9 +1568,140 @@ class Component extends DCLogic {
       const t = this.state.toast;
       this.toastTimer = setTimeout(() => { if (!this.unmounted && this.state.toast === t) this.setState({ toast: '', toastAction: null }); }, this.state.toastAction ? 10000 : 6000);
     }
+    if (this.state.loaded && prevState.loaded) this.trackHistory(prevState);
     if (!this.state.loaded || !prevState.loaded || !this.inviteId) return;
     const keys = ['title', 'kicker', 'eventDate', 'theme', 'music', 'pages', 'published', 'opening', 'personal'];
     if (keys.some((k) => prevState[k] !== this.state[k])) this.scheduleSave();
+  }
+
+  // ---------- desfazer / refazer ----------
+  histKeys() { return ['title', 'kicker', 'eventDate', 'theme', 'music', 'pages', 'opening', 'personal']; }
+
+  snap(st) {
+    const o = {};
+    this.histKeys().forEach((k) => { o[k] = st[k]; });
+    return o;
+  }
+
+  trackHistory(prevState) {
+    if (!this.undoStack) return;
+    const changed = this.histKeys().some((k) => prevState[k] !== this.state[k]);
+    if (!changed) return;
+    if (this.histMute) { this.histMute = false; return; }
+    const now = Date.now();
+    // ajustes automáticos logo depois de abrir (posições, alturas) não entram no histórico
+    if (!this.loadedAt || now - this.loadedAt < 2500) return;
+    // digitação seguida no mesmo campo (ou o mesmo controle deslizante) vira um passo só;
+    // ações de botão (adicionar, duplicar, excluir…) são sempre passos separados
+    let key = '';
+    try { const a = document.activeElement; if (a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA') && a.type !== 'file') key = a.id || a.getAttribute('data-testid') || a.tagName; } catch (e) {}
+    const merge = key && key === this.histKey && this.histLast && now - this.histLast < 1500;
+    this.histKey = key;
+    if (!merge) {
+      this.undoStack.push(this.snap(prevState));
+      if (this.undoStack.length > 80) this.undoStack.shift();
+    }
+    this.histLast = now;
+    this.redoStack = [];
+    if (this.state.histN !== this.undoStack.length || this.state.redoN !== 0) this.setState({ histN: this.undoStack.length, redoN: 0 });
+  }
+
+  restoreSnap(snapObj) {
+    const pages = snapObj.pages || this.state.pages;
+    const page = pages.find((p) => p.id === this.state.page) || pages[0];
+    const sel = page && page.blocks.some((b) => b.id === this.state.sel) ? this.state.sel : (page && page.blocks[0] ? page.blocks[0].id : null);
+    this.histMute = true;
+    this.histLast = 0;
+    this.setState(Object.assign({}, snapObj, { page: page ? page.id : this.state.page, sel, inline: null, drag: null, histN: this.undoStack.length, redoN: this.redoStack.length }));
+  }
+
+  undo() {
+    if (!this.undoStack || !this.undoStack.length) return;
+    this.redoStack.push(this.snap(this.state));
+    this.restoreSnap(this.undoStack.pop());
+  }
+
+  redo() {
+    if (!this.redoStack || !this.redoStack.length) return;
+    this.undoStack.push(this.snap(this.state));
+    this.restoreSnap(this.redoStack.pop());
+  }
+
+  // ---------- o que falta para publicar ----------
+  readiness(st) {
+    const items = [];
+    const all = [];
+    st.pages.forEach((p) => p.blocks.forEach((b) => all.push({ p, b })));
+    const rsvp = all.find((o) => o.b.type === 'rsvp');
+    const dl = rsvp && rsvp.b.deadline;
+    const go = (o) => () => {
+      this.setState({ pub: null, page: o.p.id, sel: o.b.id, panel: 'bloco', view: 'pages', sheet: this.state.narrow ? 'panel' : '' });
+      this.focusBox(o.b.id);
+    };
+    const toEvent = (fid) => () => {
+      this.setState({ pub: null, panel: 'evento', sheet: this.state.narrow ? 'panel' : '' });
+      setTimeout(() => { try { const el = document.getElementById(fid); if (el) { el.scrollIntoView({ block: 'center' }); el.focus(); } } catch (e) {} }, 80);
+    };
+    const short = (t) => { t = String(t || '').replace(/\s+/g, ' ').trim(); return t.length > 34 ? t.slice(0, 32) + '…' : t; };
+    const ph = all.filter((o) => api.placeholderIn(o.b.text, dl) || api.placeholderIn(o.b.address));
+    items.push({ key: 'textos', label: 'Textos do convite', ok: !ph.length,
+      detail: ph.length ? '“' + short(api.placeholderIn(ph[0].b.text, dl) ? ph[0].b.text : ph[0].b.address) + '” na página ' + ph[0].p.name + (ph.length > 1 ? ' e mais ' + (ph.length - 1) : '') + ' ainda é texto de exemplo' : 'nenhum texto de exemplo esquecido',
+      fix: ph.length ? go(ph[0]) : null, fixLabel: 'Corrigir' });
+    items.push({ key: 'data', label: 'Data e horário', ok: !!st.eventDate, detail: st.eventDate ? api.fmt.long(st.eventDate) : 'ainda não definidos', fix: toEvent('ev-day'), fixLabel: st.eventDate ? 'Alterar' : 'Definir' });
+    const maps = all.filter((o) => o.b.type === 'mapa');
+    if (maps.length) {
+      const noAddr = maps.find((o) => !String(o.b.address || '').trim());
+      items.push({ key: 'local', label: 'Local do evento', ok: !noAddr, detail: noAddr ? 'falta o endereço de “' + short(noAddr.b.text || 'local') + '”' : short(maps[0].b.text) + ' · ' + short(maps[0].b.address), fix: go(noAddr || maps[0]), fixLabel: noAddr ? 'Completar' : 'Ver' });
+    }
+    if (rsvp) items.push({ key: 'prazo', label: 'Prazo para responder', ok: !!dl, detail: dl ? 'até ' + api.fmt.day(dl) : 'sem prazo definido', fix: toEvent('ev-deadline'), fixLabel: dl ? 'Alterar' : 'Definir' });
+    items.push({ key: 'publicado', label: 'Publicar e compartilhar', ok: !!st.published, detail: st.published ? 'no ar' : 'ainda é rascunho', fix: null });
+    const fotos = all.filter((o) => o.b.type === 'foto' && !this.mediaUrl(o.b));
+    const warns = [];
+    if (fotos.length) warns.push({ key: 'fotos', label: fotos.length === 1 ? '1 foto sem imagem' : fotos.length + ' fotos sem imagem', detail: 'aparecem como espaço vazio no convite', fix: go(fotos[0]), fixLabel: 'Adicionar' });
+    return { items, warns, done: items.filter((i) => i.ok).length, total: items.length };
+  }
+
+  // ---------- edição de texto direto na prévia ----------
+  startInline(id) {
+    const cur = this.curPage();
+    const b = cur.blocks.find((x) => x.id === id);
+    if (!b || ['titulo', 'texto', 'orientacoes', 'botao'].indexOf(b.type) === -1) return;
+    this.setState({ sel: id, panel: 'bloco', inline: { id, text: b.text || '' } });
+    setTimeout(() => { try { const el = document.querySelector('[data-testid="inline-edit"]'); if (el) { el.focus(); el.select(); } } catch (e) {} }, 40);
+  }
+
+  commitInline() {
+    const ie = this.state.inline;
+    if (!ie) return;
+    this.setState({ inline: null });
+    this.patchBlock(ie.id, { text: ie.text });
+  }
+
+  dupBlock() {
+    const st = this.state;
+    const cur = this.curPage();
+    const i = cur.blocks.findIndex((x) => x.id === st.sel);
+    if (i < 0) return;
+    const b = cur.blocks[i];
+    const id = 'n' + st.next;
+    const copy = JSON.parse(JSON.stringify(b));
+    copy.id = id;
+    if (copy.pos) {
+      const r = this.rectsFor(cur)[b.id];
+      copy.pos = Object.assign({}, copy.pos, { y: Math.round(copy.pos.y + (r ? r.h : 40) + 12) });
+    }
+    const bs = cur.blocks.slice();
+    bs.splice(i + 1, 0, copy);
+    this.setBlocks(() => bs);
+    this.setState({ sel: id, next: st.next + 1, toast: 'Bloco duplicado.' });
+  }
+
+  openLook(sec) {
+    this.previewStop();
+    const patch = { panel: 'aparencia', apSec: sec, previewing: '' };
+    if (sec === 'abertura') patch.view = 'opening';
+    if (this.state.narrow) patch.sheet = 'panel';
+    this.setState(patch);
   }
 
   patchBlock(id, patch) {
@@ -1440,6 +1711,8 @@ class Component extends DCLogic {
   componentWillUnmount() {
     this.unmounted = true;
     clearInterval(this.measTimer);
+    window.removeEventListener('resize', this.onResize);
+    window.removeEventListener('keydown', this.onKeyDown);
     this.previewStop();
     if (this.onBeforeUnload) window.removeEventListener('beforeunload', this.onBeforeUnload);
     this.flushSave();
@@ -1775,7 +2048,7 @@ class Component extends DCLogic {
     if (!cur.free && !this.dragInfo && fontsReady && cur.blocks.every((b) => rects[b.id])) { this.makeFree(cur, rects); return; }
     if (cur.free && !this.dragInfo && maxB > 0) {
       const fh = Math.ceil(maxB + 28);
-      if (Math.abs((cur.freeH || 0) - fh) > 2) this.patchPage(cur.id, (p) => Object.assign({}, p, { freeH: fh }));
+      if (Math.abs((cur.freeH || 0) - fh) > 2) { this.histMute = true; this.patchPage(cur.id, (p) => Object.assign({}, p, { freeH: fh })); }
     }
   }
 
@@ -1812,6 +2085,7 @@ class Component extends DCLogic {
       maxB = Math.max(maxB, pos.y + hh);
       return Object.assign({}, b, { pos });
     });
+    this.histMute = true;
     this.patchPage(cur.id, (p) => (p.free ? p : Object.assign({}, p, { free: true, freeH: Math.ceil(Math.max(maxB, 0) + 28), blocks })));
   }
 
@@ -1872,7 +2146,11 @@ class Component extends DCLogic {
     const di = this.dragInfo;
     this.dragInfo = null;
     const d = this.state.drag;
-    if (!di || !di.started || !d) { if (d) this.setState({ drag: null }); return; }
+    if (!di || !di.started || !d) {
+      if (d) this.setState({ drag: null });
+      if (di && !di.started && this.state.narrow) this.setState({ sheet: 'panel', panel: 'bloco' });
+      return;
+    }
     if (d.free) {
       this.patchBlock(d.id, { pos: { x: d.x, y: Math.max(0, d.y), w: d.w } });
     } else {
@@ -2008,7 +2286,8 @@ class Component extends DCLogic {
 
   cvKey(e, id) {
     const k = e.key;
-    if (k === 'Enter' || k === ' ') { e.preventDefault(); this.setState({ sel: id, panel: 'bloco' }); return; }
+    if (k === 'Enter') { e.preventDefault(); this.setState({ sel: id, panel: 'bloco' }); this.startInline(id); return; }
+    if (k === ' ') { e.preventDefault(); this.setState({ sel: id, panel: 'bloco' }); return; }
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].indexOf(k) === -1) return;
     const cur = this.curPage();
     const blk = cur.blocks.find((b) => b.id === id);
@@ -2075,7 +2354,7 @@ class Component extends DCLogic {
         ' cursor: ' + (free ? 'move' : (dragging ? 'grabbing' : 'grab')) + '; touch-action: ' + (on ? 'none' : 'pan-y') + '; opacity: ' + (dragging && !free ? '0.4' : '1') + '; user-select: none';
       return {
         id: b.id, style,
-        aria: 'Bloco ' + M[b.type].label + ', ' + (o.i + 1) + 'º da página. Arraste ou use as setas para posicionar.',
+        aria: 'Bloco ' + M[b.type].label + ', ' + (o.i + 1) + 'º da página. Arraste ou use as setas para posicionar' + (['titulo', 'texto', 'orientacoes', 'botao'].indexOf(b.type) !== -1 ? '; Enter edita o texto.' : '.'),
         pressed: on ? 'true' : 'false',
         hasAnim: !!(b.anim && b.anim !== 'nenhuma'), animLabel: animNames[b.anim] || '',
         hasWarn: !!wn, warn: wn ? wn[0] : '', warnColor: wn ? wn[1] : '',
@@ -2083,9 +2362,23 @@ class Component extends DCLogic {
         down: (e) => this.cvDown(e, b.id, 'move'),
         resizeL: (e) => this.cvDown(e, b.id, 'l'),
         resizeR: (e) => this.cvDown(e, b.id, 'r'),
-        key: (e) => this.cvKey(e, b.id)
+        key: (e) => this.cvKey(e, b.id),
+        dbl: (e) => { if (e && e.preventDefault) e.preventDefault(); this.startInline(b.id); }
       };
     });
+    const ie = st.inline && items.find((o) => o.b.id === st.inline.id);
+    const inline = ie ? {
+      text: st.inline.text,
+      style: 'position: absolute; left: ' + Math.max(0, ie.r.x - 4) + 'px; top: ' + Math.max(0, ie.r.y - 4) + 'px; width: ' + Math.min(390, ie.r.w + 8) + 'px; height: ' + Math.max(48, ie.r.h + 8) + 'px; z-index: 8; box-sizing: border-box; padding: 6px 8px; border: 2px solid #5B3FD6; border-radius: 8px; background: rgba(255, 255, 255, 0.97); color: #17151F; font: 500 17px/1.35 \'Plus Jakarta Sans\', sans-serif; text-align: center; resize: none; box-shadow: 0 8px 24px rgba(23, 21, 31, 0.25)',
+      onInput: (e) => this.setState({ inline: Object.assign({}, this.state.inline, { text: e.target.value }) }),
+      onKey: (e) => {
+        if (e.key === 'Escape') { e.preventDefault(); this.setState({ inline: null }); return; }
+        const single = ie.b.type === 'titulo' || ie.b.type === 'botao';
+        if (e.key === 'Enter' && (e.ctrlKey || e.metaKey || (single && !e.shiftKey))) { e.preventDefault(); this.commitInline(); }
+      },
+      commit: () => this.commitInline(),
+      stop: (e) => e.stopPropagation()
+    } : { text: '', style: '' };
 
     const selItem = items.find((o) => o.b.id === st.sel && st.panel === 'bloco' && free && o.b.pos);
     const handles = selItem ? {
@@ -2128,6 +2421,8 @@ class Component extends DCLogic {
         tog('cvMargins', 'Margens', 'Mostrar margens, centro e o fim da 1ª tela', 'M4 4h16v16H4zM8 4v16M16 4v16', false)
       ],
       checkTitle, checkBg, checkFg, issues,
+      hasIssues: free && issues.length > 0,
+      hasInline: !!ie, inline,
       hasInfo: belowFold > 0,
       info: belowFold === 1 ? '1 bloco fica abaixo da 1ª tela: o convidado rola para ver.' : belowFold + ' blocos ficam abaixo da 1ª tela: o convidado rola para ver.'
     };
@@ -2216,14 +2511,16 @@ class Component extends DCLogic {
         name: p.name, n: i + 1,
         count: n === 1 ? '1 bloco' : n + ' blocos',
         current: on ? 'page' : 'false',
-        bg: on ? '#F1EFF8' : '#FFFFFF',
+        bg: on ? '#F4F1FE' : '#FFFFFF',
         border: on ? '#C9C4DB' : 'transparent',
         numBg: on ? '#5B3FD6' : '#ECEAF3',
         numFg: on ? '#FFFFFF' : '#3D3A4A',
         tabFg: on ? T.accent : T.fg,
         tabLine: on ? T.accent : 'transparent',
-        pick: () => { this.dragInfo = null; this.setState({ page: p.id, view: 'pages', drag: null, sel: p.blocks.length ? p.blocks[0].id : null }); },
+        pick: () => { this.dragInfo = null; this.setState({ page: p.id, view: 'pages', drag: null, inline: null, sheet: '', sel: p.blocks.length ? p.blocks[0].id : null }); },
         id: p.id,
+        thumb: ((p.blocks.find((x) => x.type === 'titulo') || {}).text || p.name).slice(0, 28),
+        ring: on ? '2px solid #5B3FD6' : '1px solid #EEEDF3',
         canMove: st.pages.length > 1,
         isFirst: i === 0, isLast: i === st.pages.length - 1,
         upOpacity: i === 0 ? '0.35' : '1', downOpacity: i === st.pages.length - 1 ? '0.35' : '1',
@@ -2252,8 +2549,13 @@ class Component extends DCLogic {
       video: { label: 'Novo vídeo' }, mapa: { text: 'Nome do local' }, contagem: {},
       botao: { text: 'Saiba mais' }, orientacoes: { text: 'Primeira orientação\nSegunda orientação' }, rsvp: {}
     };
+    const descs = {
+      titulo: 'Texto grande, em destaque', texto: 'Parágrafo ou frase curta', foto: 'Uma imagem, com edição', video: 'Arquivo de vídeo',
+      mapa: 'Local, foto e rotas no mapa', contagem: 'Dias e horas até o evento', botao: 'Link, página ou WhatsApp',
+      orientacoes: 'Traje, estacionamento…', rsvp: 'Formulário de presença'
+    };
     const palette = Object.keys(M).map((type) => ({
-      label: M[type].label, icon: M[type].icon,
+      label: M[type].label, icon: M[type].icon, desc: descs[type] || '',
       add: () => {
         const id = 'n' + st.next;
         const nb = Object.assign({ id: id, type: type, text: '', label: '', src: 'upload', anim: 'nenhuma' }, defaults[type]);
@@ -2263,7 +2565,8 @@ class Component extends DCLogic {
           nb.pos = { x: 20, y: Math.round(bottom + 14), w: 350 };
         }
         this.setBlocks((bs) => bs.concat([nb]));
-        this.setState({ sel: id, next: st.next + 1, panel: 'bloco', view: 'pages' });
+        this.setState({ sel: id, next: st.next + 1, panel: 'bloco', view: 'pages', addOpen: false, sheet: st.narrow ? 'panel' : '' });
+        this.focusBox(id);
       }
     }));
 
@@ -2362,7 +2665,8 @@ class Component extends DCLogic {
       customIcon: customPlaying ? 'M6 6h12v12H6z' : 'M8 5v14l11-7z',
       previewError: st.previewError,
       volume: String(m.volume),
-      loop: m.loop
+      loop: m.loop,
+      summary: hasTrack ? trackName : 'Sem música'
     };
     const capa = st.pages.find((p) => p.id === 'capa') || st.pages[0];
     const coverBlock = capa && capa.blocks.find((x) => x.type === 'titulo');
@@ -2441,10 +2745,110 @@ class Component extends DCLogic {
         }
       };
     })();
+    // ---------- prontidão, publicação e layout ----------
+    const rdy = this.readiness(st);
+    const pend = rdy.total - rdy.done;
+    const allOk = rdy.items.filter((i) => i.key !== 'publicado').every((i) => i.ok);
+    const rd = {
+      label: st.published ? (allOk ? 'No ar' : 'No ar · ' + (pend === 1 ? '1 pendência' : pend + ' pendências')) : 'Pronto para publicar: ' + rdy.done + ' de ' + rdy.total,
+      aria: 'O que falta: ' + rdy.done + ' de ' + rdy.total + ' itens prontos. Ver lista',
+      bars: rdy.items.map((i) => ({ c: i.ok ? '#1E8A4C' : '#E7C68A' })),
+      bg: allOk ? '#E3F3EA' : '#FFF8EA', fg: allOk ? '#1E6B43' : '#6B3E00', ring: allOk ? '#A8D8BC' : '#F3D9A8',
+      open: () => this.setState({ pub: 'review', addOpen: false, layoutOpen: false })
+    };
+    const rv = rdy.items.filter((i) => i.key !== 'publicado').map((i) => ({
+      label: i.label, detail: i.detail, icon: i.ok ? '✓' : '!', iconColor: i.ok ? '#1E8A4C' : '#A15C00',
+      bg: i.ok ? '#F2FAF5' : '#FFF8EA', ring: i.ok ? '#CBEBD6' : '#F3D9A8',
+      hasFix: !!i.fix && !i.ok, fix: i.fix || (() => {}), fixLabel: i.fixLabel || 'Corrigir'
+    })).concat(rdy.warns.map((w) => ({
+      label: w.label, detail: w.detail, icon: '○', iconColor: '#5E5A6B', bg: '#FAF9FC', ring: '#EEEDF3',
+      hasFix: true, fix: w.fix, fixLabel: w.fixLabel
+    })));
+    const firstRsvp = st.pages.reduce((f, p) => f || p.blocks.find((x) => x.type === 'rsvp'), null);
+    const covT = (st.pages[0] && (st.pages[0].blocks.find((x) => x.type === 'titulo') || {}).text) || st.title;
+    const pub = {
+      open: !!st.pub, isReview: st.pub === 'review', isShare: st.pub === 'share',
+      step: st.pub === 'share' ? 'COMPARTILHAR' : (st.published ? 'REVISÃO' : 'PASSO 1 DE 2 · REVISÃO'),
+      title: st.pub === 'share' ? (st.justPublished ? 'Convite publicado!' : 'Compartilhar o convite') : (allOk ? 'Tudo pronto para publicar' : (rv.filter((x) => x.icon === '!').length === 1 ? 'Quase lá: 1 ponto para olhar' : 'Quase lá: ' + rv.filter((x) => x.icon === '!').length + ' pontos para olhar')),
+      items: rv,
+      publishLabel: st.published ? 'Ir para compartilhar' : (allOk ? 'Publicar' : 'Publicar mesmo assim'),
+      shareIntro: st.published ? 'Seu convite está no ar. Agora é só mandar para os convidados.' : 'Publique o convite para o link funcionar.',
+      close: () => this.setState({ pub: null, justPublished: false }),
+      onKey: (e) => { if (e.key === 'Escape') this.setState({ pub: null, justPublished: false }); },
+      publish: () => {
+        if (st.published) { this.setState({ pub: 'share' }); return; }
+        this.setState({ published: true, pub: 'share', justPublished: true });
+        setTimeout(() => this.doSave(), 0);
+      },
+      unpublish: () => this.setState({ published: false, pub: null, justPublished: false, toast: 'O convite saiu do ar: o link fica indisponível até você publicar de novo.' }),
+      invite: { id: this.inviteId, title: st.title, coverTitle: covT, kicker: st.kicker, slug: st.slug, status: st.published ? 'publicado' : 'rascunho', theme: st.theme, deadline: firstRsvp ? firstRsvp.deadline || null : null },
+      onSlug: (slug) => this.setState({ slug }),
+      guests: () => { if (!this.inviteId) return; Promise.resolve(this.dirty ? this.doSave() : null).then(() => api.navigate('Respostas/' + this.inviteId)); }
+    };
+    const narrow = !!st.narrow;
+    const sheetStyle = 'position: fixed; left: 0; right: 0; bottom: 64px; max-height: 72vh; overflow-y: auto; z-index: 40; background: #FFFFFF; border-radius: 18px 18px 0 0; box-shadow: 0 -10px 30px rgba(23, 21, 31, 0.18); padding: 14px 16px 22px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px';
+    const tool = (key, label, icon, on, run) => ({ label, icon, on: on ? 'true' : 'false', fg: on ? '#5B3FD6' : '#3D3A4A', run });
+    const lay = {
+      narrow,
+      leftStyle: narrow ? (st.sheet === 'pages' ? sheetStyle : 'display: none') : 'flex: 1 1 220px; max-width: 290px; background: #FFFFFF; border-right: 1px solid #E3E1EA; padding: 18px 14px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px',
+      rightStyle: narrow ? (st.sheet === 'panel' ? sheetStyle : 'display: none') : 'flex: 1 1 320px; max-width: 420px; background: #FFFFFF; border-left: 1px solid #E3E1EA; padding: 16px 18px 24px; box-sizing: border-box; display: flex; flex-direction: column; gap: 18px',
+      mainPad: narrow ? '10px 6px 96px' : '18px 16px 40px',
+      tools: [
+        tool('pages', 'Páginas', 'M4 4h16v16H4zM8 9h8M8 13h8', st.sheet === 'pages', () => this.setState({ sheet: st.sheet === 'pages' ? '' : 'pages', addOpen: false })),
+        tool('add', 'Adicionar', 'M12 5v14M5 12h14', st.addOpen, () => this.setState({ addOpen: !st.addOpen, sheet: '', view: 'pages' })),
+        tool('look', 'Aparência', 'M12 3a9 9 0 1 0 0 18c1 0 2-1 2-2s-1-1.5-1-2.5 1-1.5 2-1.5h2a4 4 0 0 0 4-4 9 9 0 0 0-9-8ZM7.5 11h.01M10.5 7.5h.01M15 7.5h.01', st.sheet === 'panel' && st.panel === 'aparencia', () => this.setState({ sheet: st.sheet === 'panel' && st.panel === 'aparencia' ? '' : 'panel', panel: 'aparencia', addOpen: false })),
+        tool('event', 'Evento', 'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4', st.sheet === 'panel' && st.panel === 'evento', () => this.setState({ sheet: st.sheet === 'panel' && st.panel === 'evento' ? '' : 'panel', panel: 'evento', addOpen: false }))
+      ]
+    };
+    const accItem = (key, open) => ({
+      open, attr: open ? 'true' : 'false', arrow: open ? '▴' : '▾', bg: open ? '#F7F6FB' : '#FFFFFF',
+      toggle: () => { const nxt = open ? '' : key; this.setState({ apSec: nxt, view: nxt === 'abertura' ? 'opening' : (st.view === 'opening' ? 'pages' : st.view) }); }
+    });
+    const animLabels = { envelope: 'Carta', cortina: 'Cortina', portas: 'Portas', lacre: 'Lacre de cera', presente: 'Presente', livro: 'Livro', iris: 'Íris', neblina: 'Neblina', nenhuma: 'Sem abertura' };
+    const ap = {
+      tema: accItem('tema', st.apSec === 'tema'),
+      abertura: accItem('abertura', st.apSec === 'abertura'),
+      musica: accItem('musica', st.apSec === 'musica'),
+      temaSub: T.baseName + (T.modified ? ' · personalizado' : ''),
+      aberturaSub: animLabels[st.theme.anim] || 'Animação ao abrir'
+    };
+    const dl = {
+      has: !!firstRsvp,
+      value: firstRsvp ? api.fmt.toDateInput(firstRsvp.deadline || '') : '',
+      note: firstRsvp && firstRsvp.deadline ? 'Depois desse dia o formulário fecha. O texto “Responda até…” mostra essa data sozinho.' : 'Sem prazo, as respostas ficam abertas até você desligar.',
+      onChange: (e) => {
+        const v = api.fmt.fromDateInput(e.target.value);
+        this.setState({ pages: st.pages.map((p) => Object.assign({}, p, { blocks: p.blocks.map((x) => (x.type === 'rsvp' ? Object.assign({}, x, { deadline: v }) : x)) })) });
+      }
+    };
+
     return {
       T,
       fs,
       pers,
+      rd, pub, lay, ap, dl,
+      closeSheet: () => this.setState({ sheet: '' }),
+      undo: () => this.undo(), redo: () => this.redo(),
+      cantUndo: !(this.undoStack && this.undoStack.length), cantRedo: !(this.redoStack && this.redoStack.length),
+      previewBtnLabel: narrow ? 'Ver' : 'Ver como convidado',
+      openPublish: () => this.setState({ pub: st.published ? 'share' : 'review', justPublished: false, addOpen: false, layoutOpen: false }),
+      saveColor: st.saveState === 'error' || st.saveState === 'gone' || st.saveState === 'auth' ? '#B42318' : (st.saveState === 'saved' ? '#1E6B43' : '#5E5A6B'),
+      addOpen: !!st.addOpen, addOpenAttr: st.addOpen ? 'true' : 'false',
+      toggleAdd: () => this.setState({ addOpen: !st.addOpen, layoutOpen: false }),
+      addKey: (e) => { if (e.key === 'Escape') this.setState({ addOpen: false }); },
+      addStyle: narrow ? 'position: fixed; left: 8px; right: 8px; bottom: 72px; z-index: 40; padding: 10px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E1EA; box-shadow: 0 16px 40px rgba(23,21,31,0.2); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; box-sizing: border-box; max-height: 70vh; overflow-y: auto'
+        : 'position: absolute; left: 0; top: 46px; z-index: 20; width: 460px; max-width: calc(100vw - 24px); padding: 10px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E1EA; box-shadow: 0 16px 40px rgba(23,21,31,0.2); display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; box-sizing: border-box',
+      layoutOpen: !!st.layoutOpen, layoutOpenAttr: st.layoutOpen ? 'true' : 'false',
+      toggleLayout: () => this.setState({ layoutOpen: !st.layoutOpen, addOpen: false }),
+      advOpen: !!st.advOpen, advOpenAttr: st.advOpen ? 'true' : 'false', advArrow: st.advOpen ? '▴' : '▾',
+      toggleAdv: () => this.setState({ advOpen: !st.advOpen }),
+      pageSecOpen: !!st.pageSecOpen, pageSecAttr: st.pageSecOpen ? 'true' : 'false', pageSecArrow: st.pageSecOpen ? '▴' : '▾',
+      togglePageSec: () => this.setState({ pageSecOpen: !st.pageSecOpen }),
+      dupBlock: () => this.dupBlock(),
+      isLookPanel: st.panel === 'aparencia',
+      lookSelected: st.panel === 'aparencia' ? 'true' : 'false',
+      lookTabBg: st.panel === 'aparencia' ? '#FFFFFF' : 'transparent',
+      panelLook: () => this.setState({ panel: 'aparencia', view: st.apSec === 'abertura' ? 'opening' : 'pages' }),
       cv: this.cvVals(T, cur),
       canvasInvite,
       pos,
@@ -2478,7 +2882,7 @@ class Component extends DCLogic {
         this.setPageBg(pid, { url: local, fileName: f.name, dim: bgDim, edit: {}, uploading: true, uploadPct: 0 });
         try { e.target.value = ''; } catch (err) {}
         api.upload(f, (pct) => this.patchPage(pid, (p) => (p.bg && p.bg.url === local ? Object.assign({}, p, { bg: Object.assign({}, p.bg, { uploadPct: pct }) }) : p)))
-          .then((r) => this.patchPage(pid, (p) => (p.bg && p.bg.url === local ? Object.assign({}, p, { bg: Object.assign({}, p.bg, { url: r.url, uploading: false }) }) : p)))
+          .then((r) => { this.histMute = true; this.patchPage(pid, (p) => (p.bg && p.bg.url === local ? Object.assign({}, p, { bg: Object.assign({}, p.bg, { url: r.url, uploading: false }) }) : p)); })
           .catch((err) => {
             this.patchPage(pid, (p) => (p.bg && p.bg.url === local ? Object.assign({}, p, { bg: null }) : p));
             this.setState({ toast: 'Não foi possível enviar a foto: ' + err.message });
@@ -2525,7 +2929,7 @@ class Component extends DCLogic {
         const keepFrame = cur && cur.edit && cur.edit.frame ? { frame: cur.edit.frame } : null;
         this.patchBlock(bid, { src: 'upload', fileUrl: local, fileName: f.name, label, uploading: true, uploadPct: 0, edit: keepFrame });
         api.upload(f, (pct) => this.patchBlock(bid, { uploadPct: pct }))
-          .then((r) => this.patchBlock(bid, { fileUrl: r.url, uploading: false }))
+          .then((r) => { this.histMute = true; this.patchBlock(bid, { fileUrl: r.url, uploading: false }); })
           .catch((err) => {
             this.patchBlock(bid, { fileUrl: '', fileName: '', uploading: false });
             this.setState({ toast: 'Não foi possível enviar o arquivo: ' + err.message });
@@ -2540,7 +2944,7 @@ class Component extends DCLogic {
         this.patchBlock(bid, { photoUrl: local, photoName: f.name, photoUploading: true, photoPct: 0, photoEdit: null });
         const mine = () => { const b = this.state.pages.reduce((a, p) => a || p.blocks.find((x) => x.id === bid), null); return b && b.photoUrl === local; };
         api.upload(f, (pct) => { if (mine()) this.patchBlock(bid, { photoPct: pct }); })
-          .then((r) => { if (mine()) this.patchBlock(bid, { photoUrl: r.url, photoUploading: false, photoPct: 0 }); })
+          .then((r) => { if (mine()) { this.histMute = true; this.patchBlock(bid, { photoUrl: r.url, photoUploading: false, photoPct: 0 }); } })
           .catch((err) => {
             if (mine()) this.patchBlock(bid, { photoUrl: '', photoName: '', photoUploading: false, photoPct: 0 });
             this.setState({ toast: 'Não foi possível enviar a foto: ' + err.message });
@@ -2570,7 +2974,7 @@ class Component extends DCLogic {
       isEventPanel: st.panel === 'evento',
       eventSelected: st.panel === 'evento' ? 'true' : 'false',
       eventTabBg: st.panel === 'evento' ? '#FFFFFF' : 'transparent',
-      panelEvent: () => this.setState({ panel: 'evento' }),
+      panelEvent: () => this.setState({ panel: 'evento', view: st.view === 'opening' ? 'pages' : st.view }),
       // (data do evento: ver eventVals)
       pageOptions: st.pages.map((p) => ({ id: p.id, name: p.name })),
       f: {
@@ -2604,9 +3008,9 @@ class Component extends DCLogic {
       paletteHint: curPal ? 'Paleta atual: ' + curPal.label + ' (' + curPal.group + ')' : 'Cores personalizadas · escolha uma paleta ou ajuste abaixo',
       title: st.title,
       onTitle: (e) => this.setState({ title: e.target.value }),
-      statusLine: (st.published ? 'Publicado' : 'Rascunho') + ' · ' + ({ idle: 'tema ' + T.baseName, pending: 'alterações não salvas…', saving: 'salvando…', saved: 'todas as alterações salvas', error: 'erro ao salvar, tentando de novo…', gone: 'este convite foi excluído; as alterações não serão salvas', auth: 'sua sessão expirou; entre de novo para salvar' }[st.saveState] || '') + ' · música: ' + musicLabel,
+      statusLine: (st.published ? 'No ar' : 'Rascunho') + ' · ' + ({ idle: 'tema ' + T.baseName, pending: 'alterações não salvas…', saving: 'salvando…', saved: 'todas as alterações salvas', error: 'erro ao salvar, tentando de novo…', gone: 'este convite foi excluído; as alterações não serão salvas', auth: 'sua sessão expirou; entre de novo para salvar' }[st.saveState] || ''),
       published: st.published,
-      publishLabel: st.published ? 'Despublicar' : 'Publicar',
+      publishLabel: st.published ? 'Compartilhar' : 'Publicar',
       publishBg: st.published ? '#ECEAF3' : '#5B3FD6',
       publishFg: st.published ? '#17151F' : '#FFFFFF',
       togglePublish: () => this.setState({ published: !st.published }),
@@ -2636,15 +3040,15 @@ class Component extends DCLogic {
       pagesTabBg: isPages ? '#FFFFFF' : 'transparent', openTabBg: isPages ? 'transparent' : '#FFFFFF',
       viewPages: () => this.setState({ view: 'pages' }),
       viewOpening: () => { this.previewStop(); this.setState({ view: 'opening', previewing: '' }); },
-      previewCaption: isPages ? 'Página ' + (idx + 1) + ' de ' + st.pages.length + ' · ' + cur.name + ' · arraste os blocos para posicionar' : 'Convite fechado · toque no celular para ver a abertura',
+      previewCaption: isPages ? 'Página ' + (idx + 1) + ' de ' + st.pages.length + ' · ' + cur.name + ' · arraste para mover, duplo clique para editar o texto' : 'Convite fechado · toque no celular para ver a abertura',
       noLink: false,
       isBlockPanel, isThemePanel, isMusicPanel,
       blockSelected: isBlockPanel ? 'true' : 'false', themeSelected: isThemePanel ? 'true' : 'false', musicSelected: isMusicPanel ? 'true' : 'false',
       blockTabBg: tabBg(isBlockPanel), themeTabBg: tabBg(isThemePanel), musicTabBg: tabBg(isMusicPanel),
-      panelBlock: () => this.setState({ panel: 'bloco' }),
-      panelTheme: () => this.setState({ panel: 'tema' }),
-      panelMusic: () => this.setState({ panel: 'musica' }),
-      panelOpening: () => { this.previewStop(); this.setState({ panel: 'abertura', view: 'opening', previewing: '' }); },
+      panelBlock: () => this.setState({ panel: 'bloco', view: 'pages' }),
+      panelTheme: () => this.openLook('tema'),
+      panelMusic: () => this.openLook('musica'),
+      panelOpening: () => this.openLook('abertura'),
       isOpeningPanel: st.panel === 'abertura',
       openingSelected: st.panel === 'abertura' ? 'true' : 'false',
       openingTabBg: st.panel === 'abertura' ? '#FFFFFF' : 'transparent',

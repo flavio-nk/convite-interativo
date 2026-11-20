@@ -3,6 +3,7 @@ import { currentUser, requireUser, canManage, ownerOf, isAdminUser, MASTER_ID } 
 import { hget, hset, hdel, hgetall, del } from './_lib/store.js';
 import { maxPeople } from './guests.js';
 import { validId, rateLimit, clientIp } from './_lib/guard.js';
+import { statsFor, computeStats, dropStats } from './_lib/stats.js';
 
 const MAX_INVITES_PER_USER = 300;
 const UNDO_DAYS = 7;
@@ -22,7 +23,7 @@ function clean(input, existing) {
   return out;
 }
 
-function summarize(inv, owners) {
+function summarize(inv, owners, stats) {
   return {
     id: inv.id,
     title: inv.title,
@@ -36,15 +37,63 @@ function summarize(inv, owners) {
     ownerId: ownerOf(inv),
     ownerName: owners ? owners[ownerOf(inv)] || '' : '',
     updatedAt: inv.updatedAt,
-    createdAt: inv.createdAt
+    createdAt: inv.createdAt,
+    slug: inv.slug || '',
+    place: placeOf(inv),
+    ready: readiness(inv),
+    stats: stats || null
   };
+}
+
+// Textos de exemplo que o convite traz ao nascer e que ainda não foram trocados
+const PLACEHOLDER = [/\[[^\]]*\]/, /\{prazo\}/i, /^NOME & NOME$/i, /DD \. MM \. AAAA/, /^Escreva aqui/, /^Título do evento$/, /^Nome do local$/, /^Data e horário do evento$/, /^Outras orientações$/m];
+export function placeholderIn(text, hasDeadline) {
+  let t = String(text || '');
+  if (hasDeadline) t = t.replace(/\[data limite\]|\{prazo\}/gi, '');
+  return PLACEHOLDER.some((re) => re.test(t));
+}
+
+function placeOf(inv) {
+  for (const p of inv.pages || []) for (const b of (p && p.blocks) || []) {
+    if (b && b.type === 'mapa' && b.text && !placeholderIn(b.text)) return String(b.text).slice(0, 80);
+  }
+  return '';
+}
+
+// O que falta para o convite ficar pronto (mesma regra do editor)
+function readiness(inv) {
+  const blocks = [];
+  for (const p of inv.pages || []) for (const b of (p && p.blocks) || []) if (b) blocks.push(b);
+  const rsvp = blocks.find((b) => b.type === 'rsvp');
+  const maps = blocks.filter((b) => b.type === 'mapa');
+  const steps = [
+    { key: 'textos', label: 'Textos do convite', ok: !blocks.some((b) => placeholderIn(b.text, rsvp && rsvp.deadline) || placeholderIn(b.address)) },
+    { key: 'data', label: 'Data e horário', ok: !!inv.eventDate }
+  ];
+  if (maps.length) steps.push({ key: 'local', label: 'Local do evento', ok: maps.every((b) => String(b.address || '').trim()) });
+  if (rsvp) steps.push({ key: 'prazo', label: 'Prazo para responder', ok: !!rsvp.deadline });
+  steps.push({ key: 'publicado', label: 'Publicar e compartilhar', ok: inv.status === 'publicado' });
+  return { done: steps.filter((x) => x.ok).length, total: steps.length, steps, deadline: rsvp && rsvp.deadline ? rsvp.deadline : null };
+}
+
+const SLUG = /^[a-z0-9](?:[a-z0-9-]{1,46}[a-z0-9])$/;
+export function slugify(s) {
+  return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+    .replace(/&/g, ' e ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48).replace(/-+$/g, '');
+}
+// convite pelo id ou pelo link curto
+async function findInvite(idOrSlug) {
+  const inv = await hget(KEY, idOrSlug);
+  if (inv) return inv;
+  const real = await hget('slugs', String(idOrSlug).toLowerCase());
+  return real ? hget(KEY, real) : null;
 }
 
 export default handler(async (req, res) => {
   const id = validId(query(req).get('id'), 'Convite');
 
   if (req.method === 'GET' && id) {
-    const inv = await hget(KEY, id);
+    const inv = await findInvite(id);
     // rascunhos só abrem para o dono do convite ou um administrador
     const manager = inv ? canManage(await currentUser(req), inv) : false;
     if (!inv || (!manager && inv.status !== 'publicado')) throw httpError(404, 'Convite não encontrado ou ainda não publicado.');
@@ -53,11 +102,11 @@ export default handler(async (req, res) => {
     // quem não gerencia o convite não precisa saber quem é o dono
     const pub = manager ? inv : Object.assign({}, inv, { ownerId: undefined });
     if (g) {
-      const guest = await hget('guests:' + id, g);
+      const guest = await hget('guests:' + inv.id, g);
       // tentativas de adivinhar códigos de convites individuais: limite por IP
       if (!guest) await rateLimit('gcode:' + clientIp(req), 40, 10 * 60, 'Muitos links inválidos.');
       if (!guest) throw httpError(404, 'Este convite individual não existe mais. Peça um novo link a quem enviou o convite.');
-      const rsvp = await hget('rsvps:' + id, 'g-' + g);
+      const rsvp = await hget('rsvps:' + inv.id, 'g-' + g);
       return send(res, 200, Object.assign({}, pub, {
         guest: { id: guest.id, name: guest.name, people: guest.people || [], companions: guest.companions || 0, max: maxPeople(guest), rsvp: rsvp || null }
       }));
@@ -77,8 +126,9 @@ export default handler(async (req, res) => {
       owners = { [MASTER_ID]: 'Administrador principal' };
       for (const u of Object.values(await hgetall('users'))) owners[u.id] = u.name;
     }
-    // a lista não lê as respostas de cada convite (os cards não mostram contagem): 1 leitura em vez de 1 + N
-    const items = mine.map((inv) => summarize(inv, owners));
+    // as contagens de respostas vêm do hash "stats" (refeito a cada resposta): 2 leituras em vez de 1 + N
+    const stats = await statsFor(mine.map((inv) => inv.id));
+    const items = mine.map((inv) => summarize(inv, owners, stats[inv.id]));
     items.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
     return send(res, 200, items);
   }
@@ -89,6 +139,7 @@ export default handler(async (req, res) => {
       const count = Object.values(await hgetall(KEY)).filter((x) => ownerOf(x) === user.id).length;
       if (count >= MAX_INVITES_PER_USER) throw httpError(403, 'Limite de ' + MAX_INVITES_PER_USER + ' convites por usuário atingido. Exclua convites antigos para criar novos.');
     }
+    delete body.slug;
     const inv = clean(body, null);
     inv.id = newId();
     inv.ownerId = user.id;
@@ -96,9 +147,28 @@ export default handler(async (req, res) => {
     return send(res, 201, inv);
   }
 
+  if (req.method === 'PUT' && query(req).get('action') === 'slug') {
+    // link curto: /c/<nome-do-link>
+    if (!id) throw httpError(400, 'Informe o convite.');
+    const existing = await hget(KEY, id);
+    if (!existing || !canManage(user, existing)) throw httpError(404, 'Convite não encontrado.');
+    const body = await readBody(req);
+    const slug = slugify(body.slug);
+    if (!SLUG.test(slug)) throw httpError(400, 'Use de 3 a 48 letras, números ou hífens.');
+    if (/^(api|c|assets|admin|convite|convites)$/.test(slug)) throw httpError(400, 'Esse nome é reservado. Escolha outro.');
+    const owner = await hget('slugs', slug);
+    if (owner && owner !== id) throw httpError(409, 'Esse link já está em uso. Tente outro, por exemplo com o ano: ' + slug + '-' + new Date().getFullYear() + '.');
+    if (existing.slug && existing.slug !== slug) await hdel('slugs', existing.slug);
+    await hset('slugs', slug, id);
+    const inv = Object.assign({}, existing, { slug, updatedAt: new Date().toISOString() });
+    await hset(KEY, id, inv);
+    return send(res, 200, { slug });
+  }
+
   if (req.method === 'PUT') {
     if (!id) throw httpError(400, 'Informe o convite.');
     const body = await readBody(req);
+    delete body.slug;
     const restoring = '__rsvps' in body || '__guests' in body;
     const restore = body.__rsvps;
     const restoreGuests = body.__guests;
@@ -126,6 +196,7 @@ export default handler(async (req, res) => {
     if (restore && typeof restore === 'object') {
       for (const rid of Object.keys(restore).slice(0, 5000)) await hset('rsvps:' + id, rid, restore[rid]);
     }
+    if (tomb) await computeStats(id);
     return send(res, 200, inv);
   }
 
@@ -139,6 +210,8 @@ export default handler(async (req, res) => {
     await del('rsvps:' + id);
     await del('guests:' + id);
     await hset('deleted', id, { ownerId: ownerOf(existing), at: new Date().toISOString() });
+    if (existing.slug && (await hget('slugs', existing.slug)) === id) await hdel('slugs', existing.slug);
+    await dropStats(id);
     // devolve o que foi apagado para permitir "Desfazer"
     return send(res, 200, { deleted: id, invite: existing, rsvps, guests });
   }

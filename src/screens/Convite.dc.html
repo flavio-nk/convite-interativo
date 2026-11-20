@@ -47,7 +47,7 @@ body{margin:0}
        tela, e o navegador cancelaria a animação de abertura. -->
   <div key="camada-paginas">
     <sc-if value="{{isPages}}" hint-placeholder-val="{{ false }}">
-      <div key="paginas" inert="{{L.inert}}" style="{{L.pages}}">
+      <div key="paginas" inert="{{L.inert}}" style="{{L.pages}}" onTouchStart="{{swipe.start}}" onTouchEnd="{{swipe.end}}">
         <sc-if value="{{pageBg.has}}" hint-placeholder-val="{{ false }}">
           <div key="{{pageBg.key}}" class="pg-in" aria-hidden="true" data-testid="page-bg" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none">
             <img src="{{pageBg.url}}" alt="" style="{{pageBg.imgStyle}}">
@@ -169,6 +169,9 @@ body{margin:0}
                         <sc-if value="{{b.r.canCalendar}}" hint-placeholder-val="{{ false }}">
                           <button onClick="{{addToCalendar}}" style="min-height: 44px; padding: 0 20px; border-radius: {{T.radius}}; border: 0; background: {{T.accent}}; color: {{T.btnFg}}; font-weight: 700; font-size: calc(14px * var(--k, 1)); font-family: inherit; cursor: pointer">Adicionar à agenda</button>
                         </sc-if>
+                        <sc-if value="{{hasRoute}}" hint-placeholder-val="{{ false }}">
+                          <a href="{{routeHref}}" target="_blank" rel="noopener" style="min-height: 44px; padding: 0 20px; border-radius: {{T.radius}}; border: 1px solid {{T.line}}; color: {{T.fg}}; font-weight: 700; font-size: calc(14px * var(--k, 1)); display: inline-flex; align-items: center; gap: 8px; text-decoration: none"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>Como chegar</a>
+                        </sc-if>
                         <button onClick="{{b.r.edit}}" style="min-height: 40px; padding: 0 12px; border: 0; background: transparent; color: {{T.fg}}; font-weight: 600; font-size: calc(14px * var(--k, 1)); font-family: inherit; cursor: pointer; text-decoration: underline">Alterar minha resposta</button>
                       </div>
                     </sc-if>
@@ -269,10 +272,18 @@ body{margin:0}
           </div>
         </main>
 
+        <sc-if value="{{showSwipeHint}}" hint-placeholder-val="{{ false }}">
+          <div aria-hidden="true" data-testid="swipe-hint" class="pg-in" style="position: absolute; left: 50%; bottom: 72px; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 10px; padding: 7px 14px; border-radius: 999px; background: rgba(0, 0, 0, 0.55); color: #FFFFFF; font-size: 12px; font-weight: 700; white-space: nowrap; pointer-events: none">
+            <span style="display: flex; gap: 4px"><sc-for list="{{dots}}" as="d" hint-placeholder-count="4"><span style="width: {{d.w}}; height: 6px; border-radius: 3px; background: {{d.c}}"></span></sc-for></span>
+            Deslize para ver mais →
+          </div>
+        </sc-if>
         <sc-if value="{{hasNav}}" hint-placeholder-val="{{ true }}">
           <nav aria-label="Páginas do convite" style="position: relative; flex: none; display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}">
             <sc-for list="{{nav}}" as="n" hint-placeholder-count="4">
-              <button onClick="{{n.go}}" aria-current="{{n.current}}" style="flex: 1 1 0; min-width: 0; min-height: 60px; border: 0; border-top: 2px solid {{n.line}}; background: transparent; color: {{n.color}}; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px">{{n.name}}</button>
+              <button onClick="{{n.go}}" aria-current="{{n.current}}" data-rsvp-tab="{{n.rsvpTab}}" style="flex: 1 1 0; min-width: 0; min-height: 60px; border: 0; border-top: 2px solid {{n.line}}; background: transparent; color: {{n.color}}; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; overflow: hidden; padding: 0 4px; display: flex; align-items: center; justify-content: center">
+                <span style="display: inline-flex; align-items: center; justify-content: center; max-width: 100%; min-height: 30px; padding: {{n.pad}}; border-radius: {{T.radius}}; background: {{n.pill}}; color: {{n.pillFg}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{n.label}}</span>
+              </button>
             </sc-for>
           </nav>
         </sc-if>
@@ -327,7 +338,11 @@ class Component extends DCLogic {
       .catch((e) => this.setState({ phase: 'error', error: e.status === 404 ? 'Este convite não existe ou ainda não foi publicado.' : e.message }));
   }
 
-  componentDidUpdate(prev) {
+  componentDidUpdate(prev, prevState) {
+    // dica "deslize para ver mais": some sozinha depois de alguns segundos
+    if (this.state.phase === 'pages' && prevState && prevState.phase !== 'pages' && !this.hintT) {
+      this.hintT = setTimeout(() => { if (!this.gone) this.setState({ hintGone: true }); }, 5000);
+    }
     if (this.props.invite && prev.invite !== this.props.invite) {
       const keepPhase = this.state.phase;
       this.setState({ inv: this.props.invite, phase: keepPhase === 'loading' ? this.firstPhase(this.props.invite) : keepPhase });
@@ -335,6 +350,8 @@ class Component extends DCLogic {
   }
 
   componentWillUnmount() {
+    this.gone = true;
+    clearTimeout(this.hintT);
     clearInterval(this.timer);
     this.musicStop();
   }
@@ -468,8 +485,20 @@ class Component extends DCLogic {
   }
 
   // {nome} nos textos vira o nome do convite individual (no editor fica como está)
+  deadlineOf() {
+    const inv = this.state.inv || this.props.invite;
+    if (!inv) return null;
+    for (const p of inv.pages || []) for (const b of (p && p.blocks) || []) if (b && b.type === 'rsvp' && b.deadline) return b.deadline;
+    return null;
+  }
+
   nm(text) {
-    const t = String(text == null ? '' : text);
+    let t = String(text == null ? '' : text);
+    // "Responda até {prazo}": o prazo do formulário de presença
+    if (/\{prazo\}|\[data limite\]/i.test(t)) {
+      const dl = this.deadlineOf();
+      if (dl) t = t.replace(/\{prazo\}|\[data limite\]/gi, api.fmt.day(dl));
+    }
     if (this.props.edit || t.indexOf('{') === -1) return t;
     const g = this.guestCtx();
     return t.replace(/\{nome\}/gi, g ? g.name : 'você');
@@ -545,7 +574,7 @@ class Component extends DCLogic {
     const L = this.layout(T, edit, free, cur, pages.length > 1);
     const base = { T, L, isLoading: st.phase === 'loading', isError: st.phase === 'error', error: st.error, isClosed: false, isPages: false, noMusic: { kind: 'nenhuma' } };
     if (!inv) return base;
-    const goPage = (id) => this.setState({ page: id });
+    const goPage = (id) => this.setState({ page: id, hintGone: true });
     const preview = !!this.props.preview;
     const lastIndex = {};
 
@@ -733,10 +762,26 @@ class Component extends DCLogic {
       return o;
     });
 
+    // página com o formulário de presença: a aba vira um botão "Confirmar" até a pessoa responder
+    const rsvpPage = pages.find((p) => (p.blocks || []).some((b) => b.type === 'rsvp'));
+    const rsvpBlk = rsvpPage ? rsvpPage.blocks.find((b) => b.type === 'rsvp') : null;
+    const rsvpForm = rsvpBlk ? this.form(rsvpBlk.id) : null;
+    const rsvpOpen = !!rsvpBlk && !(rsvpForm && rsvpForm.done) && !(rsvpBlk.deadline && api.fmt.isPast(rsvpBlk.deadline));
     const nav = pages.map((p) => {
       const on = p.id === cur.id;
-      return { name: p.name, current: on ? 'page' : 'false', color: on ? T.accent : T.fg, line: on ? T.accent : 'transparent', go: () => goPage(p.id) };
+      const cta = rsvpOpen && rsvpPage && p.id === rsvpPage.id && !on;
+      const doneTab = rsvpPage && p.id === rsvpPage.id && rsvpForm && rsvpForm.done;
+      return {
+        name: p.name, label: cta ? (pages.length > 3 ? 'Confirmar' : 'Confirmar presença') : (doneTab ? '✓ ' + p.name : p.name),
+        current: on ? 'page' : 'false', color: on ? T.accent : T.fg, line: on ? T.accent : 'transparent',
+        pill: cta ? T.accent : 'transparent', pillFg: cta ? T.btnFg : 'inherit', pad: cta ? '0 10px' : '0',
+        rsvpTab: cta ? '1' : '0',
+        go: () => goPage(p.id)
+      };
     });
+    this.pageIds = pages.map((p) => p.id);
+    this.curPageId = cur.id;
+    const mapBlk = allPages.reduce((f, p) => f || (p.blocks || []).find((b) => b.type === 'mapa' && String(b.address || '').trim()), null);
     const cfg = this.musicCfg();
     return Object.assign(base, {
       isClosed: !edit && (st.phase === 'closed' || st.phase === 'opening'),
@@ -766,6 +811,26 @@ class Component extends DCLogic {
         };
       })(),
       blocks, nav, hasNav,
+      hasRoute: !!mapBlk,
+      routeHref: mapBlk ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((mapBlk.text ? mapBlk.text + ', ' : '') + mapBlk.address) : '#',
+      showSwipeHint: hasNav && !edit && st.phase === 'pages' && !st.swiped && !st.hintGone && cur.id === pages[0].id,
+      dots: pages.map((p) => ({ w: p.id === cur.id ? '16px' : '6px', c: p.id === cur.id ? '#FFFFFF' : 'rgba(255,255,255,0.5)' })),
+      swipe: {
+        start: (e) => { const t = e.touches && e.touches[0]; this.touch = t ? { x: t.clientX, y: t.clientY, at: Date.now() } : null; },
+        end: (e) => {
+          const s0 = this.touch; this.touch = null;
+          const t = e.changedTouches && e.changedTouches[0];
+          if (!s0 || !t || edit || st.phase !== 'pages') return;
+          const dx = t.clientX - s0.x, dy = t.clientY - s0.y;
+          // deslize na horizontal (não confundir com rolar a página)
+          if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - s0.at > 900) return;
+          const ids = this.pageIds || [];
+          const i = ids.indexOf(this.curPageId);
+          const j = dx < 0 ? i + 1 : i - 1;
+          if (i < 0 || j < 0 || j >= ids.length) return;
+          this.setState({ page: ids[j], swiped: true });
+        }
+      },
       pageBg: (() => {
         const bg = cur.bg && cur.bg.url ? cur.bg : null;
         const dim = bg && typeof bg.dim === 'number' ? bg.dim : 35;

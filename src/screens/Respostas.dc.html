@@ -46,79 +46,86 @@ button:disabled{opacity:.5;cursor:not-allowed}
 <div style="min-height: 100vh; background: #F5F4F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
 
   <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA">
-    <div style="max-width: 1100px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
-      <div style="display: flex; align-items: center; gap: 10px">
-        <div style="width: 32px; height: 32px; border-radius: 9px; background: #5B3FD6; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
-        </div>
-        <span style="font-weight: 700; font-size: 17px; letter-spacing: -0.01em">Convite Interativo</span>
-      </div>
-      <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto">
-        <a href="Main.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Convites</a>
-        <a href="Temas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Temas</a>
-        <a href="Respostas.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #EFECFB; color: #3B26A8; font-weight: 600; text-decoration: none">Convidados</a>
-        <sc-if value="{{hdr.isAdmin}}" hint-placeholder-val="{{ false }}">
-          <a href="Usuarios.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Usuários</a>
-        </sc-if>
+    <div style="max-width: 1100px; margin: 0 auto; padding: 12px 24px 0; display: flex; flex-direction: column; gap: 8px">
+      <nav aria-label="Caminho" style="font-size: 13px; color: #5E5A6B; display: flex; align-items: center; gap: 6px; min-width: 0">
+        <a href="Main.dc.html" style="color: #5E5A6B; font-weight: 600">Meus convites</a>
+        <span aria-hidden="true">›</span>
+        <span style="color: #17151F; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{invTitle}}</span>
       </nav>
-      <div style="display: flex; align-items: center; gap: 10px">
-        <span style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; font-size: 13px"><strong style="font-size: 14px">{{hdr.name}}</strong><span style="color: #5E5A6B">{{hdr.role}}</span></span>
-        <button onClick="{{hdr.logout}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Sair</button>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px">
+        <h1 style="margin: 0; font-size: 24px; letter-spacing: -0.02em; flex: 1 1 260px; min-width: 0; overflow-wrap: anywhere">{{invTitle}}</h1>
+        <span style="padding: 4px 12px; border-radius: 999px; background: {{statusBg}}; color: {{statusFg}}; font-size: 13px; font-weight: 700">{{statusLabel}}</span>
+        <a href="{{guestHref}}" target="_blank" rel="noopener" class="btn">Ver convite</a>
+        <button class="btn" onClick="{{exportCsv}}">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"></path></svg>
+          Baixar planilha
+        </button>
+      </div>
+      <div role="tablist" aria-label="Seções do convite" style="display: flex; gap: 4px; margin-bottom: -1px; overflow-x: auto">
+        <a href="{{editHref}}" role="tab" aria-selected="false" style="padding: 12px 14px; color: #3D3A4A; font-weight: 600; font-size: 15px; text-decoration: none; border-bottom: 3px solid transparent; white-space: nowrap">Editar</a>
+        <button role="tab" onClick="{{showList}}" aria-selected="{{listSel}}" style="padding: 12px 14px; border: 0; background: transparent; color: {{listTabFg}}; font-weight: 700; font-size: 15px; border-bottom: 3px solid {{listTabLine}}; cursor: pointer; white-space: nowrap">Convidados</button>
+        <button role="tab" onClick="{{showShare}}" aria-selected="{{shareSel}}" style="padding: 12px 14px; border: 0; background: transparent; color: {{shareTabFg}}; font-weight: 700; font-size: 15px; border-bottom: 3px solid {{shareTabLine}}; cursor: pointer; white-space: nowrap">Compartilhar</button>
       </div>
     </div>
   </header>
 
-  <main style="max-width: 1100px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 22px">
-    <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
-      <div style="display: flex; flex-direction: column; gap: 6px; min-width: 0">
-        <h1 style="margin: 0; font-size: 26px; letter-spacing: -0.02em">Convidados</h1>
-        <p style="margin: 0; color: #5E5A6B; font-size: 14px; max-width: 640px">Acompanhe quem vai ao evento, crie convites individuais e registre você mesmo as respostas que chegarem por outros meios.</p>
-      </div>
-      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; gap: 8px">
-        <div>
-          <label class="lbl" for="inv-pick">Convite</label>
-          <select class="fld" id="inv-pick" value="{{currentId}}" onChange="{{onPick}}" style="min-width: 240px; font-weight: 600">
-            <sc-for list="{{inviteOptions}}" as="o" hint-placeholder-count="3">
-              <option value="{{o.id}}">{{o.title}}</option>
-            </sc-for>
-          </select>
-        </div>
-        <a href="{{editHref}}" class="btn">Editar convite</a>
-        <a href="{{guestHref}}" target="_blank" rel="noopener" class="btn">Abrir convite</a>
-        <button class="btn pri" onClick="{{exportCsv}}">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v12M7 11l5 5 5-5M4 20h16"></path></svg>
-          Exportar planilha
-        </button>
-      </div>
-    </div>
-
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px">
-      <sc-for list="{{stats}}" as="s" hint-placeholder-count="4">
-        <div style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 14px; padding: 16px 18px">
-          <div style="font-size: 13px; color: #5E5A6B; font-weight: 600">{{s.label}}</div>
-          <div style="font-size: 30px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; color: {{s.color}}">{{s.value}}</div>
-          <div style="font-size: 12px; color: #5E5A6B">{{s.note}}</div>
-        </div>
-      </sc-for>
-    </div>
-
-    <div style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 14px; padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px">
-      <span style="font-weight: 600">{{linkTitle}}</span>
-      <span style="flex: 1 1 240px; min-width: 0; padding: 10px 12px; border-radius: 10px; background: #F5F4F8; font-family: ui-monospace, monospace; font-size: 14px; color: #3D3A4A; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{guestLink}}</span>
-      <div style="display: flex; flex-wrap: wrap; gap: 8px">
-        <button class="btn" onClick="{{copyLink}}">Copiar link</button>
-        <button class="btn" onClick="{{shareWhatsApp}}">Enviar por WhatsApp</button>
-      </div>
-      <span style="flex-basis: 100%; font-size: 13px; color: #5E5A6B">{{linkNote}}</span>
-    </div>
-
-    <sc-if value="{{showEnable}}" hint-placeholder-val="{{ false }}">
-      <div style="padding: 14px 18px; border-radius: 14px; background: #EFECFB; color: #2F1F8F; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px">
-        <span style="flex: 1 1 320px; font-size: 14px">{{enableText}}</span>
-        <button class="btn pri" onClick="{{enablePersonal}}">Ativar convites individuais</button>
-      </div>
+  <main style="max-width: 1100px; margin: 0 auto; padding: 24px 24px 64px; display: flex; flex-direction: column; gap: 20px">
+    <sc-if value="{{isShare}}" hint-placeholder-val="{{ false }}">
+      <section aria-label="Compartilhar" style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 16px; padding: 22px; max-width: 640px">
+        <h2 style="margin: 0 0 14px; font-size: 18px">Enviar o convite</h2>
+        <sc-if value="{{hasInv}}" hint-placeholder-val="{{ true }}">
+          <dc-import name="Compartilhar" invite="{{shareInvite}}" on-slug-change="{{onSlug}}" hint-size="100%,360px"></dc-import>
+        </sc-if>
+      </section>
     </sc-if>
 
+    <sc-if value="{{isList}}" hint-placeholder-val="{{ true }}">
+    <section aria-label="Resumo das respostas" style="display: flex; flex-wrap: wrap; gap: 18px; padding: 20px 22px; border-radius: 16px; background: #FFFFFF; border: 1px solid #E3E1EA">
+      <div style="flex: 2 1 440px; display: flex; flex-direction: column; gap: 12px; min-width: 0">
+        <div style="display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px">
+          <span data-testid="sum-people" style="font-size: 40px; font-weight: 800; line-height: 1; color: #1E6B43">{{sum.people}}</span>
+          <span style="font-size: 16px; font-weight: 600">{{sum.peopleLabel}}</span>
+          <span style="font-size: 14px; color: #5E5A6B">{{sum.peopleNote}}</span>
+        </div>
+        <div role="img" aria-label="{{sum.barAria}}" style="display: flex; height: 14px; border-radius: 999px; overflow: hidden; background: #ECEAF3">
+          <span style="width: {{sum.yesPct}}; background: #1E8A4C"></span><span style="width: {{sum.noPct}}; background: #C2410C"></span>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 14px">
+          <span><span aria-hidden="true" style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #1E8A4C; margin-right: 6px"></span><strong>{{sum.yes}}</strong> vão</span>
+          <span><span aria-hidden="true" style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #C2410C; margin-right: 6px"></span><strong>{{sum.no}}</strong> não vão</span>
+          <sc-if value="{{sum.hasPending}}" hint-placeholder-val="{{ true }}">
+            <span><span aria-hidden="true" style="display: inline-block; width: 10px; height: 10px; border-radius: 3px; background: #ECEAF3; border: 1px solid #C9C4DB; margin-right: 6px; box-sizing: border-box"></span><strong>{{sum.pending}}</strong> sem resposta</span>
+          </sc-if>
+          <span style="color: #5E5A6B">{{sum.total}}</span>
+        </div>
+      </div>
+      <div style="flex: 1 1 250px; display: flex; flex-direction: column; justify-content: center; gap: 10px; padding: 14px 16px; border-radius: 12px; background: {{dl.bg}}; border: 1px solid {{dl.ring}}">
+        <span style="font-size: 14px"><strong>{{dl.title}}</strong><br><span style="color: {{dl.fg}}">{{dl.note}}</span></span>
+        <sc-if value="{{dl.canRemind}}" hint-placeholder-val="{{ false }}">
+          <button class="btn" onClick="{{dl.remind}}" style="align-self: flex-start">Copiar lembrete para quem não respondeu</button>
+        </sc-if>
+        <sc-if value="{{dl.canSet}}" hint-placeholder-val="{{ false }}">
+          <a href="{{editHref}}" style="font-size: 14px; font-weight: 700">Definir prazo no editor</a>
+        </sc-if>
+      </div>
+    </section>
+
+    <section aria-label="Enviar o convite" style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 16px; padding: 14px 18px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px">
+      <span style="font-weight: 700">{{linkTitle}}</span>
+      <span data-testid="link-box" style="flex: 1 1 220px; min-width: 0; min-height: 40px; display: flex; align-items: center; padding: 0 12px; border-radius: 10px; background: #F5F4F8; font-size: 15px; font-weight: 600; color: #17151F; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{shortLink}}</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button class="btn" onClick="{{copyLink}}">Copiar link</button>
+        <button class="btn" onClick="{{shareWhatsApp}}" style="background: #1E7A45; border-color: #1E7A45; color: #FFFFFF">WhatsApp</button>
+        <button class="btn" onClick="{{showShare}}">QR code e mais</button>
+      </div>
+      <span style="flex-basis: 100%; font-size: 13px; color: #5E5A6B">{{linkNote}}</span>
+      <div style="flex-basis: 100%; display: flex; align-items: center; gap: 12px; padding-top: 12px; border-top: 1px solid #EEECF3">
+        <button role="switch" data-testid="personal-switch" onClick="{{togglePersonal}}" aria-checked="{{personalAttr}}" aria-label="Convites com o nome de cada convidado" style="position: relative; width: 46px; height: 26px; flex: none; border-radius: 999px; border: 0; background: {{switchBg}}; cursor: pointer; padding: 0">
+          <span aria-hidden="true" style="position: absolute; top: 3px; left: {{switchKnob}}; width: 20px; height: 20px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 1px 3px rgba(0,0,0,0.25); transition: left .15s"></span>
+        </button>
+        <span style="font-size: 14px"><strong>Convites com o nome de cada convidado</strong> <span style="color: #5E5A6B">· {{personalNote}}</span></span>
+      </div>
+    </section>
 
     <section aria-labelledby="list-title" style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 14px; overflow: hidden">
       <div style="padding: 16px 20px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid #EEECF3">
@@ -320,6 +327,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
       </sc-if>
       <div style="padding: 14px 20px; font-size: 13px; color: #5E5A6B">{{footer}}</div>
     </section>
+    </sc-if>
   </main>
 
   <sc-if value="{{addModal.open}}" hint-placeholder-val="{{ false }}">
@@ -458,7 +466,7 @@ class Component extends DCLogic {
 
   link(g) {
     const inv = this.state.inv;
-    return inv ? api.guestLink(inv.id, inv.theme, g.id) : '';
+    return inv ? api.guestLink(inv.id, inv.theme, g.id, inv.slug) : '';
   }
 
   copy(text, okMsg) {
@@ -772,16 +780,72 @@ class Component extends DCLogic {
         })
         .catch((err) => this.setState({ busy: false, formError: err.message }));
     };
-    const link = inv ? api.guestLink(inv.id, inv.theme) : '';
+    const link = inv ? api.guestLink(inv.id, inv.theme, null, inv.slug) : '';
+    // ---------- resumo, prazo e espaço do convite ----------
+    let rsvpB = null;
+    if (inv) for (const pg of inv.pages || []) for (const b of (pg && pg.blocks) || []) if (!rsvpB && b && b.type === 'rsvp') rsvpB = b;
+    const deadline = rsvpB && rsvpB.deadline ? rsvpB.deadline : null;
+    const yesN = items.filter((it) => it.r && it.r.go).length;
+    const noN = items.filter((it) => it.r && !it.r.go).length;
+    const totalN = items.length;
+    const peopleN = sum.g + sum.c;
+    const pct = (n) => (totalN ? Math.round((n / totalN) * 1000) / 10 : 0) + '%';
+    const sumV = {
+      people: String(peopleN), peopleLabel: peopleN === 1 ? 'pessoa confirmada' : 'pessoas confirmadas',
+      peopleNote: plural(sum.g, 'convidado', 'convidados') + ' + ' + plural(sum.c, 'acompanhante', 'acompanhantes') + (sum.n ? ' · ' + plural(sum.n, 'pessoa não vai', 'pessoas não vão') : ''),
+      yes: String(yesN), no: String(noN), pending: String(pending),
+      hasPending: guests.length > 0,
+      yesPct: pct(yesN), noPct: pct(noN),
+      total: guests.length ? 'de ' + plural(totalN, 'convite', 'convites') : (totalN ? plural(totalN, 'resposta', 'respostas') + ' pelo link' : 'nenhuma resposta ainda'),
+      barAria: yesN + ' vão, ' + noN + ' não vão' + (guests.length ? ', ' + pending + ' sem resposta' : '')
+    };
+    const dDate = deadline ? new Date(deadline) : null;
+    const past = !!dDate && dDate.getTime() < Date.now();
+    const daysLeft = dDate ? Math.ceil((dDate.getTime() - Date.now()) / 86400000) : 0;
+    const ddmm = dDate ? String(dDate.getDate()).padStart(2, '0') + '/' + String(dDate.getMonth() + 1).padStart(2, '0') : '';
+    const dlV = !inv ? { title: '', note: '', bg: '#FFFFFF', ring: '#E3E1EA', fg: '#5E5A6B', canRemind: false, canSet: false, remind: () => {} } : (deadline ? {
+      title: 'Prazo de resposta: ' + api.fmt.day(deadline),
+      note: past ? 'O prazo terminou: o formulário está fechado.' : (daysLeft <= 1 ? 'termina amanhã' : 'faltam ' + daysLeft + ' dias') + (guests.length && pending ? ' · ' + plural(pending, 'convite ainda não respondeu', 'convites ainda não responderam') : ''),
+      bg: past ? '#FDECEA' : '#FFF8EA', ring: past ? '#F2C4BE' : '#F3D9A8', fg: past ? '#8C1D13' : '#6B3E00',
+      canRemind: !past, canSet: false,
+      remind: () => this.copy('Oi! Ainda não recebemos sua confirmação para ' + inv.title + '. Responda até ' + ddmm + ' pelo convite: ' + link, 'Lembrete copiado: cole no WhatsApp de quem ainda não respondeu.')
+    } : { title: 'Sem prazo de resposta', note: 'As respostas ficam abertas até você definir um prazo.', bg: '#F5F4F8', ring: '#E3E1EA', fg: '#5E5A6B', canRemind: false, canSet: true, remind: () => {} });
+    const view = st.view === 'share' ? 'share' : 'list';
+    const tabStyle = (on) => ({ fg: on ? '#3B26A8' : '#3D3A4A', line: on ? '#5B3FD6' : 'transparent' });
     const slug = inv ? String(inv.title).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') : 'convite';
 
     return {
       hdr: this.header(),
+      invTitle: inv ? inv.title : (loading ? 'Carregando…' : 'Convite'),
+      statusLabel: inv ? (inv.status === 'publicado' ? '● No ar' : 'Rascunho') : '',
+      statusBg: inv && inv.status === 'publicado' ? '#DDF3E4' : '#FFF1D6', statusFg: inv && inv.status === 'publicado' ? '#135C2E' : '#8A4B00',
+      isShare: view === 'share', isList: view === 'list', hasInv: !!inv,
+      listSel: view === 'list' ? 'true' : 'false', shareSel: view === 'share' ? 'true' : 'false',
+      listTabFg: tabStyle(view === 'list').fg, listTabLine: tabStyle(view === 'list').line,
+      shareTabFg: tabStyle(view === 'share').fg, shareTabLine: tabStyle(view === 'share').line,
+      showList: () => this.setState({ view: 'list' }),
+      showShare: () => this.setState({ view: 'share' }),
+      shareInvite: inv ? { id: inv.id, title: inv.title, coverTitle: inv.coverTitle, kicker: inv.kicker, slug: inv.slug || '', status: inv.status, theme: inv.theme, deadline } : {},
+      onSlug: (slug) => this.setState({ inv: Object.assign({}, this.state.inv, { slug }) }),
+      sum: sumV, dl: dlV,
+      shortLink: link ? api.shortLink(link) : '—',
+      personalAttr: personalOn ? 'true' : 'false',
+      switchBg: personalOn ? '#5B3FD6' : '#C9C4DB', switchKnob: personalOn ? '23px' : '3px',
+      personalNote: personalOn ? plural(guests.length, 'convite individual', 'convites individuais') + ' · cada um recebe o seu link' : 'cada convidado recebe o seu link e você limita os acompanhantes',
+      togglePersonal: () => {
+        if (!inv) return;
+        const personal = Object.assign({ greeting: 'Convite para {nome}', generic: true }, inv.personal || {}, { enabled: !personalOn });
+        const data = Object.assign({}, inv, { personal });
+        delete data.guest;
+        api.saveInvite(inv.id, data)
+          .then((saved) => this.setState({ inv: saved, toast: personalOn ? 'Convites individuais desligados: os links individuais abrem o convite comum.' : 'Convites individuais ativados neste convite.' }))
+          .catch((err) => this.setState({ toast: err.message }));
+      },
       inviteOptions: invites.map((i) => ({ id: i.id, title: i.title })),
       currentId: st.currentId,
       onPick: (e) => { const id = e.target.value; this.setState({ currentId: id }); api.navigate('Respostas/' + id); },
       editHref: st.currentId ? '#/Editor/' + st.currentId : '#/Main',
-      guestHref: inv ? '#/c/' + inv.id : '#/Main',
+      guestHref: link || '#/Main',
       stats,
       linkTitle: personalOn ? 'Link geral (sem nome)' : 'Link para os convidados',
       guestLink: link || '—',
@@ -791,7 +855,7 @@ class Component extends DCLogic {
       copyLink: () => link && this.copy(link, 'Link copiado: ' + link),
       shareWhatsApp: () => {
         if (!link) return;
-        const msg = 'Você está convidado! Veja o convite "' + inv.title + '" e confirme sua presença: ' + link;
+        const msg = 'Oi! Você está convidado: ' + inv.title + '. Abra o convite' + (deadline && !past ? ' e confirme sua presença até ' + ddmm : '') + ': ' + link;
         window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank', 'noopener');
       },
       showEnable: !!inv && !personalOn,

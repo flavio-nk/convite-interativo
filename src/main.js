@@ -5,12 +5,19 @@ import { api } from './api.js';
 
 const h = React.createElement;
 
-const ADMIN = new Set(['Main', 'Temas', 'CriarTema', 'Editor', 'Respostas', 'Usuarios']);
+const ADMIN = new Set(['Main', 'Novo', 'Temas', 'CriarTema', 'Editor', 'Respostas', 'Usuarios']);
 
 // #/Editor/abc?x=1  →  { name: 'Editor', params: { id: 'abc', x: '1' } }
 // #/c/abc           →  convite do convidado
 // #/c/abc/x1y2z3    →  convite individual (personalizado) daquele convidado
 function parseRoute() {
+  // link curto do convidado: /c/<link-ou-id>[/<código individual>]
+  const pm = window.location.pathname.match(/^\/c\/([^/]+)(?:\/([^/]+))?\/?$/);
+  if (pm && !window.location.hash) {
+    const params = { id: decodeURIComponent(pm[1]) };
+    if (pm[2]) params.g = decodeURIComponent(pm[2]);
+    return { name: 'Convite', params, key: window.location.pathname };
+  }
   const raw = window.location.hash.replace(/^#\/?/, '');
   const [pathPart, queryPart] = raw.split('?');
   const parts = pathPart.split('/').filter(Boolean);

@@ -38,26 +38,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
 </style>
 </helmet>
 <div style="min-height: 100vh; background: #F5F4F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
-  <header style="background: #FFFFFF; border-bottom: 1px solid #E3E1EA">
-    <div style="max-width: 1200px; margin: 0 auto; padding: 14px 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 16px 32px">
-      <div style="display: flex; align-items: center; gap: 10px">
-        <div style="width: 32px; height: 32px; border-radius: 9px; background: #5B3FD6; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
-        </div>
-        <span style="font-weight: 700; font-size: 17px; letter-spacing: -0.01em">Convite Interativo</span>
-      </div>
-      <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; gap: 4px; flex: 1 1 auto">
-        <a href="Main.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Convites</a>
-        <a href="Temas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Temas</a>
-        <a href="Respostas.dc.html" style="padding: 8px 12px; border-radius: 8px; color: #4A4757; font-weight: 500; text-decoration: none">Convidados</a>
-        <a href="Usuarios.dc.html" aria-current="page" style="padding: 8px 12px; border-radius: 8px; background: #EFECFB; color: #3B26A8; font-weight: 600; text-decoration: none">Usuários</a>
-      </nav>
-      <div style="display: flex; align-items: center; gap: 10px">
-        <span style="display: flex; flex-direction: column; align-items: flex-end; line-height: 1.25; font-size: 13px"><strong style="font-size: 14px">{{hdr.name}}</strong><span style="color: #5E5A6B">{{hdr.role}}</span></span>
-        <button onClick="{{hdr.logout}}" style="min-height: 40px; padding: 0 14px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Sair</button>
-      </div>
-    </div>
-  </header>
+  <dc-import name="Topo" active="usuarios" on-logout="{{hdr.done}}" hint-size="100%,64px"></dc-import>
 
   <main style="max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 22px">
     <div>
@@ -197,6 +178,12 @@ button:disabled{opacity:.5;cursor:not-allowed}
               <div class="pwbox">
                 <input class="fld" id="u-pass" type="{{eye.type}}" value="{{f.password}}" onInput="{{f.on.password}}" autocomplete="new-password" placeholder="{{modal.passPlaceholder}}">
                 <button type="button" class="pweye" onClick="{{eye.toggle}}" aria-label="{{eye.label}}" aria-pressed="{{eye.pressed}}" title="{{eye.label}}"><sc-if value="{{eye.shown}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 5.1A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.3 2 12 2 12s3.6 7 10 7a10 10 0 0 0 5.4-1.6"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg></sc-if><sc-if value="{{eye.hidden}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></sc-if></button>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-top: 6px">
+                <button type="button" class="sbtn" data-testid="gen-pass" onClick="{{genPass}}">Gerar senha segura</button>
+                <sc-if value="{{canCopyPass}}" hint-placeholder-val="{{ false }}">
+                  <button type="button" class="sbtn" onClick="{{copyPass}}">Copiar senha</button>
+                </sc-if>
               </div>
               <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{modal.passHelp}}</span>
             </div>
@@ -343,7 +330,8 @@ class Component extends DCLogic {
     return {
       isAdmin: api.isAdmin(), name: u.name || u.username || '',
       role: u.role === 'admin' ? 'Administrador' : 'Usuário',
-      logout: () => api.logout().then(() => { if (this.props.onLogout) this.props.onLogout(); })
+      logout: () => api.logout().then(() => { if (this.props.onLogout) this.props.onLogout(); }),
+      done: () => { if (this.props.onLogout) this.props.onLogout(); }
     };
   }
 
@@ -409,6 +397,21 @@ class Component extends DCLogic {
     const editingMe = editing && m.id === me.id;
     const loading = st.users === null;
     return Object.assign(this.backupVals(), {
+      genPass: () => {
+        // 12 caracteres sem letras parecidas (l, 1, O, 0), com pelo menos um número
+        const abc = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        const buf = new Uint32Array(12);
+        (window.crypto || window.msCrypto).getRandomValues(buf);
+        let pw = Array.from(buf, (n) => abc[n % abc.length]).join('');
+        if (!/\d/.test(pw)) pw = pw.slice(0, 11) + '7';
+        this.setForm({ password: pw });
+        this.setState({ showPw: true });
+      },
+      canCopyPass: !!(st.modal && st.modal.form && st.modal.form.password),
+      copyPass: () => {
+        const pw = st.modal && st.modal.form ? st.modal.form.password : '';
+        try { navigator.clipboard.writeText(pw).then(() => this.say('Senha copiada. Envie para a pessoa por um canal seguro.')); } catch (e) {}
+      },
       eye: { shown: !!st.showPw, hidden: !st.showPw, type: st.showPw ? 'text' : 'password', label: st.showPw ? 'Ocultar senha' : 'Mostrar senha', pressed: st.showPw ? 'true' : 'false', toggle: () => this.setState({ showPw: !this.state.showPw }) },
       hdr: this.header(),
       stats: [

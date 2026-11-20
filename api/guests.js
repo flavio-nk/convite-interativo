@@ -7,6 +7,7 @@ import { handler, query, readBody, send, httpError, newId } from './_lib/http.js
 import { requireUser, canManage } from './_lib/auth.js';
 import { hget, hset, hdel, hgetall, hlen } from './_lib/store.js';
 import { validId } from './_lib/guard.js';
+import { computeStats } from './_lib/stats.js';
 
 const MAX_GUESTS_PER_INVITE = 3000;
 
@@ -67,6 +68,7 @@ export default handler(async (req, res) => {
       await hset(key, g.id, g);
       created.push(Object.assign({}, g, { max: maxPeople(g), rsvp: null }));
     }
+    await computeStats(inviteId);
     return send(res, 201, created);
   }
 
@@ -84,6 +86,7 @@ export default handler(async (req, res) => {
     if (!id) throw httpError(400, 'Informe o convite individual.');
     await hdel(key, id);
     await hdel('rsvps:' + inviteId, 'g-' + id);
+    await computeStats(inviteId);
     return send(res, 200, { deleted: id });
   }
 

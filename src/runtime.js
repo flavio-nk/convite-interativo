@@ -30,9 +30,12 @@ const BOOL_ATTRS = new Set(['checked', 'disabled', 'selected', 'readonly', 'mult
 function preprocess(src) {
   // <template> é aceito em qualquer lugar (inclusive dentro de <tbody>), então
   // sc-for / sc-if viram <template data-sc="..."> para o parser HTML não movê-los.
+  // Atributos onclick/oninput… viram data-dc-on-*: assim o DOMParser não os trata como
+  // código inline (a política de segurança do site bloqueia e registra um aviso para cada um).
   return src
     .replace(/<sc-(for|if)\b/g, '<template data-sc="$1"')
-    .replace(/<\/sc-(for|if)>/g, '</template>');
+    .replace(/<\/sc-(for|if)>/g, '</template>')
+    .replace(/(\s)on([a-z]+)=(["'])/gi, '$1data-dc-on-$2=$3');
 }
 
 function getDef(name) {
@@ -204,7 +207,8 @@ function renderNode(node, scope, def) {
   for (const a of Array.from(node.attributes)) {
     let v = attrValue(a.value, scope);
     if (v === '' && BOOL_ATTRS.has(a.name)) v = true;
-    props[propName(a.name)] = v;
+    const an = a.name.startsWith('data-dc-on-') ? 'on' + a.name.slice(11) : a.name;
+    props[propName(an)] = v;
   }
 
   if (tag === 'a' && typeof props.href === 'string') {

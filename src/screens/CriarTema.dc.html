@@ -43,6 +43,15 @@ button,input,select{font-family:inherit}
         <button onClick="{{save}}" disabled="{{busy}}" style="min-height: 44px; padding: 0 20px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 15px; cursor: pointer">{{saveLabel}}</button>
       </div>
     </div>
+    <div style="max-width: 1320px; margin: 0 auto; padding: 0 24px 10px">
+      <ol aria-label="Etapas do tema" style="display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none">
+        <sc-for list="{{steps}}" as="sp" hint-placeholder-count="3">
+          <li><button onClick="{{sp.go}}" aria-current="{{sp.current}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 14px 0 6px; border-radius: 999px; border: 1px solid {{sp.ring}}; background: {{sp.bg}}; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">
+            <span style="width: 26px; height: 26px; border-radius: 50%; background: {{sp.numBg}}; color: {{sp.numFg}}; display: inline-flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700">{{sp.n}}</span>{{sp.label}}
+          </button></li>
+        </sc-for>
+      </ol>
+    </div>
     <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
       <div role="alert" style="background: #FDECEA; color: #8C1D13; padding: 10px 24px; font-size: 14px; text-align: center">{{error}}</div>
     </sc-if>
@@ -66,6 +75,7 @@ button,input,select{font-family:inherit}
 
     <div style="flex: 999 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
 
+      <sc-if value="{{isStep1}}" hint-placeholder-val="{{ true }}">
       <section class="card" aria-labelledby="s-basico">
         <h2 class="h2" id="s-basico">Informações</h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px">
@@ -96,7 +106,12 @@ button,input,select{font-family:inherit}
 
       <section class="card" aria-labelledby="s-cores">
         <h2 class="h2" id="s-cores">Cores</h2>
-        <p class="sub">24 paletas prontas em 6 estilos. Depois, ajuste cada cor como quiser.</p>
+        <p class="sub">Comece por uma foto ou por uma das 24 paletas prontas. Depois, ajuste cada cor como quiser.</p>
+        <label data-testid="photo-palette" style="position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 14px; padding: 16px; border-radius: 14px; border: 1.5px dashed #B9B4CC; background: #FAFAFC; cursor: pointer">
+          <span aria-hidden="true" style="width: 48px; height: 48px; border-radius: 12px; background: #EFECFB; color: #5B3FD6; display: inline-flex; align-items: center; justify-content: center; flex: none"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg></span>
+          <span style="flex: 1 1 220px; display: flex; flex-direction: column; line-height: 1.35"><strong style="font-size: 15px">{{photoTitle}}</strong><span style="font-size: 13px; color: #5E5A6B">Envie a foto do casal, do local ou da decoração: sugerimos uma paleta que combina.</span></span>
+          <input id="ct-photo" type="file" accept="image/*" onChange="{{onPhoto}}" aria-label="Enviar foto para tirar as cores" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer">
+        </label>
         <div style="display: flex; flex-direction: column; gap: 16px">
           <sc-for list="{{paletteGroups}}" as="g" hint-placeholder-count="6">
             <div role="group" aria-label="Paletas {{g.name}}" style="display: flex; flex-direction: column; gap: 8px">
@@ -134,6 +149,8 @@ button,input,select{font-family:inherit}
         </sc-if>
       </section>
 
+      </sc-if>
+      <sc-if value="{{isStep2}}" hint-placeholder-val="{{ false }}">
       <section class="card" aria-labelledby="s-fontes">
         <h2 class="h2" id="s-fontes">Tipografia e botões</h2>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px">
@@ -179,6 +196,8 @@ button,input,select{font-family:inherit}
         </div>
       </section>
 
+      </sc-if>
+      <sc-if value="{{isStep3}}" hint-placeholder-val="{{ false }}">
       <section class="card" aria-labelledby="s-layout">
         <h2 class="h2" id="s-layout">Layout da capa</h2>
         <p class="sub">Como foto, título e data se organizam na primeira página.</p>
@@ -186,7 +205,7 @@ button,input,select{font-family:inherit}
           <sc-for list="{{layouts}}" as="l" hint-placeholder-count="8">
             <button class="tile" onClick="{{l.pick}}" aria-pressed="{{l.pressed}}" style="padding: 6px; border-radius: 14px; border: 2px solid {{l.ring}}; background: #FFFFFF; cursor: pointer; display: flex; flex-direction: column; gap: 6px; text-align: center; color: #17151F">
               <span style="display: block; border-radius: 8px; overflow: hidden">
-                <dc-import name="CapaPreview" layout="{{l.id}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" body-font="{{bodyFont}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{cat}}" titulo="Ana &amp; Pedro" data="17 · 04 · 2027" btn-radius="{{radius}}" title-scale="{{titleScale}}" aspect="4 / 5" hint-size="100%,130px"></dc-import>
+                <dc-import name="CapaPreview" layout="{{l.id}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" body-font="{{bodyFont}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{cat}}" titulo="{{sampleTitle}}" data="{{sampleDate}}" btn-radius="{{radius}}" title-scale="{{titleScale}}" aspect="4 / 5" hint-size="100%,130px"></dc-import>
               </span>
               <span style="font-size: 13px; font-weight: 600">{{l.label}}</span>
             </button>
@@ -222,6 +241,19 @@ button,input,select{font-family:inherit}
         </div>
         <p style="margin: 0; font-size: 13px; color: #5E5A6B">A música de fundo é escolhida em cada convite, na aba Música do editor.</p>
       </section>
+      </sc-if>
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px">
+        <sc-if value="{{hasPrev}}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{prev}}" style="min-height: 46px; padding: 0 18px; border-radius: 11px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">← {{prevLabel}}</button>
+        </sc-if>
+        <span></span>
+        <sc-if value="{{hasNext}}" hint-placeholder-val="{{ true }}">
+          <button onClick="{{next}}" style="min-height: 46px; padding: 0 20px; border-radius: 11px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 15px; cursor: pointer">Próximo: {{nextLabel}} →</button>
+        </sc-if>
+        <sc-if value="{{isLast}}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{save}}" disabled="{{busy}}" style="min-height: 46px; padding: 0 20px; border-radius: 11px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 15px; cursor: pointer">{{saveLabel}}</button>
+        </sc-if>
+      </div>
     </div>
 
     <aside aria-label="Prévia do tema" style="flex: 1 1 340px; position: sticky; top: 96px; display: flex; flex-direction: column; align-items: center; gap: 14px">
@@ -231,11 +263,11 @@ button,input,select{font-family:inherit}
       </div>
       <div style="width: 300px; height: 649px; border-radius: 40px; border: 9px solid #17151F; overflow: hidden; box-sizing: content-box; background: {{bg}}">
         <sc-if value="{{isCapaTab}}" hint-placeholder-val="{{ true }}">
-          <dc-import name="CapaPreview" layout="{{layout}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" body-font="{{bodyFont}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{cat}}" titulo="Ana &amp; Pedro" data="17 · 04 · 2027" btn-radius="{{radius}}" title-scale="{{titleScale}}" aspect="300 / 649" hint-size="300px,649px"></dc-import>
+          <dc-import name="CapaPreview" layout="{{layout}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" body-font="{{bodyFont}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{cat}}" titulo="{{sampleTitle}}" data="{{sampleDate}}" btn-radius="{{radius}}" title-scale="{{titleScale}}" aspect="300 / 649" hint-size="300px,649px"></dc-import>
         </sc-if>
         <sc-if value="{{isAbTab}}" hint-placeholder-val="{{ false }}">
           <div style="width: 390px; height: 844px; transform: scale(0.7692); transform-origin: top left">
-            <dc-import name="Abertura" anim="{{anim}}" layout="{{layout}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" paper="{{paper}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{cat}}" titulo="Ana &amp; Pedro" data="17 · 04 · 2027" btn-radius="{{radius}}" show-link="{{noLink}}" music="{{noMusic}}" hint-size="390px,844px"></dc-import>
+            <dc-import name="Abertura" anim="{{anim}}" layout="{{layout}}" bg="{{bg}}" fg="{{fg}}" accent="{{accent}}" paper="{{paper}}" ph="{{ph}}" btn-fg="{{btnFg}}" font="{{font}}" weight="{{weight}}" fstyle="{{fstyle}}" kicker="{{cat}}" titulo="{{sampleTitle}}" data="{{sampleDate}}" btn-radius="{{radius}}" show-link="{{noLink}}" music="{{noMusic}}" hint-size="390px,844px"></dc-import>
           </div>
         </sc-if>
       </div>
@@ -252,11 +284,17 @@ class Component extends DCLogic {
     super(props);
     const id = props.route && props.route.params && props.route.params.id;
     this.state = Object.assign(
-      { name: 'Meu tema', cat: 'Casamento', base: 'jardim', tab: 'capa', saved: false, bodyKey: 'jakarta', titleScale: 1, italic: false, radiusKey: 'pilula', step: 'form', themeId: id || null, editing: !!id, busy: false, error: '', confirmingDelete: false },
+      { ts: 1, sampleTitle: 'Ana & Pedro', sampleDate: '17 · 04 · 2027', photoBusy: false, name: 'Meu tema', cat: 'Casamento', base: 'jardim', tab: 'capa', saved: false, bodyKey: 'jakarta', titleScale: 1, italic: false, radiusKey: 'pilula', step: 'form', themeId: id || null, editing: !!id, busy: false, error: '', confirmingDelete: false },
       this.presets().jardim
     );
   }
   componentDidMount() {
+    // a prévia usa os nomes e a data do convite mais recente (quando houver)
+    api.listInvites().then((items) => {
+      const it = (items || []).find((x) => x.coverTitle && !/^Título do evento$/.test(x.coverTitle)) || null;
+      const names = /^save the date$/i.test(it ? it.coverTitle : '') ? String(it.title || '').replace(/^(Casamento|Aniversário de|Festa de|Chá de bebê de|Formatura)\s+/i, '') : (it ? it.coverTitle : '');
+      if (it) this.setState({ sampleTitle: names || it.coverTitle, sampleDate: it.eventDate ? api.fmt.dots(it.eventDate) : this.state.sampleDate });
+    }).catch(() => {});
     if (!this.state.themeId) return;
     api.getTheme(this.state.themeId).then((t) => this.setState({
       // tema de outro usuário: abre como cópia (o original não muda)
@@ -335,6 +373,34 @@ class Component extends DCLogic {
     const x = this.lum(a), y = this.lum(b);
     return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
   }
+  stepVals() {
+    const st = this.state;
+    const names = ['Cores', 'Letras', 'Capa e abertura'];
+    const go = (n) => { this.setState({ ts: n }); try { window.scrollTo({ top: 0, behavior: 'smooth' }); } catch (e) {} };
+    return {
+      steps: names.map((label, i) => {
+        const on = st.ts === i + 1, done = st.ts > i + 1;
+        return { n: done ? '✓' : String(i + 1), label, current: on ? 'step' : 'false', go: () => go(i + 1),
+          ring: on ? '#5B3FD6' : '#E3E1EA', bg: on ? '#EFECFB' : '#FFFFFF', numBg: on ? '#5B3FD6' : (done ? '#E3F3EA' : '#F1EFF6'), numFg: on ? '#FFFFFF' : (done ? '#1E6B43' : '#3D3A4A') };
+      }),
+      isStep1: st.ts === 1, isStep2: st.ts === 2, isStep3: st.ts === 3,
+      hasPrev: st.ts > 1, hasNext: st.ts < 3, isLast: st.ts === 3,
+      prevLabel: names[st.ts - 2] || '', nextLabel: names[st.ts] || '',
+      prev: () => go(Math.max(1, st.ts - 1)), next: () => go(Math.min(3, st.ts + 1)),
+      sampleTitle: st.sampleTitle, sampleDate: st.sampleDate,
+      photoTitle: st.photoBusy ? 'Lendo as cores da foto…' : 'Tirar as cores de uma foto',
+      onPhoto: (e) => {
+        const f = e.target.files && e.target.files[0];
+        try { e.target.value = ''; } catch (err) {}
+        if (!f) return;
+        this.setState({ photoBusy: true, error: '' });
+        api.paletteFromImage(f)
+          .then((pal) => this.setState(Object.assign({ photoBusy: false }, pal)))
+          .catch((err) => this.setState({ photoBusy: false, error: err.message || 'Não foi possível ler essa foto.' }));
+      }
+    };
+  }
+
   renderVals() {
     const st = this.state;
     const F = this.fonts();
@@ -405,7 +471,7 @@ class Component extends DCLogic {
     else if (btnRatio < 4.5) msg = 'O texto dos botões tem pouco contraste com a cor de destaque (' + btnRatio.toFixed(1) + ':1).';
 
     const isCapa = st.tab === 'capa';
-    return {
+    return Object.assign(this.stepVals(), {
       name: st.name, cat: st.cat, base: st.base,
       saved: st.saved,
       onName: set('name'), onCat: set('cat'),
@@ -416,10 +482,9 @@ class Component extends DCLogic {
       isFormStep: true,
       payload,
       useInInvite: () => {
-        this.setState({ busy: true, error: '' });
-        api.createInvite({ title: 'Novo convite · ' + st.name, kicker: st.cat, coverTitle: 'Título do evento', status: 'rascunho', theme: payload, themeBase: payload })
-          .then((inv) => api.navigate('Editor/' + inv.id))
-          .catch((e) => this.setState({ busy: false, error: e.message }));
+        // o convite novo passa pelos dados do evento, já com este tema escolhido
+        try { sessionStorage.setItem('ci:novo', JSON.stringify({ kind: '', names: '', day: '', time: '', place: '', address: '', rsvp: true, themeId: st.themeId ? 'custom:' + st.themeId : '' })); } catch (e) {}
+        api.navigate('Novo');
       },
       editing: st.editing,
       busy: st.busy,
@@ -461,7 +526,7 @@ class Component extends DCLogic {
           .then((t) => this.setState({ busy: false, saved: true, themeId: t.id, editing: true }))
           .catch((e) => this.setState({ busy: false, error: e.message }));
       }
-    };
+    });
   }
 }
 </script>

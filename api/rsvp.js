@@ -3,6 +3,7 @@ import { currentUser, requireUser, canManage } from './_lib/auth.js';
 import { hget, hset, hdel, hgetall, hlen } from './_lib/store.js';
 import { maxPeople } from './guests.js';
 import { validId, clientIp, rateLimit } from './_lib/guard.js';
+import { computeStats } from './_lib/stats.js';
 
 const MAX_GENERIC_PER_INVITE = 3000;
 
@@ -96,6 +97,7 @@ export default handler(async (req, res) => {
         updatedAt: now
       };
       await hset(key, rid, entry);
+      await computeStats(inviteId);
       return send(res, 200, { rsvpId: rid, entry });
     }
     if (personal && inv.personal.generic === false && !admin) {
@@ -127,7 +129,8 @@ export default handler(async (req, res) => {
       updatedAt: now
     };
     await hset(key, rid, entry);
-    return send(res, 200, { rsvpId: rid, entry });
+    await computeStats(inviteId);
+      return send(res, 200, { rsvpId: rid, entry });
   }
 
   if (req.method === 'DELETE') {
@@ -135,6 +138,7 @@ export default handler(async (req, res) => {
     const id = validId(q.get('id'), 'Resposta');
     if (!id) throw httpError(400, 'Informe a resposta.');
     await hdel(key, id);
+    await computeStats(inviteId);
     return send(res, 200, { deleted: id });
   }
 

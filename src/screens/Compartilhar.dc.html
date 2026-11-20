@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Compartilhar convite</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+.shr-btn:hover{filter:brightness(0.97)}
+.shr-btn:focus-visible,.shr-in:focus{outline:2px solid #5B3FD6;outline-offset:2px}
+</style>
+</helmet>
+<div style="display: flex; flex-direction: column; gap: 16px; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: #17151F">
+  <sc-if value="{{draft}}" hint-placeholder-val="{{ false }}">
+    <p role="note" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FFF8EA; border: 1px solid #F3D9A8; color: #6B3E00; font-size: 13px">Este convite ainda é um rascunho: o link só abre depois de publicar.</p>
+  </sc-if>
+
+  <div>
+    <span style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px">Link do convite</span>
+    <sc-if value="{{notEditing}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 6px 6px 6px 14px; border-radius: 12px; border: 1px solid #D6D3E0; background: #FFFFFF">
+        <span data-testid="share-link" style="flex: 1 1 200px; min-width: 0; font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{shortLink}}</span>
+        <button class="shr-btn" onClick="{{startEdit}}" style="min-height: 40px; padding: 0 12px; border-radius: 9px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 13px; cursor: pointer">Personalizar</button>
+        <button class="shr-btn" onClick="{{copyLink}}" style="min-height: 40px; padding: 0 16px; border-radius: 9px; border: 0; background: #17151F; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">{{copyLabel}}</button>
+      </div>
+    </sc-if>
+    <sc-if value="{{editing}}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 12px; border: 1px solid #C9C4DB; background: #FAF9FC">
+        <label for="shr-slug" style="font-size: 13px; color: #3D3A4A">Escolha como o link termina (letras, números e hífen)</label>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px">
+          <span style="font-size: 14px; color: #5E5A6B">{{host}}/c/</span>
+          <input id="shr-slug" class="shr-in" value="{{slugDraft}}" onInput="{{onSlug}}" onKeyDown="{{slugKey}}" maxlength="48" style="flex: 1 1 160px; min-width: 0; min-height: 40px; padding: 0 10px; border-radius: 9px; border: 1px solid #D6D3E0; font: inherit; font-size: 15px">
+        </div>
+        <sc-if value="{{hasSlugError}}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin: 0; font-size: 13px; color: #B42318">{{slugError}}</p>
+        </sc-if>
+        <div style="display: flex; gap: 8px; justify-content: flex-end">
+          <button class="shr-btn" onClick="{{cancelEdit}}" style="min-height: 40px; padding: 0 14px; border-radius: 9px; border: 1px solid #D6D3E0; background: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Cancelar</button>
+          <button class="shr-btn" onClick="{{saveSlug}}" disabled="{{savingSlug}}" style="min-height: 40px; padding: 0 16px; border-radius: 9px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">Salvar link</button>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div>
+    <label for="shr-msg" style="display: block; font-size: 13px; font-weight: 700; margin-bottom: 6px">Mensagem para enviar</label>
+    <textarea id="shr-msg" class="shr-in" rows="4" value="{{message}}" onInput="{{onMessage}}" style="width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 12px; border: 1px solid #D6D3E0; font: inherit; font-size: 14px; line-height: 1.5; resize: vertical"></textarea>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+    <a class="shr-btn" href="{{waHref}}" target="_blank" rel="noopener" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 12px; background: #1E7A45; color: #FFFFFF; font-weight: 700; font-size: 13px; text-decoration: none; text-align: center">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 0 1-13.5 7.8L3 21l1.2-4.5A9 9 0 1 1 21 12Z"></path></svg>
+      Enviar no WhatsApp
+    </a>
+    <button class="shr-btn" onClick="{{toggleQr}}" aria-expanded="{{qrOpenAttr}}" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 12px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 700; font-size: 13px; cursor: pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><path d="M14 14h3v3h-3zM18 18h3v3h-3z"></path></svg>
+      QR code
+    </button>
+    <button class="shr-btn" onClick="{{shareOther}}" style="min-height: 60px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; border-radius: 12px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 700; font-size: 13px; cursor: pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7M16 6l-4-4-4 4M12 2v13"></path></svg>
+      {{otherLabel}}
+    </button>
+  </div>
+
+  <sc-if value="{{qrOpen}}" hint-placeholder-val="{{ false }}">
+    <div data-testid="share-qr" style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 14px; border-radius: 12px; border: 1px solid #E3E1EA; background: #FFFFFF">
+      <svg role="img" aria-label="QR code do link do convite" viewBox="{{qrBox}}" width="132" height="132" style="flex: none; background: #FFFFFF" shape-rendering="crispEdges"><path d="{{qrPath}}" fill="#000000"></path></svg>
+      <div style="flex: 1 1 180px; display: flex; flex-direction: column; gap: 8px">
+        <span style="font-size: 13px; color: #3D3A4A">Para imprimir em cartões, na mesa do evento ou mostrar na tela: quem aponta a câmera do celular abre o convite.</span>
+        <button class="shr-btn" onClick="{{downloadQr}}" style="align-self: flex-start; min-height: 40px; padding: 0 14px; border-radius: 9px; border: 1px solid #D6D3E0; background: #FFFFFF; font-weight: 700; font-size: 14px; cursor: pointer">Baixar imagem (PNG)</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasNote}}" hint-placeholder-val="{{ false }}">
+    <p role="status" style="margin: 0; font-size: 13px; color: #1E6B43">{{note}}</p>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"invite":{"editor":null},"onSlugChange":{"editor":null},"$preview":{"width":560,"height":420}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { editing: false, slugDraft: '', slugError: '', savingSlug: false, message: null, qr: false, note: '', copied: false, slug: null };
+  }
+
+  inv() { return this.props.invite || {}; }
+
+  link() {
+    const inv = this.inv();
+    const slug = this.state.slug != null ? this.state.slug : inv.slug;
+    return inv.id ? api.guestLink(inv.id, inv.theme, null, slug) : '';
+  }
+
+  deadline() {
+    const inv = this.inv();
+    if (inv.deadline) return inv.deadline;
+    for (const p of inv.pages || []) for (const b of (p && p.blocks) || []) if (b && b.type === 'rsvp' && b.deadline) return b.deadline;
+    return null;
+  }
+
+  defaultMessage() {
+    const inv = this.inv();
+    const t = String(inv.title || '').trim();
+    const who = t && !/^Novo convite/i.test(t) ? t : String(inv.coverTitle || t).trim();
+    const dl = this.deadline();
+    const d = dl ? new Date(dl) : null;
+    const dd = d && !isNaN(d) ? String(d.getDate()).padStart(2, '0') + '/' + String(d.getMonth() + 1).padStart(2, '0') : '';
+    return 'Oi! Você está convidado' + (who ? ': ' + who : '') + '. Abra o convite' + (dd ? ' e confirme sua presença até ' + dd : '') + ': ' + this.link();
+  }
+
+  say(note) {
+    this.setState({ note });
+    clearTimeout(this.noteT);
+    this.noteT = setTimeout(() => this.setState({ note: '' }), 4000);
+  }
+
+  copy(text, okMsg) {
+    const fail = () => this.say('Copie: ' + text);
+    try {
+      if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(text).then(() => this.say(okMsg), fail);
+      else fail();
+    } catch (e) { fail(); }
+  }
+
+  componentWillUnmount() { clearTimeout(this.noteT); }
+
+  renderVals() {
+    const st = this.state;
+    const inv = this.inv();
+    const link = this.link();
+    const msgDefault = this.defaultMessage();
+    // a mensagem acompanha o link enquanto ninguém a editou
+    const message = st.message == null ? msgDefault : st.message;
+    let qrv = { size: 1, path: '' };
+    if (st.qr && link) { try { qrv = api.qr(link); } catch (e) {} }
+    let host = '';
+    try { host = window.location.host; } catch (e) {}
+    const canShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function';
+    const saveSlug = () => {
+      const v = api.slugify(st.slugDraft);
+      if (!v || v.length < 3) { this.setState({ slugError: 'Use pelo menos 3 letras ou números.' }); return; }
+      this.setState({ savingSlug: true, slugError: '' });
+      api.setSlug(inv.id, v).then((r) => {
+        this.setState({ savingSlug: false, editing: false, slug: r.slug, message: st.message == null ? null : st.message.split(link).join(api.guestLink(inv.id, inv.theme, null, r.slug)) });
+        if (typeof this.props.onSlugChange === 'function') this.props.onSlugChange(r.slug);
+        this.say('Link atualizado.');
+      }).catch((e) => this.setState({ savingSlug: false, slugError: e.message }));
+    };
+    return {
+      draft: inv.status && inv.status !== 'publicado',
+      shortLink: api.shortLink(link),
+      host,
+      editing: st.editing, notEditing: !st.editing,
+      startEdit: () => this.setState({ editing: true, slugError: '', slugDraft: (st.slug != null ? st.slug : inv.slug) || api.slugify(inv.coverTitle || inv.title) }),
+      cancelEdit: () => this.setState({ editing: false, slugError: '' }),
+      slugDraft: st.slugDraft,
+      onSlug: (e) => this.setState({ slugDraft: e.target.value.toLowerCase().replace(/\s+/g, '-'), slugError: '' }),
+      slugKey: (e) => { if (e.key === 'Enter') { e.preventDefault(); saveSlug(); } if (e.key === 'Escape') this.setState({ editing: false }); },
+      saveSlug, savingSlug: st.savingSlug,
+      hasSlugError: !!st.slugError, slugError: st.slugError,
+      copyLink: () => this.copy(link, 'Link copiado.'),
+      copyLabel: 'Copiar',
+      message,
+      onMessage: (e) => this.setState({ message: e.target.value }),
+      waHref: 'https://wa.me/?text=' + encodeURIComponent(message),
+      qrOpen: st.qr, qrOpenAttr: st.qr ? 'true' : 'false',
+      toggleQr: () => this.setState({ qr: !st.qr }),
+      qrBox: '0 0 ' + qrv.size + ' ' + qrv.size, qrPath: qrv.path,
+      downloadQr: () => {
+        try {
+          const a = document.createElement('a');
+          a.href = api.qrPng(link, 1200);
+          a.download = 'qr-' + (api.slugify(inv.coverTitle || inv.title) || 'convite') + '.png';
+          document.body.appendChild(a); a.click(); a.remove();
+        } catch (e) { this.say('Não foi possível gerar a imagem.'); }
+      },
+      otherLabel: canShare ? 'Outros apps' : 'Copiar mensagem',
+      shareOther: () => {
+        if (canShare) navigator.share({ title: inv.title || 'Convite', text: message }).catch(() => {});
+        else this.copy(message, 'Mensagem copiada: cole no app que preferir.');
+      },
+      hasNote: !!st.note, note: st.note
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,3 +1,4 @@
+import qrcode from 'qrcode-generator';
 // Acesso aos dados salvos (funções em /api). Disponível para as telas como `api`.
 
 let config = null;
@@ -329,7 +330,84 @@ export function setFrameColor(bg) {
   } catch (e) {}
 }
 
+// QR code do link do convite: caminho SVG (para mostrar na tela) e PNG (para baixar).
+export function qr(text) {
+  const q = qrcode(0, 'M');
+  q.addData(String(text || ''));
+  q.make();
+  const n = q.getModuleCount();
+  let d = '';
+  for (let r = 0; r < n; r++) for (let c = 0; c < n; c++) if (q.isDark(r, c)) d += 'M' + (c + 4) + ' ' + (r + 4) + 'h1v1h-1z';
+  return { size: n + 8, path: d };
+}
+export function qrPng(text, px) {
+  const m = qr(text);
+  const scale = Math.max(4, Math.floor((px || 1024) / m.size));
+  const c = document.createElement('canvas');
+  c.width = c.height = m.size * scale;
+  const g = c.getContext('2d');
+  g.fillStyle = '#FFFFFF'; g.fillRect(0, 0, c.width, c.height);
+  g.fillStyle = '#000000';
+  g.scale(scale, scale);
+  g.fill(new Path2D(m.path));
+  return c.toDataURL('image/png');
+}
+
+// Textos de exemplo que o convite traz ao nascer (mesma regra do servidor)
+const PLACEHOLDER = [/\[[^\]]*\]/, /\{prazo\}/i, /^NOME & NOME$/i, /DD \. MM \. AAAA/, /^Escreva aqui/, /^Título do evento$/, /^Nome do local$/, /^Data e horário do evento$/, /^Outras orientações$/m];
+export function placeholderIn(text, hasDeadline) {
+  let t = String(text || '');
+  if (hasDeadline) t = t.replace(/\[data limite\]|\{prazo\}/gi, '');
+  return PLACEHOLDER.some((re) => re.test(t));
+}
+
+// ---------- cores a partir de uma foto ----------
+const hx = (r, g, b) => '#' + [r, g, b].map((v) => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, '0')).join('').toUpperCase();
+const lum = (r, g, b) => {
+  const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+};
+const contrast = (a, b) => { const x = lum(...a), y = lum(...b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+const mix = (a, b, t) => a.map((v, i) => v + (b[i] - v) * t);
+const sat = (c) => { const mx = Math.max(...c), mn = Math.min(...c); return mx === 0 ? 0 : (mx - mn) / mx; };
+
+// Sugere fundo, texto, destaque e demais cores do tema a partir das cores mais presentes na foto.
+export async function paletteFromImage(file) {
+  const bmp = await createImageBitmap(file);
+  const W = 72, H = Math.max(1, Math.round((72 * bmp.height) / bmp.width));
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'); g.drawImage(bmp, 0, 0, W, H); bmp.close && bmp.close();
+  const px = g.getImageData(0, 0, W, H).data;
+  const buckets = {};
+  for (let i = 0; i < px.length; i += 4) {
+    if (px[i + 3] < 128) continue;
+    const k = (px[i] >> 4) + ',' + (px[i + 1] >> 4) + ',' + (px[i + 2] >> 4);
+    const b = buckets[k] || (buckets[k] = { n: 0, r: 0, g: 0, b: 0 });
+    b.n++; b.r += px[i]; b.g += px[i + 1]; b.b += px[i + 2];
+  }
+  const cols = Object.values(buckets).map((b) => ({ n: b.n, c: [b.r / b.n, b.g / b.n, b.b / b.n] })).sort((a, b) => b.n - a.n);
+  if (!cols.length) throw new Error('Não foi possível ler as cores dessa foto.');
+  // fundo: a cor mais presente, levada para um tom bem claro ou bem escuro (o texto precisa aparecer)
+  let bg = cols[0].c;
+  const dark = lum(...bg) < 0.35;
+  bg = dark ? mix(bg, [0, 0, 0], 0.45) : mix(bg, [255, 255, 255], 0.55);
+  // destaque: a cor mais viva entre as frequentes, com contraste suficiente com o fundo
+  const cands = cols.slice(0, 24).map((x) => x.c).filter((x) => sat(x) > 0.25);
+  let accent = cands.find((x) => contrast(x, bg) >= 3) || cands[0] || (dark ? [227, 211, 181] : [91, 63, 214]);
+  if (contrast(accent, bg) < 3) accent = dark ? mix(accent, [255, 255, 255], 0.5) : mix(accent, [0, 0, 0], 0.45);
+  const fg = dark ? mix(bg, [255, 255, 255], 0.92) : mix(bg, [0, 0, 0], 0.85);
+  const btnFg = contrast([255, 255, 255], accent) >= contrast([20, 20, 20], accent) ? [255, 255, 255] : mix(bg, [0, 0, 0], 0.6);
+  return {
+    bg: hx(...bg), fg: hx(...fg), accent: hx(...accent), btnFg: hx(...btnFg),
+    paper: hx(...mix(accent, bg, 0.55)), ph: hx(...mix(bg, fg, 0.14))
+  };
+}
+
 export const api = {
+  paletteFromImage,
+  placeholderIn,
+  qr,
+  qrPng,
   fmt,
   themeTokens,
   BODY_FONTS,
@@ -427,9 +505,16 @@ export const api = {
     else window.location.hash = target;
   },
   // link do convidado; com o código de um convite individual, o link é só daquele convidado
-  guestLink(id, theme, guestCode) {
-    const t = themeHint.encode(theme);
-    return window.location.origin + window.location.pathname + '#/c/' + id + (guestCode ? '/' + guestCode : '') + (t ? '?t=' + t : '');
+  // (link curto: /c/<nome-do-link>, sem os códigos de cor)
+  guestLink(id, theme, guestCode, slug) {
+    return window.location.origin + '/c/' + encodeURIComponent(slug || id) + (guestCode ? '/' + guestCode : '');
+  },
+  // o mesmo link sem "https://" (para mostrar na tela)
+  shortLink(link) { return String(link || '').replace(/^https?:\/\//, ''); },
+  setSlug: (id, slug) => call('PUT', '/api/invites?id=' + enc(id) + '&action=slug', { slug }),
+  slugify(s) {
+    return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase()
+      .replace(/&/g, ' e ').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 48).replace(/-+$/g, '');
   },
   local: {
     get(k) { try { return JSON.parse(window.localStorage.getItem(k)); } catch (e) { return null; } },

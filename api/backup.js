@@ -14,7 +14,7 @@ import { uploadsMode, blobAuth } from './upload.js';
 const KEEP = 30;
 const PREFIX = 'backups/';
 const DIR = path.join(process.cwd(), '.data', 'backups');
-const FIXED = ['users', 'invites', 'themes', 'deleted'];
+const FIXED = ['users', 'invites', 'themes', 'deleted', 'slugs'];
 const NAME = /^convite-backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z(-[a-z-]+)?\.json$/;
 
 const blobMode = () => uploadsMode() === 'blob' || uploadsMode() === 'blob-oidc';
@@ -61,6 +61,7 @@ async function restore(b) {
   const keys = new Set(FIXED);
   for (const id of Object.keys(cur)) { keys.add('rsvps:' + id); keys.add('guests:' + id); }
   for (const k of keys) await del(k);
+  await del('stats'); // resumos de respostas são refeitos sob demanda
   for (const [k, h] of Object.entries(b.data)) {
     for (const [f, v] of Object.entries(h)) await hset(k, f, v);
   }
