@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Criar senha</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap">
+<style>
+body{margin:0;background:#F5F4F8}
+.fld{width:100%;box-sizing:border-box;min-height:48px;padding:12px 48px 12px 14px;border:1px solid #D6D3E0;border-radius:10px;background:#FFFFFF;color:#17151F;font:inherit;font-size:16px}
+.fld:focus{outline:2px solid #5B3FD6;outline-offset:1px;border-color:#5B3FD6}
+.pwbox{position:relative}
+.pweye{position:absolute;top:50%;right:4px;transform:translateY(-50%);width:40px;height:40px;border:0;border-radius:8px;background:transparent;color:#5E5A6B;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pweye:hover{background:#F1EFF6;color:#17151F}
+.pweye:focus-visible{outline:2px solid #5B3FD6;outline-offset:1px}
+.lbl{display:block;font-size:13px;font-weight:600;color:#3D3A4A;margin-bottom:6px}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F5F4F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; display: flex; align-items: center; justify-content: center; padding: 24px; box-sizing: border-box">
+  <div style="width: 100%; max-width: 400px; background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 18px; padding: 32px 28px; box-sizing: border-box; display: flex; flex-direction: column; gap: 16px">
+    <div style="display: flex; align-items: center; gap: 10px">
+      <div style="width: 36px; height: 36px; border-radius: 10px; background: #5B3FD6; color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="m3 7 9 6 9-6"></path></svg>
+      </div>
+      <span style="font-weight: 700; font-size: 18px">Convite Interativo</span>
+    </div>
+
+    <sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+      <p role="status" style="margin: 0; color: #5E5A6B; font-size: 15px">Conferindo o seu link…</p>
+    </sc-if>
+
+    <sc-if value="{{invalid}}" hint-placeholder-val="{{ false }}">
+      <div data-testid="acesso-invalido" style="display: flex; flex-direction: column; gap: 12px">
+        <h1 style="margin: 0; font-size: 22px; font-weight: 700">Link sem validade</h1>
+        <p role="alert" style="margin: 0; padding: 12px 14px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px; line-height: 1.5">{{error}}</p>
+        <a href="#/Main" style="align-self: flex-start; color: #4A32C4; font-weight: 600; font-size: 14px">Já tenho senha: entrar</a>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{showForm}}" hint-placeholder-val="{{ true }}">
+      <form onSubmit="{{submit}}" data-testid="acesso-form" style="display: flex; flex-direction: column; gap: 16px; margin: 0">
+        <div>
+          <h1 style="margin: 0; font-size: 24px; font-weight: 700">Olá, {{firstName}}!</h1>
+          <p style="margin: 6px 0 0; color: #5E5A6B; font-size: 14px; line-height: 1.5">{{intro}}</p>
+        </div>
+        <div style="padding: 12px 14px; border-radius: 10px; background: #F4F1FE; color: #2F1F8F; font-size: 14px">
+          Seu usuário: <strong data-testid="acesso-usuario">{{username}}</strong>
+          <span style="display: block; margin-top: 2px; color: #4B4470; font-size: 13px">Guarde-o: é com ele e com a senha que você vai entrar das próximas vezes.</span>
+        </div>
+        <input type="text" name="username" autocomplete="username" value="{{username}}" readonly style="position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none" tabindex="-1" aria-hidden="true">
+        <div>
+          <label class="lbl" for="novasenha">Crie uma senha</label>
+          <div class="pwbox">
+            <input class="fld" id="novasenha" type="{{eye.type}}" autocomplete="new-password" value="{{password}}" onInput="{{onPassword}}" aria-describedby="pw-dica">
+            <button type="button" class="pweye" onClick="{{eye.toggle}}" aria-label="{{eye.label}}" aria-pressed="{{eye.pressed}}" title="{{eye.label}}"><sc-if value="{{eye.shown}}" hint-placeholder-val="{{ false }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3l18 18"></path><path d="M10.6 5.1A10.7 10.7 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.8 8.3 2 12 2 12s3.6 7 10 7a10 10 0 0 0 5.4-1.6"></path><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"></path></svg></sc-if><sc-if value="{{eye.hidden}}" hint-placeholder-val="{{ true }}"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"></path><circle cx="12" cy="12" r="3"></circle></svg></sc-if></button>
+          </div>
+          <p id="pw-dica" style="margin: 6px 0 0; color: #5E5A6B; font-size: 13px">Pelo menos 8 caracteres.</p>
+        </div>
+        <div>
+          <label class="lbl" for="confirma">Repita a senha</label>
+          <input class="fld" id="confirma" type="{{eye.type}}" autocomplete="new-password" value="{{confirm}}" onInput="{{onConfirm}}">
+        </div>
+        <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{error}}</p>
+        </sc-if>
+        <button type="submit" disabled="{{busy}}" style="min-height: 48px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 16px; cursor: pointer">{{buttonLabel}}</button>
+      </form>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"onLogin":{"editor":null},"$preview":{"width":480,"height":760}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { loading: true, info: null, error: '', password: '', confirm: '', busy: false, showPw: false };
+  }
+  token() { return (this.props.route && this.props.route.params && this.props.route.params.id) || ''; }
+  componentDidMount() {
+    api.accessInfo(this.token())
+      .then((info) => this.setState({ loading: false, info }))
+      .catch((e) => this.setState({ loading: false, info: null, error: e.message }));
+  }
+  renderVals() {
+    const st = this.state;
+    const info = st.info || {};
+    const client = info.role === 'cliente';
+    return {
+      loading: st.loading,
+      invalid: !st.loading && !st.info,
+      showForm: !st.loading && !!st.info,
+      firstName: String(info.name || '').split(/\s+/)[0] || 'tudo bem',
+      intro: (info.hasPassword ? 'Crie uma senha nova para a sua conta. ' : 'Falta só criar a sua senha. ') +
+        (client ? 'Depois disso, você entra direto no seu convite: acompanha quem confirmou presença e ajusta textos, fotos e detalhes quando quiser.' : 'Depois disso, você já entra na plataforma.'),
+      username: info.username || '',
+      eye: { shown: !!st.showPw, hidden: !st.showPw, type: st.showPw ? 'text' : 'password', label: st.showPw ? 'Ocultar senha' : 'Mostrar senha', pressed: st.showPw ? 'true' : 'false', toggle: () => this.setState({ showPw: !this.state.showPw }) },
+      password: st.password,
+      confirm: st.confirm,
+      onPassword: (e) => this.setState({ password: e.target.value, error: '' }),
+      onConfirm: (e) => this.setState({ confirm: e.target.value, error: '' }),
+      hasError: !!st.error,
+      error: st.error,
+      busy: st.busy,
+      buttonLabel: st.busy ? 'Salvando…' : 'Criar senha e entrar',
+      submit: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const f = e && e.target && e.target.elements;
+        const password = (f && f.novasenha && f.novasenha.value) || st.password;
+        const confirm = (f && f.confirma && f.confirma.value) || st.confirm;
+        if (password.length < 8) { this.setState({ error: 'A senha precisa ter pelo menos 8 caracteres.' }); return; }
+        if (password !== confirm) { this.setState({ error: 'As duas senhas não são iguais. Digite de novo.' }); return; }
+        this.setState({ busy: true, error: '' });
+        api.setPasswordByLink(this.token(), password)
+          .then(() => { if (this.props.onLogin) this.props.onLogin(); })
+          .catch((err) => this.setState({ busy: false, error: err.message }));
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -795,7 +795,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
           
 
           <section style="display: flex; flex-direction: column; gap: 8px; border-top: 1px solid #EEECF3; padding-top: 16px">
-            <button onClick="{{saveAsTheme}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Salvar como novo tema</button>
+<sc-if value="{{canSaveTheme}}" hint-placeholder-val="{{ true }}">            <button onClick="{{saveAsTheme}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer">Salvar como novo tema</button></sc-if>
             <button onClick="{{resetTheme}}" disabled="{{T.unmodified}}" style="min-height: 44px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 14px; cursor: pointer">Restaurar tema {{T.baseName}}</button>
             <button onClick="{{changeTheme}}" style="align-self: center; min-height: 40px; padding: 0 8px; border: 0; background: transparent; color: #4A32C4; font-weight: 600; font-size: 14px; cursor: pointer; text-decoration: underline">Trocar tema base</button>
           </section>
@@ -3253,6 +3253,7 @@ class Component extends DCLogic {
       onRadius: (e) => this.patchTheme({ radiusKey: e.target.value }),
       onOpenAnim: (e) => { this.patchTheme({ anim: e.target.value }); this.setState({ view: 'opening', openingRun: st.openingRun + 1 }); },
       resetTheme: () => this.setState({ theme: this.baseTheme(), toast: 'Tema ' + T.baseName + ' restaurado neste convite.' }),
+      canSaveTheme: !api.isClient(),
       saveAsTheme: () => {
         const th = st.theme;
         api.saveTheme({ name: T.baseName + ' personalizado', cat: st.kicker || 'Casamento', bg: th.bg, fg: th.fg, accent: th.accent, btnFg: th.btnFg, paper: th.paper, ph: th.ph, fontKey: th.fontKey, italic: th.italic, layout: th.layout, radiusKey: th.radiusKey, anim: th.anim, fx: th.fx || 'nenhum', pageFx: th.pageFx || 'suave', bodyKey: th.bodyKey || 'jakarta' })

@@ -30,7 +30,7 @@ button,input,select,textarea{font-family:inherit}
 button:disabled{opacity:.5;cursor:not-allowed}
 .xbtn:hover{background:rgba(127,120,150,.16)}
 .xbtn:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
-.urow{display:grid;grid-template-columns:minmax(160px,1.4fr) minmax(110px,.8fr) minmax(170px,1.3fr) 130px 120px 96px 200px;gap:6px 14px;align-items:center}
+.urow{display:grid;grid-template-columns:minmax(160px,1.4fr) minmax(110px,.8fr) minmax(170px,1.3fr) 130px 120px 96px 300px;gap:6px 14px;align-items:center}
 .uhead{padding:8px 20px;background:#FAF9FC;border-bottom:1px solid #EEECF3;color:#5E5A6B;font-size:12px;font-weight:600}
 .mlbl{display:none;font-size:11px;font-weight:600;color:#5E5A6B}
 .seg{min-height:44px;border-radius:10px;font-weight:700;font-size:14px;cursor:pointer}
@@ -43,7 +43,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
   <main style="max-width: 1200px; margin: 0 auto; padding: 32px 24px 64px; display: flex; flex-direction: column; gap: 22px">
     <div>
       <h1 style="margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700">Usuários</h1>
-      <p style="margin: 6px 0 0; color: #5E5A6B; max-width: 720px">Quem pode entrar na plataforma. <strong>Administradores</strong> veem todos os convites, temas e listas de convidados e acessam este painel. <strong>Usuários</strong> veem só os próprios convites e listas de convidados, e podem usar todos os temas.</p>
+      <p style="margin: 6px 0 0; color: #5E5A6B; max-width: 720px">Quem pode entrar na plataforma. <strong>Administradores</strong> veem todos os convites, temas e listas de convidados e acessam este painel. <strong>Usuários</strong> veem só os próprios convites e listas de convidados, e podem usar todos os temas. <strong>Clientes</strong> só veem e editam os convites que estão na conta deles e acompanham as respostas: não criam convites nem temas. Eles recebem um link para criar a própria senha.</p>
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px">
@@ -83,6 +83,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
                 <sc-if value="{{u.master}}" hint-placeholder-val="{{ false }}">
                   <span style="display: block; font-size: 12px; color: #5E5A6B">Conta principal · senha na variável ADMIN_PASSWORD do Vercel</span>
                 </sc-if>
+                <sc-if value="{{u.hasNote}}" hint-placeholder-val="{{ false }}">
+                  <span data-testid="nota-acesso" style="display: block; font-size: 12px; color: #8A4B00">{{u.note}}</span>
+                </sc-if>
                 <sc-if value="{{u.isMe}}" hint-placeholder-val="{{ false }}">
                   <span style="display: block; font-size: 12px; color: #4A32C4; font-weight: 600">Você</span>
                 </sc-if>
@@ -101,6 +104,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
               <div class="c-wide c-act" style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px">
                 <sc-if value="{{u.editable}}" hint-placeholder-val="{{ true }}">
                   <button class="sbtn" onClick="{{u.edit}}" aria-label="Editar {{u.name}}">Editar</button>
+                  <sc-if value="{{u.active}}" hint-placeholder-val="{{ true }}">
+                    <button class="sbtn" onClick="{{u.makeLink}}" aria-label="Gerar link de acesso para {{u.name}}" title="Link para a pessoa criar uma senha nova">Link de acesso</button>
+                  </sc-if>
                   <sc-if value="{{u.canToggle}}" hint-placeholder-val="{{ true }}">
                     <button class="sbtn" onClick="{{u.toggle}}" aria-label="{{u.toggleAria}}" style="color: {{u.toggleFg}}">{{u.toggleLabel}}</button>
                   </sc-if>
@@ -161,7 +167,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
               <input class="fld" id="u-name" value="{{f.name}}" onInput="{{f.on.name}}" autocomplete="off" placeholder="Nome completo">
             </div>
             <div>
-              <label class="lbl" for="u-email">E-mail</label>
+              <label class="lbl" for="u-email">E-mail<sc-if value="{{f.isClient}}" hint-placeholder-val="{{ false }}"> <span style="font-weight: 400; color: #5E5A6B">(opcional para clientes)</span></sc-if></label>
               <input class="fld" id="u-email" type="email" value="{{f.email}}" onInput="{{f.on.email}}" autocomplete="off" placeholder="nome@exemplo.com">
             </div>
             <div>
@@ -187,13 +193,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
               </div>
               <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{modal.passHelp}}</span>
             </div>
-            <div>
+            <div style="grid-column: 1 / -1">
               <span class="lbl" id="u-role-l">Perfil de acesso</span>
-              <div role="radiogroup" aria-labelledby="u-role-l" style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px">
-                <sc-for list="{{f.roles}}" as="r" hint-placeholder-count="2">
-                  <button type="button" role="radio" class="seg" aria-checked="{{r.checked}}" onClick="{{r.pick}}" disabled="{{r.disabled}}" style="border: 1px solid {{r.ring}}; background: {{r.bg}}; color: {{r.fg}}">{{r.label}}</button>
+              <div role="radiogroup" aria-labelledby="u-role-l" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px">
+                <sc-for list="{{f.roles}}" as="r" hint-placeholder-count="3">
+                  <button type="button" role="radio" class="seg" aria-checked="{{r.checked}}" onClick="{{r.pick}}" disabled="{{r.disabled}}" style="border: 1px solid {{r.ring}}; background: {{r.bg}}; color: {{r.fg}}; padding: 0 6px">{{r.label}}</button>
                 </sc-for>
               </div>
+              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">{{f.roleHelp}}</span>
             </div>
           </div>
           <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 10px; background: #F5F4F8; cursor: pointer">
@@ -230,6 +237,29 @@ button:disabled{opacity:.5;cursor:not-allowed}
     </div>
   </sc-if>
 
+  <sc-if value="{{lk.open}}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{lk.backdrop}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(15, 14, 20, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
+      <div role="dialog" aria-modal="true" aria-labelledby="lk-title" data-testid="link-modal" style="position: relative; width: min(520px, 100%); max-height: calc(100vh - 32px); overflow: auto; box-sizing: border-box; background: #FFFFFF; border-radius: 16px; padding: 22px; display: flex; flex-direction: column; gap: 12px">
+        <button type="button" class="xbtn" onClick="{{lk.close}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        <h2 id="lk-title" style="margin: 0; padding-right: 48px; font-size: 18px">Link de acesso de {{lk.name}}</h2>
+        <p style="margin: 0; font-size: 14px; color: #3D3A4A">Pelo link, {{lk.first}} cria uma senha nova e já entra. Vale por 7 dias e pode ser usado uma vez; links gerados antes deixam de valer.</p>
+        <div>
+          <label class="lbl" for="lk-link">Link</label>
+          <input class="fld" id="lk-link" data-testid="link-acesso" readonly value="{{lk.link}}" onFocus="{{lk.selectAll}}">
+        </div>
+        <div>
+          <label class="lbl" for="lk-msg">Mensagem pronta</label>
+          <textarea class="fld" id="lk-msg" readonly rows="7" value="{{lk.message}}" style="resize: vertical; line-height: 1.45"></textarea>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: flex-end">
+          <a class="btn pri" href="{{lk.waHref}}" target="_blank" rel="noopener noreferrer">Enviar pelo WhatsApp</a>
+          <button type="button" class="btn" onClick="{{lk.copy}}">{{lk.copyLabel}}</button>
+          <button type="button" class="btn" onClick="{{lk.close}}">Concluir</button>
+        </div>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 70; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 12px 18px; border-radius: 12px; background: #17151F; color: #FFFFFF; font-size: 14px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3)">{{toast}}</div>
   </sc-if>
@@ -239,13 +269,13 @@ button:disabled{opacity:.5;cursor:not-allowed}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    this.state = { users: null, error: '', tab: 'Todos', query: '', modal: null, toast: '', bk: null, bkBusy: false, restore: null };
+    this.state = { users: null, error: '', tab: 'Todos', query: '', modal: null, toast: '', bk: null, bkBusy: false, restore: null, link: null };
   }
 
   componentDidMount() {
     this.load();
     this.loadBackups();
-    this.onEsc = (e) => { if (e.key === 'Escape') { if (this.state.restore) this.setState({ restore: null }); else if (this.state.modal) this.setState({ modal: null }); } };
+    this.onEsc = (e) => { if (e.key === 'Escape') { if (this.state.link) this.setState({ link: null }); else if (this.state.restore) this.setState({ restore: null }); else if (this.state.modal) this.setState({ modal: null }); } };
     window.addEventListener('keydown', this.onEsc);
   }
 
@@ -329,7 +359,7 @@ class Component extends DCLogic {
     const u = api.user() || {};
     return {
       isAdmin: api.isAdmin(), name: u.name || u.username || '',
-      role: u.role === 'admin' ? 'Administrador' : 'Usuário',
+      role: u.role === 'admin' ? 'Administrador' : (u.role === 'cliente' ? 'Cliente' : 'Usuário'),
       logout: () => api.logout().then(() => { if (this.props.onLogout) this.props.onLogout(); }),
       done: () => { if (this.props.onLogout) this.props.onLogout(); }
     };
@@ -343,6 +373,33 @@ class Component extends DCLogic {
       error: '', busy: false
     } });
     setTimeout(() => { try { document.getElementById('u-name').focus(); } catch (e) {} }, 40);
+  }
+
+  // link de acesso: a pessoa cria uma senha nova por ele (o anterior deixa de valer)
+  makeLink(u) {
+    api.newAccessLink(u.id)
+      .then((r) => {
+        this.setState({ link: Object.assign({ copied: false }, r), users: (this.state.users || []).map((x) => (x.id === r.user.id ? r.user : x)) });
+      })
+      .catch((e) => this.say(e.message));
+  }
+
+  linkVals() {
+    const l = this.state.link;
+    if (!l) return { open: false };
+    const u = l.user || {};
+    const digits = String(u.phone || '').replace(/\D/g, '');
+    const intl = digits.length === 10 || digits.length === 11 ? '55' + digits : digits;
+    return {
+      open: true, name: u.name, first: String(u.name || '').split(/\s+/)[0] || 'a pessoa',
+      link: l.link, message: l.message,
+      waHref: 'https://wa.me/' + intl + '?text=' + encodeURIComponent(l.message || ''),
+      selectAll: (e) => { try { e.target.select(); } catch (err) {} },
+      copyLabel: l.copied ? 'Copiado!' : 'Copiar mensagem',
+      copy: () => { try { navigator.clipboard.writeText(l.message).then(() => this.setState({ link: Object.assign({}, this.state.link, { copied: true }) })); } catch (e) {} },
+      close: () => this.setState({ link: null }),
+      backdrop: (e) => { if (e.target === e.currentTarget) this.setState({ link: null }); }
+    };
   }
 
   setForm(patch) {
@@ -378,8 +435,12 @@ class Component extends DCLogic {
       return {
         id: u.id, name: u.name, username: u.username, master: !!u.master, isMe,
         emailText: u.email || '—', phoneText: u.phone || '—',
-        roleLabel: u.role === 'admin' ? 'Administrador' : 'Usuário',
-        roleBg: u.role === 'admin' ? '#EEEAFB' : '#F1EFF6', roleFg: u.role === 'admin' ? '#43299F' : '#3D3A4A',
+        roleLabel: u.role === 'admin' ? 'Administrador' : (u.role === 'cliente' ? 'Cliente' : 'Usuário'),
+        roleBg: u.role === 'admin' ? '#EEEAFB' : (u.role === 'cliente' ? '#E6F4FF' : '#F1EFF6'), roleFg: u.role === 'admin' ? '#43299F' : (u.role === 'cliente' ? '#0B4A75' : '#3D3A4A'),
+        active: !!u.active,
+        hasNote: !u.master && (!u.hasPassword || !!u.accessUntil),
+        note: !u.hasPassword ? (u.accessUntil ? 'Ainda não criou a senha · link vale até ' + new Date(u.accessUntil).toLocaleDateString('pt-BR') : 'Ainda não criou a senha · gere um link de acesso') : 'Link de acesso enviado · vale até ' + new Date(u.accessUntil).toLocaleDateString('pt-BR'),
+        makeLink: () => this.makeLink(u),
         stLabel: u.active ? 'Ativo' : 'Inativo', stFg: u.active ? '#1E6B43' : '#8E2A1F', stDot: u.active ? '#2E9D62' : '#D64535',
         rowBg: u.active ? '#FFFFFF' : '#FCFBFD',
         editable: !u.master, canToggle: !u.master && !isMe,
@@ -396,7 +457,9 @@ class Component extends DCLogic {
     const f = m ? m.form : {};
     const editingMe = editing && m.id === me.id;
     const loading = st.users === null;
+    const clientForm = f.role === 'cliente';
     return Object.assign(this.backupVals(), {
+      lk: this.linkVals(),
       genPass: () => {
         // 12 caracteres sem letras parecidas (l, 1, O, 0), com pelo menos um número
         const abc = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -416,7 +479,7 @@ class Component extends DCLogic {
       hdr: this.header(),
       stats: [
         { label: 'Usuários', value: String(users.length), note: 'incluindo a conta principal' },
-        { label: 'Ativos', value: String(count((u) => u.active)), note: count((u) => u.active && u.role === 'admin') + ' administradores' },
+        { label: 'Ativos', value: String(count((u) => u.active)), note: count((u) => u.active && u.role === 'admin') + ' administradores · ' + count((u) => u.active && u.role === 'cliente') + ' clientes' },
         { label: 'Inativos', value: String(count((u) => !u.active)), note: 'não conseguem entrar' }
       ],
       tabs, query: st.query, onQuery: (e) => this.setState({ query: e.target.value }),
@@ -429,9 +492,9 @@ class Component extends DCLogic {
       modal: {
         open: !!m,
         title: editing ? 'Editar usuário' : 'Novo usuário',
-        passLabel: editing ? 'Nova senha' : 'Senha',
-        passPlaceholder: editing ? 'Deixe em branco para manter' : 'Mínimo de 8 caracteres',
-        passHelp: editing ? 'Ao trocar a senha, o usuário precisa entrar de novo.' : 'Mínimo de 8 caracteres. Envie ao usuário por um canal seguro.',
+        passLabel: editing ? 'Nova senha' : (clientForm ? 'Senha (opcional)' : 'Senha'),
+        passPlaceholder: editing ? 'Deixe em branco para manter' : (clientForm ? 'Deixe em branco: o cliente cria pelo link' : 'Mínimo de 8 caracteres'),
+        passHelp: editing ? 'Ao trocar a senha, o usuário precisa entrar de novo. Ou use “Link de acesso” para a pessoa criar a própria senha.' : (clientForm ? 'Sem senha, você recebe um link para o cliente criar a dele.' : 'Mínimo de 8 caracteres. Envie ao usuário por um canal seguro.'),
         saveLabel: m && m.busy ? 'Salvando…' : 'Salvar',
         busy: !!(m && m.busy),
         hasError: !!(m && m.error), error: m ? m.error : '',
@@ -442,7 +505,7 @@ class Component extends DCLogic {
           const cur = this.state.modal;
           const d = cur.form;
           if (!String(d.name).trim()) { this.setState({ modal: Object.assign({}, cur, { error: 'Informe o nome.' }) }); return; }
-          if (!cur.id && String(d.password).length < 8) { this.setState({ modal: Object.assign({}, cur, { error: 'A senha precisa ter pelo menos 8 caracteres.' }) }); return; }
+          if (!cur.id && d.role !== 'cliente' && String(d.password).length < 8) { this.setState({ modal: Object.assign({}, cur, { error: 'A senha precisa ter pelo menos 8 caracteres.' }) }); return; }
           const payload = { name: d.name, email: d.email, phone: d.phone, username: d.username, role: d.role, active: d.active };
           if (d.password) payload.password = d.password;
           this.setState({ modal: Object.assign({}, cur, { busy: true, error: '' }) });
@@ -451,6 +514,8 @@ class Component extends DCLogic {
               const list = this.state.users || [];
               const exists = list.some((x) => x.id === u.id);
               this.setState({ users: exists ? list.map((x) => (x.id === u.id ? u : x)) : list.concat([u]), modal: null });
+              // cliente novo sem senha: já mostra o link de acesso para enviar
+              if (!cur.id && u.role === 'cliente' && !u.hasPassword) { this.makeLink(u); return; }
               this.say(cur.id ? 'Usuário ' + u.name + ' atualizado.' : 'Usuário ' + u.name + ' criado. Ele já pode entrar com o usuário “' + u.username + '”.');
             })
             .catch((err) => this.setState({ modal: Object.assign({}, this.state.modal, { busy: false, error: err.message }) }));
@@ -461,10 +526,12 @@ class Component extends DCLogic {
         active: f.active !== false,
         lockActive: editingMe,
         activeHelp: editingMe ? 'Você não pode inativar a sua própria conta.' : 'Usuários inativos não conseguem entrar; os convites deles continuam no ar.',
-        roles: [['user', 'Usuário'], ['admin', 'Administrador']].map(([v, label]) => {
+        isClient: clientForm,
+        roleHelp: f.role === 'admin' ? 'Vê e gerencia tudo, inclusive este painel.' : (clientForm ? 'Só vê e edita os convites que estão na conta dele e acompanha as respostas. Não cria convites nem temas.' : 'Cria e gerencia os próprios convites e temas.'),
+        roles: [['user', 'Usuário'], ['cliente', 'Cliente'], ['admin', 'Administrador']].map(([v, label]) => {
           const on = f.role === v;
           return {
-            label, checked: on ? 'true' : 'false', disabled: editingMe && v === 'user',
+            label, checked: on ? 'true' : 'false', disabled: editingMe && v !== 'admin',
             bg: on ? '#5B3FD6' : '#FFFFFF', fg: on ? '#FFFFFF' : '#17151F', ring: on ? '#5B3FD6' : '#D6D3E0',
             pick: () => this.setForm({ role: v })
           };

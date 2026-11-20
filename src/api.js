@@ -586,6 +586,15 @@ export const api = {
   // usuário logado (do último /api/auth?action=me)
   user: () => (config && config.user) || null,
   isAdmin: () => !!(config && config.admin),
+  // conta de cliente: só edita os convites que estão nela e acompanha as respostas
+  isClient: () => !!(config && config.client),
+
+  // link de acesso do cliente
+  accessInfo: (token) => call('POST', '/api/auth?action=access', { token }),
+  setPasswordByLink: (token, password) => call('POST', '/api/auth?action=setpw', { token, password }),
+  giveClientAccess: (data) => call('POST', '/api/users?action=client', data),
+  newAccessLink: (id) => call('POST', '/api/users?action=link&id=' + enc(id), {}),
+  transferInvite: (id, ownerId) => call('PUT', '/api/invites?action=transfer&id=' + enc(id), { ownerId }),
 
   listUsers: () => call('GET', '/api/users'),
   createUser: (data) => call('POST', '/api/users', data),

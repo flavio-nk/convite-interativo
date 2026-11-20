@@ -19,6 +19,13 @@ button{font-family:inherit}
 .pill:hover{border-color:#B9B4CC}
 .mi:hover{background:#F4F1FE}
 .fab{display:none}
+.mfld{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid #D6D3E0;border-radius:10px;background:#FFFFFF;color:#17151F;font:inherit;font-size:15px}
+.mfld:focus{outline:2px solid #5B3FD6;outline-offset:1px;border-color:#5B3FD6}
+.mlbl{display:block;font-size:13px;font-weight:600;color:#3D3A4A;margin-bottom:6px}
+.sbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 16px;border-radius:10px;border:1px solid #D6D3E0;background:#FFFFFF;color:#17151F;font-weight:600;font-size:14px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.sbtn:hover{background:#F4F1FE}
+.pbtn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border-radius:10px;border:0;background:#5B3FD6;color:#FFFFFF;font-weight:700;font-size:14px;cursor:pointer;text-decoration:none;box-sizing:border-box}
+.pbtn[disabled]{opacity:.6;cursor:default}
 @media (max-width:640px){.fab{display:inline-flex}.newbtn{display:none!important}}
 </style>
 </helmet>
@@ -31,10 +38,12 @@ button{font-family:inherit}
         <h1 style="margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 800">{{heading}}</h1>
         <p style="margin: 6px 0 0; color: #5E5A6B">{{countLabel}}</p>
       </div>
+      <sc-if value="{{canCreate}}" hint-placeholder-val="{{ true }}">
       <a href="{{newHref}}" onClick="{{startNew}}" class="newbtn" style="display: inline-flex; align-items: center; gap: 8px; min-height: 46px; padding: 0 20px; border-radius: 11px; background: #5B3FD6; color: #FFFFFF; font-weight: 700; text-decoration: none">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
         Novo convite
       </a>
+      </sc-if>
     </div>
 
     <sc-if value="{{hasAny}}" hint-placeholder-val="{{ true }}">
@@ -71,7 +80,7 @@ button{font-family:inherit}
               <h2 style="margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; overflow-wrap: anywhere">{{inv.title}}</h2>
               <p style="margin: 4px 0 0; font-size: 14px; color: #5E5A6B">{{inv.when}}</p>
               <sc-if value="{{inv.showOwner}}" hint-placeholder-val="{{ false }}">
-                <p data-owner="{{inv.ownerName}}" style="margin: 2px 0 0; font-size: 13px; color: #5E5A6B">de {{inv.ownerName}}</p>
+                <p data-owner="{{inv.ownerName}}" style="margin: 2px 0 0; font-size: 13px; color: #5E5A6B; display: flex; align-items: center; gap: 6px; flex-wrap: wrap">de {{inv.ownerName}}<sc-if value="{{inv.ownerClient}}" hint-placeholder-val="{{ false }}"><span data-testid="badge-cliente" style="padding: 1px 8px; border-radius: 999px; background: #E6F4FF; color: #0B4A75; font-size: 11px; font-weight: 700">Cliente</span></sc-if></p>
               </sc-if>
             </div>
             <sc-if value="{{inv.showStats}}" hint-placeholder-val="{{ false }}">
@@ -101,9 +110,16 @@ button{font-family:inherit}
               <a role="menuitem" class="mi" href="{{inv.viewHref}}" target="_blank" rel="noopener" style="display: flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: 8px; color: #17151F; font-size: 14px; text-decoration: none">Ver o convite</a>
               <a role="menuitem" class="mi" href="{{inv.editHref}}" style="display: flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: 8px; color: #17151F; font-size: 14px; text-decoration: none">Editar</a>
               <a role="menuitem" class="mi" href="{{inv.rsvpHref}}" style="display: flex; align-items: center; min-height: 40px; padding: 0 12px; border-radius: 8px; color: #17151F; font-size: 14px; text-decoration: none">Convidados e respostas</a>
+              <sc-if value="{{inv.canAdmin}}" hint-placeholder-val="{{ true }}">
+              <span style="height: 1px; background: #EEEDF3; margin: 4px 0"></span>
+              <button role="menuitem" class="mi" onClick="{{inv.giveAccess}}" data-testid="menu-acesso" style="text-align: left; min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: #17151F; font: inherit; font-size: 14px; cursor: pointer">Dar acesso ao cliente…</button>
+              <button role="menuitem" class="mi" onClick="{{inv.askTransfer}}" data-testid="menu-transferir" style="text-align: left; min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: #17151F; font: inherit; font-size: 14px; cursor: pointer">Transferir para outra conta…</button>
+              </sc-if>
+              <sc-if value="{{inv.canCreate}}" hint-placeholder-val="{{ true }}">
               <button role="menuitem" class="mi" onClick="{{inv.duplicate}}" style="text-align: left; min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: #17151F; font: inherit; font-size: 14px; cursor: pointer">Duplicar (para outro evento)</button>
               <span style="height: 1px; background: #EEEDF3; margin: 4px 0"></span>
               <button role="menuitem" class="mi" onClick="{{inv.askDelete}}" aria-label="Excluir {{inv.title}}" style="text-align: left; min-height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: #B42318; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer">Excluir convite…</button>
+              </sc-if>
             </div>
           </sc-if>
         </article>
@@ -115,6 +131,12 @@ button{font-family:inherit}
     </sc-if>
     <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
       <p role="alert" style="margin: 0; padding: 12px 14px; border-radius: 10px; background: #FDECEA; color: #8C1D13">{{error}} <button onClick="{{reload}}" style="border: 0; background: transparent; color: #8C1D13; font-weight: 700; text-decoration: underline; cursor: pointer; font-size: 15px">Tentar de novo</button></p>
+    </sc-if>
+    <sc-if value="{{isNoneClient}}" hint-placeholder-val="{{ false }}">
+      <section aria-label="Nenhum convite" data-testid="cliente-vazio" style="padding: 28px; border-radius: 18px; border: 1.5px dashed #C9C4DB; background: #FFFFFF">
+        <h2 style="margin: 0 0 6px; font-size: 22px">Seu convite ainda não chegou aqui</h2>
+        <p style="margin: 0; font-size: 15px; color: #5E5A6B">Assim que quem está fazendo o seu convite passá-lo para a sua conta, ele aparece nesta página. Daqui você acompanha as respostas dos convidados e ajusta textos e fotos quando quiser.</p>
+      </section>
     </sc-if>
     <sc-if value="{{isNone}}" hint-placeholder-val="{{ false }}">
       <section aria-label="Primeiro convite" style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center; padding: 28px; border-radius: 18px; border: 1.5px dashed #C9C4DB; background: #FFFFFF">
@@ -135,10 +157,12 @@ button{font-family:inherit}
     </sc-if>
   </main>
 
+  <sc-if value="{{canCreate}}" hint-placeholder-val="{{ true }}">
   <a href="{{newHref}}" onClick="{{startNew}}" class="fab" aria-label="Novo convite" style="position: fixed; right: 16px; bottom: 20px; z-index: 15; align-items: center; gap: 8px; height: 56px; padding: 0 22px; border-radius: 999px; background: #5B3FD6; color: #FFFFFF; font-weight: 700; font-size: 15px; text-decoration: none; box-shadow: 0 10px 24px rgba(91,63,214,0.35)">
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
     Novo convite
   </a>
+  </sc-if>
 
   <sc-if value="{{toast}}" hint-placeholder-val="{{ false }}">
     <div role="status" style="position: fixed; left: 50%; bottom: 28px; transform: translateX(-50%); background: #17151F; color: #FFFFFF; padding: 12px 18px; border-radius: 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 16px">
@@ -165,6 +189,108 @@ button{font-family:inherit}
       </div>
     </div>
   </sc-if>
+
+  <sc-if value="{{acc.open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 30; background: rgba(23, 21, 31, 0.55); display: flex; align-items: center; justify-content: center; padding: 16px; overflow-y: auto">
+      <div role="dialog" aria-modal="true" aria-labelledby="acc-title" data-testid="modal-acesso" style="position: relative; background: #FFFFFF; border-radius: 16px; padding: 28px; width: 100%; max-width: 480px; max-height: calc(100vh - 32px); overflow-y: auto; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px">
+        <button type="button" class="xbtn" onClick="{{acc.close}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        <sc-if value="{{acc.form}}" hint-placeholder-val="{{ true }}">
+          <form onSubmit="{{acc.submit}}" style="display: flex; flex-direction: column; gap: 14px; margin: 0">
+            <div style="padding-right: 36px">
+              <h2 id="acc-title" style="margin: 0; font-size: 20px; font-weight: 700">Dar acesso ao cliente</h2>
+              <p style="margin: 6px 0 0; color: #5E5A6B; font-size: 14px">“{{acc.title}}” passa para a conta do cliente, com convidados e respostas. Ele recebe um link para criar a senha e, depois, só vê e edita os próprios convites: não cria convites nem temas. Você continua vendo e editando tudo.</p>
+            </div>
+            <sc-if value="{{acc.hasClients}}" hint-placeholder-val="{{ false }}">
+              <div>
+                <label class="mlbl" for="acc-conta">Conta</label>
+                <select class="mfld" id="acc-conta" value="{{acc.userId}}" onChange="{{acc.onUser}}">
+                  <option value="">Criar uma conta nova de cliente</option>
+                  <sc-for list="{{acc.clients}}" as="c" hint-placeholder-count="2">
+                    <option value="{{c.id}}">{{c.label}}</option>
+                  </sc-for>
+                </select>
+              </div>
+            </sc-if>
+            <sc-if value="{{acc.isNew}}" hint-placeholder-val="{{ true }}">
+              <div>
+                <label class="mlbl" for="acc-nome">Nome do cliente</label>
+                <input class="mfld" id="acc-nome" autocomplete="off" value="{{acc.name}}" onInput="{{acc.onName}}">
+              </div>
+              <div>
+                <label class="mlbl" for="acc-whats">WhatsApp (com DDD)</label>
+                <input class="mfld" id="acc-whats" type="tel" inputmode="tel" autocomplete="off" placeholder="(11) 98765-4321" value="{{acc.phone}}" onInput="{{acc.onPhone}}">
+              </div>
+              <div>
+                <label class="mlbl" for="acc-email">E-mail <span style="font-weight: 500; color: #5E5A6B">(opcional)</span></label>
+                <input class="mfld" id="acc-email" type="email" autocomplete="off" value="{{acc.email}}" onInput="{{acc.onEmail}}">
+              </div>
+            </sc-if>
+            <sc-if value="{{acc.hasError}}" hint-placeholder-val="{{ false }}">
+              <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{acc.error}}</p>
+            </sc-if>
+            <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px">
+              <button type="button" class="sbtn" onClick="{{acc.close}}">Cancelar</button>
+              <button type="submit" class="pbtn" disabled="{{acc.busy}}">{{acc.submitLabel}}</button>
+            </div>
+          </form>
+        </sc-if>
+        <sc-if value="{{acc.done}}" hint-placeholder-val="{{ false }}">
+          <div data-testid="acesso-pronto" style="display: flex; flex-direction: column; gap: 14px">
+            <div style="padding-right: 36px">
+              <h2 id="acc-title" style="margin: 0; font-size: 20px; font-weight: 700">Pronto! Agora é só enviar</h2>
+              <p style="margin: 6px 0 0; color: #5E5A6B; font-size: 14px">“{{acc.title}}” está na conta de <strong>{{acc.clientName}}</strong> (usuário <strong>{{acc.username}}</strong>). Envie a mensagem abaixo: o link vale por 7 dias e pode ser usado uma vez. Se precisar, gere outro em Usuários.</p>
+            </div>
+            <div>
+              <label class="mlbl" for="acc-link">Link de acesso</label>
+              <input class="mfld" id="acc-link" data-testid="acesso-link" readonly value="{{acc.link}}" onFocus="{{acc.selectAll}}">
+            </div>
+            <div>
+              <label class="mlbl" for="acc-msg">Mensagem pronta</label>
+              <textarea class="mfld" id="acc-msg" readonly rows="7" value="{{acc.message}}" style="resize: vertical; line-height: 1.45"></textarea>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <a class="pbtn" href="{{acc.waHref}}" target="_blank" rel="noopener noreferrer" data-testid="acesso-whats">Enviar pelo WhatsApp</a>
+              <button type="button" class="sbtn" onClick="{{acc.copy}}">{{acc.copyLabel}}</button>
+              <sc-if value="{{acc.hasEmail}}" hint-placeholder-val="{{ false }}">
+                <a class="sbtn" href="{{acc.mailHref}}">Enviar por e-mail</a>
+              </sc-if>
+            </div>
+            <div style="display: flex; justify-content: flex-end">
+              <button type="button" class="sbtn" onClick="{{acc.close}}">Concluir</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{tr.open}}" hint-placeholder-val="{{ false }}">
+    <div style="position: fixed; inset: 0; z-index: 30; background: rgba(23, 21, 31, 0.55); display: flex; align-items: center; justify-content: center; padding: 16px">
+      <form role="dialog" aria-modal="true" aria-labelledby="tr-title" data-testid="modal-transferir" onSubmit="{{tr.submit}}" style="position: relative; background: #FFFFFF; border-radius: 16px; padding: 28px; width: 100%; max-width: 440px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; margin: 0">
+        <button type="button" class="xbtn" onClick="{{tr.close}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        <div style="padding-right: 36px">
+          <h2 id="tr-title" style="margin: 0; font-size: 20px; font-weight: 700">Transferir “{{tr.title}}”</h2>
+          <p style="margin: 6px 0 0; color: #5E5A6B; font-size: 14px">O convite vai com os convidados e as respostas. O link dos convidados continua o mesmo. Hoje ele está na conta de <strong>{{tr.current}}</strong>.</p>
+        </div>
+        <div>
+          <label class="mlbl" for="tr-para">Passar para</label>
+          <select class="mfld" id="tr-para" value="{{tr.to}}" onChange="{{tr.onTo}}">
+            <option value="">Escolha uma conta…</option>
+            <sc-for list="{{tr.users}}" as="u" hint-placeholder-count="3">
+              <option value="{{u.id}}">{{u.label}}</option>
+            </sc-for>
+          </select>
+        </div>
+        <sc-if value="{{tr.hasError}}" hint-placeholder-val="{{ false }}">
+          <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{tr.error}}</p>
+        </sc-if>
+        <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px">
+          <button type="button" class="sbtn" onClick="{{tr.close}}">Cancelar</button>
+          <button type="submit" class="pbtn" disabled="{{tr.busy}}">Transferir</button>
+        </div>
+      </form>
+    </div>
+  </sc-if>
 </div>
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"onLogout":{"editor":null},"$preview":{"width":1280,"height":1000}}'>
@@ -173,7 +299,7 @@ class Component extends DCLogic {
     super(props);
     let pref = null;
     try { pref = JSON.parse(localStorage.getItem('ci:lista') || 'null'); } catch (e) {}
-    this.state = { filter: 'Todos', sort: (pref && pref.sort) || 'evento', query: '', items: null, error: '', pending: null, lastDeleted: null, busy: false, menu: null, note: '' };
+    this.state = { filter: 'Todos', sort: (pref && pref.sort) || 'evento', query: '', items: null, error: '', pending: null, lastDeleted: null, busy: false, menu: null, note: '', acc: null, tr: null, users: null };
   }
   componentDidMount() {
     this.load();
@@ -203,6 +329,100 @@ class Component extends DCLogic {
     clearTimeout(this.toastTimer);
     this.toastTimer = setTimeout(() => this.setState({ lastDeleted: null, note: '' }), 10000);
     this.setState({ note, lastDeleted: undo || null });
+  }
+  loadUsers() {
+    if (this.state.users) return Promise.resolve(this.state.users);
+    return api.listUsers().then((users) => { this.setState({ users }); return users; });
+  }
+  openAccess(i) {
+    this.setState({ menu: null, acc: { inv: i, step: 'form', userId: '', name: '', phone: '', email: '', error: '', busy: false, result: null, copied: false } });
+    this.loadUsers().catch(() => {});
+  }
+  patchAcc(p) { this.setState({ acc: Object.assign({}, this.state.acc, p) }); }
+  submitAccess(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const a = this.state.acc;
+    if (!a || a.busy) return;
+    const f = e && e.target && e.target.elements;
+    const val = (k, d) => (f && f[k] ? f[k].value : d);
+    const data = { inviteId: a.inv.id };
+    if (a.userId) data.userId = a.userId;
+    else {
+      data.name = String(val('acc-nome', a.name)).trim();
+      data.phone = String(val('acc-whats', a.phone)).trim();
+      data.email = String(val('acc-email', a.email)).trim();
+      if (!data.name) { this.patchAcc({ error: 'Informe o nome do cliente.' }); return; }
+    }
+    this.patchAcc({ busy: true, error: '' });
+    api.giveClientAccess(data)
+      .then((r) => { this.patchAcc({ busy: false, step: 'done', result: r }); this.setState({ users: null }); this.load(); })
+      .catch((err) => this.patchAcc({ busy: false, error: err.message }));
+  }
+  accVals() {
+    const a = this.state.acc;
+    if (!a) return { open: false };
+    const r = a.result || {};
+    const ru = r.user || {};
+    const clients = (this.state.users || []).filter((u) => u.role === 'cliente' && u.active);
+    const digits = String(ru.phone || a.phone || '').replace(/\D/g, '');
+    const intl = digits.length === 10 || digits.length === 11 ? '55' + digits : digits;
+    const msg = r.message || '';
+    return {
+      open: true, form: a.step === 'form', done: a.step === 'done',
+      title: a.inv.title,
+      hasClients: clients.length > 0,
+      clients: clients.map((u) => ({ id: u.id, label: u.name + ' (' + u.username + ')' })),
+      userId: a.userId, isNew: !a.userId,
+      onUser: (e) => this.patchAcc({ userId: e.target.value, error: '' }),
+      name: a.name, phone: a.phone, email: a.email,
+      onName: (e) => this.patchAcc({ name: e.target.value, error: '' }),
+      onPhone: (e) => this.patchAcc({ phone: e.target.value, error: '' }),
+      onEmail: (e) => this.patchAcc({ email: e.target.value, error: '' }),
+      hasError: !!a.error, error: a.error, busy: a.busy,
+      submitLabel: a.busy ? 'Gerando o acesso…' : 'Passar convite e gerar link',
+      submit: (e) => this.submitAccess(e),
+      clientName: ru.name || '', username: ru.username || '',
+      link: r.link || '', message: msg,
+      waHref: 'https://wa.me/' + (intl ? intl : '') + '?text=' + encodeURIComponent(msg),
+      hasEmail: !!ru.email,
+      mailHref: 'mailto:' + (ru.email || '') + '?subject=' + encodeURIComponent('Acesso ao seu convite') + '&body=' + encodeURIComponent(msg),
+      selectAll: (e) => { try { e.target.select(); } catch (err) {} },
+      copyLabel: a.copied ? 'Copiado!' : 'Copiar mensagem',
+      copy: () => {
+        const done = () => this.patchAcc({ copied: true });
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(msg).then(done, () => {});
+        else { const t = document.getElementById('acc-msg'); if (t) { t.select(); try { document.execCommand('copy'); done(); } catch (err) {} } }
+      },
+      close: () => this.setState({ acc: null })
+    };
+  }
+  openTransfer(i) {
+    this.setState({ menu: null, tr: { inv: i, to: '', error: '', busy: false } });
+    this.loadUsers().catch((e) => this.setState({ tr: Object.assign({}, this.state.tr, { error: e.message }) }));
+  }
+  trVals() {
+    const t = this.state.tr;
+    if (!t) return { open: false };
+    const roleName = { admin: 'Administrador', user: 'Usuário', cliente: 'Cliente' };
+    const users = (this.state.users || []).filter((u) => u.active && u.id !== t.inv.ownerId);
+    const patch = (p) => this.setState({ tr: Object.assign({}, this.state.tr, p) });
+    return {
+      open: true, title: t.inv.title, current: t.inv.ownerName || 'Administrador principal',
+      users: users.map((u) => ({ id: u.id, label: u.name + ' · ' + (roleName[u.role] || 'Usuário') })),
+      to: t.to, onTo: (e) => patch({ to: e.target.value, error: '' }),
+      hasError: !!t.error, error: t.error, busy: t.busy,
+      close: () => this.setState({ tr: null }),
+      submit: (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        const f = e && e.target && e.target.elements;
+        const to = (f && f['tr-para'] && f['tr-para'].value) || t.to;
+        if (!to) { patch({ error: 'Escolha para qual conta o convite vai.' }); return; }
+        patch({ busy: true, error: '' });
+        api.transferInvite(t.inv.id, to)
+          .then((r) => { this.setState({ tr: null }); this.say('“' + t.inv.title + '” agora está na conta de ' + r.ownerName + '.'); this.load(); })
+          .catch((err) => patch({ busy: false, error: err.message }));
+      }
+    };
   }
   duplicate(i) {
     this.setState({ menu: null, busy: true });
@@ -260,7 +480,10 @@ class Component extends DCLogic {
         coverOpacity: ended ? '0.7' : '1',
         monogram: this.monogram(i.coverTitle || i.title),
         when: (i.eventDate ? api.fmt.card(i.eventDate) : 'Data a definir') + (i.place ? ' · ' + i.place : ''),
-        showOwner: api.isAdmin() && !!i.ownerName, ownerName: i.ownerName || '',
+        showOwner: api.isAdmin() && !!i.ownerName, ownerName: i.ownerName || '', ownerClient: i.ownerRole === 'cliente',
+        canAdmin: api.isAdmin(), canCreate: !api.isClient(),
+        giveAccess: () => this.openAccess(i),
+        askTransfer: () => this.openTransfer(i),
         badgeBg: badge[i.statusLabel][0], badgeFg: badge[i.statusLabel][1],
         showStats: !draft,
         yesPct: pct(s.yes || 0), noPct: pct(s.no || 0),
@@ -302,6 +525,8 @@ class Component extends DCLogic {
     return {
       logout: () => { if (this.props.onLogout) this.props.onLogout(); },
       heading: first ? 'Olá, ' + first : 'Meus convites',
+      canCreate: !api.isClient(),
+      acc: this.accVals(), tr: this.trVals(),
       countLabel: loading ? '' : (api.isAdmin() ? 'Todos os convites da plataforma · ' : '') + plural(n, 'convite', 'convites') + (soon ? ' · ' + plural(soon, 'evento', 'eventos') + ' nos próximos 30 dias' : ''),
       invites, pills, loading,
       hasAny: n > 0,
@@ -313,7 +538,8 @@ class Component extends DCLogic {
       startNew: () => { try { sessionStorage.removeItem('ci:novo'); } catch (e) {} },
       hasError: !!st.error, error: st.error,
       reload: () => this.load(),
-      isNone: !loading && !st.error && n === 0,
+      isNone: !loading && !st.error && n === 0 && !api.isClient(),
+      isNoneClient: !loading && !st.error && n === 0 && api.isClient(),
       isFilteredEmpty: !loading && !st.error && n > 0 && invites.length === 0,
       showModal: !!pendingItem,
       modalTitle: pendingItem ? pendingItem.title : '',

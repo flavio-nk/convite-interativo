@@ -1,5 +1,5 @@
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
-import { requireUser, canManage, ownerOf, isAdminUser } from './_lib/auth.js';
+import { requireUser, canManage, ownerOf, isAdminUser, isClientUser } from './_lib/auth.js';
 import { validId } from './_lib/guard.js';
 
 const MAX_THEMES_PER_USER = 100;
@@ -8,6 +8,7 @@ const COLORS = ['bg', 'fg', 'accent', 'btnFg', 'paper', 'ph'];
 import { hget, hset, hdel, hgetall } from './_lib/store.js';
 
 const KEY = 'themes';
+const NO_CLIENT = 'Contas de cliente não criam nem alteram temas. Você pode escolher qualquer tema pronto no editor do convite.';
 
 export default handler(async (req, res) => {
   // todos os usuários veem todos os temas; editar e excluir só o dono do tema ou um administrador
@@ -18,12 +19,15 @@ export default handler(async (req, res) => {
     if (id) {
       const t = await hget(KEY, id);
       if (!t) throw httpError(404, 'Tema não encontrado.');
-      return send(res, 200, Object.assign({}, t, { canEdit: canManage(user, t), mine: ownerOf(t) === user.id }));
+      return send(res, 200, Object.assign({}, t, { canEdit: !isClientUser(user) && canManage(user, t), mine: ownerOf(t) === user.id }));
     }
-    const list = Object.values(await hgetall(KEY)).map((t) => Object.assign({}, t, { canEdit: canManage(user, t), mine: ownerOf(t) === user.id }));
+    const client = isClientUser(user);
+    const list = Object.values(await hgetall(KEY)).map((t) => Object.assign({}, t, { canEdit: !client && canManage(user, t), mine: ownerOf(t) === user.id }));
     list.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
     return send(res, 200, list);
   }
+
+  if ((req.method === 'POST' || req.method === 'DELETE') && isClientUser(user)) throw httpError(403, NO_CLIENT);
 
   if (req.method === 'POST') {
     const body = await readBody(req);

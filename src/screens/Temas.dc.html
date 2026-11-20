@@ -47,10 +47,12 @@ button,select{font-family:inherit}
         <h1 style="margin: 0; font-size: 32px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 700">{{heading}}</h1>
         <p style="margin: 8px 0 0; color: #5E5A6B; max-width: 680px">{{intro}}</p>
       </div>
+      <sc-if value="{{canCreate}}" hint-placeholder-val="{{ true }}">
       <button onClick="{{newTheme}}" style="display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 10px; border: 1px solid #D6D3E0; background: #FFFFFF; color: #17151F; font-weight: 600; font-size: 15px; cursor: pointer">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.5-.8 1.5-1.6 0-1.3-1-1.6-1-2.6 0-.9.7-1.3 1.6-1.3H16a5 5 0 0 0 5-5C21 6.4 17 3 12 3Z"></path><path d="M7.5 11h.01M10 7.5h.01M14.5 7.5h.01"></path></svg>
         Criar tema
       </button>
+      </sc-if>
     </div>
 
     <div role="group" aria-label="Filtrar por tipo de evento" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px">
@@ -78,6 +80,7 @@ button,select{font-family:inherit}
     </div>
 
     <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(214px, 1fr)); gap: 20px; margin-top: 24px">
+      <sc-if value="{{canCreate}}" hint-placeholder-val="{{ true }}">
       <button class="newcard" onClick="{{newTheme}}" style="min-height: 380px; border-radius: 18px; border: 2px dashed #C9C4DB; background: #FFFFFF; color: #17151F; cursor: pointer; font-size: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 20px; text-align: center">
         <span style="width: 52px; height: 52px; border-radius: 14px; background: #EFECFB; color: #3B26A8; display: flex; align-items: center; justify-content: center">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
@@ -85,6 +88,7 @@ button,select{font-family:inherit}
         <span style="font-weight: 700; font-size: 17px">Criar novo tema</span>
         <span style="font-size: 14px; color: #5E5A6B">Defina cores, fontes, layout e animação de abertura do seu jeito.</span>
       </button>
+      </sc-if>
       <sc-for list="{{themes}}" as="t" hint-placeholder-count="12">
         <button class="tcard" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" aria-label="Tema {{t.name}}" style="text-align: left; padding: 10px; border-radius: 18px; border: 2px solid {{t.ring}}; background: #FFFFFF; color: #17151F; cursor: pointer; display: flex; flex-direction: column; gap: 12px; position: relative">
           <span style="display: block; width: 100%; border-radius: 12px; overflow: hidden; border: 1px solid #ECEAF2">
@@ -315,7 +319,7 @@ class Component extends DCLogic {
     const ready = all.filter((x) => !x.custom).length;
     const mine = all.length - ready;
     return {
-      cats, themes, sel: Object.assign({}, sel, { editable: !!(sel && sel.custom && sel.canEdit !== false) }),
+      cats, themes, sel: Object.assign({}, sel, { editable: !api.isClient() && !!(sel && sel.custom && sel.canEdit !== false) }),
       isEmpty: themes.length === 0,
       countLabel: 'Mostrando ' + themes.length + ' · ' + ready + ' temas prontos e ' + mine + ' criado por você',
       layoutFilter: st.layout, animFilter: st.anim,
@@ -368,6 +372,7 @@ class Component extends DCLogic {
           .then((inv) => { try { sessionStorage.removeItem('ci:novo'); } catch (e) {} api.navigate('Editor/' + inv.id); })
           .catch((e) => this.setState({ busy: false, error: e.message }));
       },
+      canCreate: !api.isClient(),
       newTheme: () => api.navigate('CriarTema'),
       editTheme: () => { if (sel.themeId) api.navigate('CriarTema/' + sel.themeId); }
     };

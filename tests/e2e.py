@@ -1273,6 +1273,139 @@ def t_savedate(pg):
 
 
 
+def t_client(pg, browser):
+    """Conta do cliente: dar acesso por link, permissões do perfil Cliente e transferência de convites."""
+    J = "async ([m, u, b]) => { const r = await fetch(u, {method: m, headers: {'content-type': 'application/json'}, body: b}); let d = null; try { d = await r.json(); } catch (e) {} return [r.status, d]; }"
+    page = [{'name': 'Capa', 'blocks': [{'type': 'texto', 'text': 'Festa da Carla'}, {'type': 'rsvp', 'text': 'Confirme', 'deadline': '2027-03-01'}]}]
+    inv = api_invite(pg, {'anim': 'nenhuma'}, page, title='Festa da Carla')
+    pg.evaluate(J, ['PUT', '/api/invites?id=' + inv['id'], '{"title":"Festa da Carla"}'])
+    go(pg, 'Main', 1300)
+    open_menu(pg, 'Festa da Carla')
+    ok('Cliente: menu do administrador tem "Dar acesso" e "Transferir"', count(pg, '[data-testid="menu-acesso"]') == 1 and count(pg, '[data-testid="menu-transferir"]') == 1)
+    pg.click('[data-testid="menu-acesso"]'); pg.wait_for_timeout(500)
+    ok('Cliente: modal de acesso abre com nome, WhatsApp e e-mail', all(count(pg, '#acc-' + f) == 1 for f in ['nome', 'whats', 'email']))
+    pg.click('[data-testid="modal-acesso"] button[type=submit]'); pg.wait_for_timeout(300)
+    ok('Cliente: nome obrigatório', 'Informe o nome' in pg.inner_text('[data-testid="modal-acesso"]'))
+    pg.fill('#acc-nome', 'Carla Souza'); pg.fill('#acc-whats', '(11) 98765-4321')
+    pg.click('[data-testid="modal-acesso"] button[type=submit]'); pg.wait_for_timeout(1200)
+    ok('Cliente: acesso gerado', count(pg, '[data-testid="acesso-pronto"]') == 1, text(pg)[-400:])
+    link = pg.input_value('[data-testid="acesso-link"]') if count(pg, '[data-testid="acesso-link"]') else ''
+    msg = pg.input_value('#acc-msg') if count(pg, '#acc-msg') else ''
+    wa = pg.get_attribute('[data-testid="acesso-whats"]', 'href') if count(pg, '[data-testid="acesso-whats"]') else ''
+    ok('Cliente: link de acesso no endereço do site', '/#/Acesso/' in link and link.startswith('http'), link)
+    ok('Cliente: mensagem pronta com link e usuário', link in msg and 'carla.souza' in msg and 'Festa da Carla' in msg, msg)
+    ok('Cliente: botão do WhatsApp já com o número e a mensagem', wa.startswith('https://wa.me/5511987654321?text='), wa)
+    pg.click('[data-testid="acesso-pronto"] button:has-text("Concluir")'); pg.wait_for_timeout(900)
+    card = 'article:has-text("Festa da Carla")'
+    ok('Cliente: cartão mostra o dono com a etiqueta Cliente', count(pg, card + ' [data-owner="Carla Souza"]') == 1 and count(pg, card + ' [data-testid="badge-cliente"]') == 1)
+
+    # cliente abre o link e cria a senha
+    ctx = browser.new_context(viewport={'width': 1280, 'height': 900})
+    cp = ctx.new_page(); cp.set_default_timeout(6000)
+    cp.on('pageerror', lambda e: errors.append('[cliente] %s' % e))
+    cp.goto(link); cp.wait_for_timeout(1200)
+    ok('Acesso: link abre a tela de criar senha, sem login', count(cp, '[data-testid="acesso-form"]') == 1 and 'Olá, Carla' in text(cp), text(cp)[:300])
+    ok('Acesso: mostra o nome de usuário', cp.inner_text('[data-testid="acesso-usuario"]') == 'carla.souza')
+    cp.fill('#novasenha', 'curta'); cp.fill('#confirma', 'curta'); cp.click('button:has-text("Criar senha e entrar")'); cp.wait_for_timeout(300)
+    ok('Acesso: senha curta recusada', '8 caracteres' in text(cp))
+    cp.fill('#novasenha', 'carlaFesta2026'); cp.fill('#confirma', 'carlaFesta2027'); cp.click('button:has-text("Criar senha e entrar")'); cp.wait_for_timeout(300)
+    ok('Acesso: senhas diferentes recusadas', 'não são iguais' in text(cp))
+    cp.fill('#novasenha', '12345678'); cp.fill('#confirma', '12345678'); cp.click('button:has-text("Criar senha e entrar")'); cp.wait_for_timeout(800)
+    ok('Acesso: senha fácil recusada pelo servidor', 'fácil demais' in text(cp))
+    cp.fill('#novasenha', 'carlaFesta2026'); cp.fill('#confirma', 'carlaFesta2026'); cp.click('button:has-text("Criar senha e entrar")'); cp.wait_for_timeout(1500)
+    ok('Acesso: cria a senha e entra direto nos convites', count(cp, 'h1:has-text("Olá, Carla")') == 1 and count(cp, 'article[data-invite]') == 1, text(cp)[:300])
+    ok('Cliente: sem "Novo convite"', count(cp, 'a:has-text("Novo convite")') == 0)
+    ok('Cliente: menu do topo sem Temas e sem Usuários', count(cp, 'nav a:has-text("Temas")') == 0 and count(cp, 'nav a:has-text("Usuários")') == 0 and count(cp, 'nav a:has-text("Meus convites")') == 1)
+    open_menu(cp, 'Festa da Carla')
+    menu = cp.inner_text('[role=menu]') if count(cp, '[role=menu]') else ''
+    ok('Cliente: menu do cartão sem Duplicar, Excluir e Transferir', 'Editar' in menu and 'Convidados e respostas' in menu and 'Duplicar' not in menu and 'Excluir' not in menu and 'Transferir' not in menu, menu)
+    for r in ['Novo', 'CriarTema', 'Temas', 'Usuarios']:
+        go(cp, r, 1000)
+        ok('Cliente: endereço ' + r + ' volta para os convites', count(cp, 'h1:has-text("Olá, Carla")') == 1, text(cp)[:120])
+    iid = inv['id']
+    st, _ = cp.evaluate(J, ['POST', '/api/invites', '{"title":"novo"}'])
+    ok('Cliente: API não cria convite', st == 403, st)
+    st, _ = cp.evaluate(J, ['DELETE', '/api/invites?id=' + iid, None])
+    ok('Cliente: API não exclui convite', st == 403, st)
+    st, _ = cp.evaluate(J, ['POST', '/api/themes', '{"name":"x","bg":"#111111","fg":"#EEEEEE","accent":"#C9A227"}'])
+    ok('Cliente: API não cria tema', st == 403, st)
+    st, _ = cp.evaluate(J, ['PUT', '/api/invites?action=transfer&id=' + iid, '{"ownerId":"admin"}'])
+    ok('Cliente: API não transfere convite', st == 403, st)
+    st, _ = cp.evaluate(J, ['GET', '/api/users', None])
+    ok('Cliente: API de usuários recusada', st == 403, st)
+    full = cp.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    full['title'] = 'Festa da Carla 30 anos'
+    st, d = cp.evaluate(J, ['PUT', '/api/invites?id=' + iid, __import__('json').dumps(full)])
+    ok('Cliente: edita o próprio convite', st == 200 and d.get('title') == 'Festa da Carla 30 anos' and d.get('ownerId') == full.get('ownerId'), [st, d and d.get('ownerId')])
+    st, _ = cp.evaluate(J, ['POST', '/api/guests?invite=' + iid, '{"name":"Tia Lúcia"}'])
+    ok('Cliente: cria convidados no próprio convite', st == 201, st)
+    st, _ = cp.evaluate(J, ['GET', '/api/rsvp?invite=' + iid, None])
+    ok('Cliente: vê as respostas do próprio convite', st == 200, st)
+    go(cp, 'Respostas/' + iid, 1400)
+    ok('Cliente: tela de respostas abre', 'Tia Lúcia' in text(cp), text(cp)[:200])
+    go(cp, 'Editor/' + iid, 2000)
+    safe('Cliente: editor', lambda: tab(cp, 'Tema'))
+    ok('Cliente: editor sem "Salvar como novo tema"', count(cp, 'aside[aria-label="Propriedades"]') == 1 and count(cp, 'button:has-text("como novo tema")') == 0)
+    go(cp, 'Main', 1200)
+    ok('Cliente: perfil "Cliente" no menu da conta', 'Cliente' in (cp.inner_text('[data-testid="user-menu"]') if count(cp, '[data-testid="user-menu"]') else ''))
+
+    # o link vale uma vez
+    c2 = browser.new_context(); p2 = c2.new_page(); p2.set_default_timeout(6000)
+    p2.goto(link); p2.wait_for_timeout(1200)
+    ok('Acesso: link usado não vale de novo', count(p2, '[data-testid="acesso-invalido"]') == 1, text(p2)[:200])
+    p2.goto(BASE + '#/Acesso/inexistente123456789012345'); p2.wait_for_timeout(1000)
+    ok('Acesso: link inventado recusado', count(p2, '[data-testid="acesso-invalido"]') == 1)
+    c2.close()
+    lp = login_as(browser, 'carla.souza', 'carlaFesta2026')
+    ok('Cliente: entra depois com usuário e senha', count(lp, 'h1:has-text("Olá, Carla")') == 1)
+    lp.context.close()
+
+    # administrador transfere de volta
+    go(pg, 'Main', 1300)
+    open_menu(pg, 'Festa da Carla 30 anos')
+    pg.click('[data-testid="menu-transferir"]'); pg.wait_for_timeout(700)
+    ok('Transferir: modal mostra a conta atual', 'Carla Souza' in pg.inner_text('[data-testid="modal-transferir"]'))
+    pg.click('[data-testid="modal-transferir"] button:has-text("Transferir")'); pg.wait_for_timeout(300)
+    ok('Transferir: exige escolher a conta', 'Escolha para qual conta' in pg.inner_text('[data-testid="modal-transferir"]'))
+    pg.select_option('#tr-para', 'admin'); pg.click('[data-testid="modal-transferir"] button:has-text("Transferir")'); pg.wait_for_timeout(1200)
+    ok('Transferir: convite volta para a conta principal', 'agora está na conta de Administrador principal' in text(pg) and count(pg, 'article:has-text("Festa da Carla 30 anos") [data-testid="badge-cliente"]') == 0, text(pg)[-300:])
+    go(cp, 'Main', 1300)
+    ok('Cliente: sem convites, vê o aviso próprio (sem "criar")', count(cp, '[data-testid="cliente-vazio"]') == 1 and count(cp, 'article[data-invite]') == 0 and 'Criar meu primeiro' not in text(cp))
+    # conta existente: passa o convite de novo para a Carla pela API
+    users = pg.evaluate("fetch('/api/users').then(r => r.json())")
+    carla = [u for u in users if u['username'] == 'carla.souza'][0]
+    st, d = pg.evaluate(J, ['POST', '/api/users?action=client', __import__('json').dumps({'userId': carla['id'], 'inviteId': iid})])
+    ok('Dar acesso: conta de cliente existente recebe o convite', st == 201 and d['user']['id'] == carla['id'] and '/#/Acesso/' in d['link'], [st, d and d.get('user')])
+
+    # novo link pelo painel: senha nova derruba a sessão antiga
+    go(pg, 'Usuarios', 1300)
+    row = pg.inner_text('li[data-user="carla.souza"]')
+    ok('Usuários: cliente aparece com o perfil Cliente', 'Cliente' in row, row)
+    pg.click('[aria-label="Gerar link de acesso para Carla Souza"]'); pg.wait_for_timeout(900)
+    link2 = pg.input_value('[data-testid="link-acesso"]') if count(pg, '[data-testid="link-acesso"]') else ''
+    ok('Usuários: "Link de acesso" gera um link novo', '/#/Acesso/' in link2 and link2 != link, link2)
+    pg.click('[data-testid="link-modal"] button:has-text("Concluir")'); pg.wait_for_timeout(200)
+    c3 = browser.new_context(); p3 = c3.new_page(); p3.set_default_timeout(6000)
+    p3.goto(link2); p3.wait_for_timeout(1200)
+    p3.fill('#novasenha', 'carlaNova2026'); p3.fill('#confirma', 'carlaNova2026'); p3.click('button:has-text("Criar senha e entrar")'); p3.wait_for_timeout(1500)
+    ok('Acesso: novo link troca a senha e entra', count(p3, 'h1:has-text("Olá, Carla")') == 1 and count(p3, 'article[data-invite]') == 1)
+    c3.close()
+    go(cp, 'Main', 1200)
+    ok('Acesso: senha nova encerra a sessão antiga', count(cp, '#pw') == 1)
+    ctx.close()
+
+    # cliente criado pelo painel, sem senha e sem e-mail: já mostra o link
+    pg.click('button:has-text("+ Novo usuário")'); pg.wait_for_timeout(200)
+    pg.fill('#u-name', 'Davi Cliente'); pg.fill('#u-email', '')
+    pg.click('[data-testid="usuario-modal"] button[role=radio]:has-text("Cliente")'); pg.wait_for_timeout(100)
+    ok('Usuários: senha opcional para cliente', 'opcional' in pg.inner_text('[data-testid="usuario-modal"]'))
+    pg.click('[data-testid="usuario-modal"] button:has-text("Salvar")'); pg.wait_for_timeout(1200)
+    ok('Usuários: cliente sem senha criado e link mostrado', count(pg, '[data-testid="link-modal"]') == 1 and '/#/Acesso/' in (pg.input_value('[data-testid="link-acesso"]') if count(pg, '[data-testid="link-acesso"]') else ''), text(pg)[-300:])
+    pg.click('[data-testid="link-modal"] button:has-text("Concluir")'); pg.wait_for_timeout(200)
+    ok('Usuários: aviso de que ainda não criou a senha', 'Ainda não criou a senha' in pg.inner_text('li[data-user="davi.cliente"]'))
+    pg.screenshot(path=os.environ['SHOTS'] + '/usuarios-clientes.png', full_page=True) if os.environ.get('SHOTS') else None
+
+
 def api_invite(pg, theme, pages, opening=None, title='Ana & Pedro'):
     base = dict(baseName='Teste', bg='#1F3329', fg='#F3EEE4', accent='#CDAE6B', btnFg='#1F3329', paper='#E9E1D0', ph='#2B4538', fontKey='cormorant', italic=False, layout='centro', radiusKey='pilula', anim='nenhuma')
     base.update(theme)
@@ -1562,7 +1695,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('design', lambda: t_design(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('cliente', lambda: t_client(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('design', lambda: t_design(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

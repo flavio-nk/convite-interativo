@@ -80,7 +80,8 @@ class Component extends DCLogic {
     const u = api.user() || {};
     const narrow = this.state.w < 760;
     const active = this.props.active || 'convites';
-    const defs = [['convites', 'Convites', '#/Main'], ['temas', 'Temas', '#/Temas']];
+    // conta de cliente: só "Meus convites" (não cria temas)
+    const defs = api.isClient() ? [['convites', 'Meus convites', '#/Main']] : [['convites', 'Convites', '#/Main'], ['temas', 'Temas', '#/Temas']];
     if (api.isAdmin()) defs.push(['usuarios', 'Usuários', '#/Usuarios']);
     const name = u.name || u.username || '';
     const ini = name.split(/\s+/).filter(Boolean).map((w) => w[0]).slice(0, 2).join('').toUpperCase() || '?';
@@ -90,7 +91,7 @@ class Component extends DCLogic {
         const on = d[0] === active;
         return { label: d[1], href: d[2], current: on ? 'page' : 'false', bg: on ? '#EFECFB' : 'transparent', fg: on ? '#3B26A8' : '#3D3A4A', weight: on ? '700' : '500' };
       }),
-      name, initials: ini, role: u.role === 'admin' ? 'Administrador' : 'Usuário',
+      name, initials: ini, role: u.role === 'admin' ? 'Administrador' : (u.role === 'cliente' ? 'Cliente' : 'Usuário'),
       open: this.state.open, openAttr: this.state.open ? 'true' : 'false',
       btnPad: narrow ? '0 10px' : '4px 12px 4px 4px',
       menuAria: narrow ? 'Abrir menu' : 'Menu da conta de ' + name,

@@ -1,5 +1,5 @@
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
-import { currentUser, requireUser, canManage, ownerOf, isAdminUser, MASTER_ID } from './_lib/auth.js';
+import { currentUser, requireUser, canManage, ownerOf, isAdminUser, isClientUser, roleOf, MASTER_ID } from './_lib/auth.js';
 import { hget, hset, hdel, hgetall, del } from './_lib/store.js';
 import { maxPeople } from './guests.js';
 import { validId, rateLimit, clientIp } from './_lib/guard.js';
@@ -35,7 +35,9 @@ function summarize(inv, owners, stats) {
     themeName: inv.themeBase ? inv.themeBase.baseName : (inv.theme && inv.theme.baseName) || '',
     personal: !!(inv.personal && inv.personal.enabled),
     ownerId: ownerOf(inv),
-    ownerName: owners ? owners[ownerOf(inv)] || '' : '',
+    ownerName: owners && owners[ownerOf(inv)] ? owners[ownerOf(inv)].name : '',
+    ownerRole: owners && owners[ownerOf(inv)] ? owners[ownerOf(inv)].role : '',
+    transferredAt: inv.transferredAt || null,
     updatedAt: inv.updatedAt,
     createdAt: inv.createdAt,
     slug: inv.slug || '',
@@ -123,14 +125,19 @@ export default handler(async (req, res) => {
     const mine = Object.values(all).filter((inv) => admin || ownerOf(inv) === user.id);
     let owners = null;
     if (admin) {
-      owners = { [MASTER_ID]: 'Administrador principal' };
-      for (const u of Object.values(await hgetall('users'))) owners[u.id] = u.name;
+      owners = { [MASTER_ID]: { name: 'Administrador principal', role: 'admin' } };
+      for (const u of Object.values(await hgetall('users'))) owners[u.id] = { name: u.name, role: roleOf(u) };
     }
     // as contagens de respostas vêm do hash "stats" (refeito a cada resposta): 2 leituras em vez de 1 + N
     const stats = await statsFor(mine.map((inv) => inv.id));
     const items = mine.map((inv) => summarize(inv, owners, stats[inv.id]));
     items.sort((a, b) => String(b.updatedAt).localeCompare(String(a.updatedAt)));
     return send(res, 200, items);
+  }
+
+  // conta de cliente: só edita os convites que já estão nela
+  if ((req.method === 'POST' || req.method === 'DELETE') && isClientUser(user)) {
+    throw httpError(403, req.method === 'POST' ? 'Contas de cliente não criam convites. Fale com quem fez o seu convite.' : 'Contas de cliente não excluem convites. Fale com quem fez o seu convite.');
   }
 
   if (req.method === 'POST') {
@@ -165,6 +172,22 @@ export default handler(async (req, res) => {
     return send(res, 200, { slug });
   }
 
+  if (req.method === 'PUT' && query(req).get('action') === 'transfer') {
+    // passar o convite (com respostas e convidados) para a conta de outro usuário: só administradores
+    if (!admin) throw httpError(403, 'Só administradores podem transferir convites.');
+    if (!id) throw httpError(400, 'Informe o convite.');
+    const existing = await hget(KEY, id);
+    if (!existing) throw httpError(404, 'Convite não encontrado.');
+    const body = await readBody(req);
+    const to = String(body.ownerId || '');
+    let target = to === MASTER_ID ? { id: MASTER_ID, name: 'Administrador principal', role: 'admin' } : await hget('users', validId(to, 'Usuário') || '-');
+    if (!target) throw httpError(404, 'Usuário não encontrado.');
+    if (target.active === false) throw httpError(400, 'Este usuário está inativo.');
+    const inv = Object.assign({}, existing, { ownerId: target.id, transferredAt: new Date().toISOString(), transferredBy: user.id });
+    await hset(KEY, id, inv);
+    return send(res, 200, { id, ownerId: target.id, ownerName: target.name, ownerRole: roleOf(target) });
+  }
+
   if (req.method === 'PUT') {
     if (!id) throw httpError(400, 'Informe o convite.');
     const body = await readBody(req);
@@ -173,6 +196,7 @@ export default handler(async (req, res) => {
     const restore = body.__rsvps;
     const restoreGuests = body.__guests;
     delete body.__rsvps; delete body.__guests; delete body.guest;
+    delete body.transferredAt; delete body.transferredBy;
     const existing = await hget(KEY, id);
     // só o "Desfazer" (que manda as respostas apagadas junto) pode recriar um convite excluído
     if (!existing && !restoring) throw httpError(404, 'Este convite foi excluído.');

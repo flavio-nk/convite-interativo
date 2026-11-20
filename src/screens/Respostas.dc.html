@@ -391,7 +391,7 @@ class Component extends DCLogic {
     const u = api.user() || {};
     return {
       isAdmin: api.isAdmin(), name: u.name || u.username || '',
-      role: u.role === 'admin' ? 'Administrador' : 'Usuário',
+      role: u.role === 'admin' ? 'Administrador' : (u.role === 'cliente' ? 'Cliente' : 'Usuário'),
       logout: () => api.logout().then(() => { if (this.props.onLogout) this.props.onLogout(); })
     };
   }

@@ -6,6 +6,8 @@ import { api } from './api.js';
 const h = React.createElement;
 
 const ADMIN = new Set(['Main', 'Novo', 'Temas', 'CriarTema', 'Editor', 'Respostas', 'Usuarios']);
+// telas que a conta de cliente não usa (ela não cria convites nem temas)
+const NOT_CLIENT = new Set(['Novo', 'CriarTema', 'Usuarios']);
 
 // #/Editor/abc?x=1  →  { name: 'Editor', params: { id: 'abc', x: '1' } }
 // #/c/abc           →  convite do convidado
@@ -28,7 +30,7 @@ function parseRoute() {
   if (name === 'Convidados') name = 'Respostas'; // a tela de convites individuais foi unida à de respostas
   if (parts[1]) params.id = decodeURIComponent(parts[1]);
   if (name === 'Convite' && parts[2]) params.g = decodeURIComponent(parts[2]);
-  if (name !== 'Convite' && !ADMIN.has(name)) name = 'Main';
+  if (name !== 'Convite' && name !== 'Acesso' && !ADMIN.has(name)) name = 'Main';
   return { name, params, key: raw };
 }
 
@@ -103,13 +105,20 @@ function App() {
     const Guest = getComponent('Convite');
     return h(PhoneFrame, null, h(Guest, { key: route.key + ':' + visit, route }));
   }
+  // link de acesso do cliente: abre mesmo sem login (é nele que a senha é criada)
+  if (route.name === 'Acesso') {
+    const Acesso = getComponent('Acesso');
+    return h(Acesso, { key: route.key, route, onLogin: () => refreshMe().then(() => { window.location.hash = '#/Main'; }) });
+  }
   if (!me) return h(Loading);
   if (!me.logged) {
     const Login = getComponent('Login');
     return h(Login, { me, onLogin: refreshMe });
   }
   // o painel de administração (Usuários) é só para administradores
-  const name = route.name === 'Usuarios' && !me.admin ? 'Main' : route.name;
+  let name = route.name === 'Usuarios' && !me.admin ? 'Main' : route.name;
+  // cliente: Temas só para trocar o tema de um convite dele
+  if (me.client && (NOT_CLIENT.has(name) || (name === 'Temas' && !route.params.invite))) name = 'Main';
   const Screen = getComponent(name);
   // cada visita começa do zero, como um carregamento real de página
   return h(Screen, { key: route.key + ':' + visit, route, onLogout: refreshMe });
