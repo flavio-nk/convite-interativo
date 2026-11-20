@@ -8,7 +8,7 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&amp;family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;family=Cinzel:wght@500;600;700&amp;family=Fraunces:ital,wght@0,400;0,600;1,400&amp;family=Pinyon+Script&amp;family=Unbounded:wght@600;700;800&amp;display=swap">
 <style>
 body{margin:0}
 @keyframes ciFade{from{opacity:0}to{opacity:1}}
@@ -20,8 +20,42 @@ body{margin:0}
 .a-deslizar{animation:ciUp .8s cubic-bezier(.2,.7,.2,1) both}
 .a-zoom{animation:ciZoom .7s cubic-bezier(.2,.7,.2,1) both}
 .pg-in{animation:ciFade .45s ease both}
+@keyframes ciSlideL{from{opacity:0;transform:translateX(60px)}to{opacity:1;transform:none}}
+@keyframes ciSlideR{from{opacity:0;transform:translateX(-60px)}to{opacity:1;transform:none}}
+@keyframes ciZoomPg{from{opacity:0;transform:scale(1.08)}to{opacity:1;transform:none}}
+@keyframes ciFlipL{from{opacity:0;transform:perspective(1400px) rotateY(-28deg);transform-origin:left center}to{opacity:1;transform:none;transform-origin:left center}}
+@keyframes ciFlipR{from{opacity:0;transform:perspective(1400px) rotateY(28deg);transform-origin:right center}to{opacity:1;transform:none;transform-origin:right center}}
+@keyframes ciRise{from{opacity:0;transform:translateY(46px)}to{opacity:1;transform:none}}
+.pg-deslizar-n{animation:ciSlideL .5s cubic-bezier(.2,.7,.2,1) both}.pg-deslizar-p{animation:ciSlideR .5s cubic-bezier(.2,.7,.2,1) both}
+.pg-zoom{animation:ciZoomPg .55s cubic-bezier(.2,.7,.2,1) both}
+.pg-virar-n{animation:ciFlipR .6s cubic-bezier(.2,.7,.2,1) both}.pg-virar-p{animation:ciFlipL .6s cubic-bezier(.2,.7,.2,1) both}
+.pg-subir{animation:ciRise .55s cubic-bezier(.2,.7,.2,1) both}
+@keyframes ciLeft{from{opacity:0;transform:translateX(-36px)}to{opacity:1;transform:none}}
+@keyframes ciBlur{from{opacity:0;filter:blur(12px)}to{opacity:1;filter:blur(0)}}
+@keyframes ciTurn{from{opacity:0;transform:rotate(-7deg) scale(.9)}to{opacity:1;transform:none}}
+@keyframes ciBounce{0%{opacity:0;transform:translateY(-40px)}55%{opacity:1;transform:translateY(8px)}75%{transform:translateY(-4px)}100%{opacity:1;transform:none}}
+@keyframes ciType{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
+.a-lateral{animation:ciLeft .8s cubic-bezier(.2,.7,.2,1) both}.a-desfoque{animation:ciBlur 1s ease both}
+.a-girar{animation:ciTurn .8s cubic-bezier(.2,.7,.2,1) both}.a-quicar{animation:ciBounce .9s ease-out both}
+.a-maquina{animation:ciType 1.4s steps(24,end) both}
+@keyframes pmKen{from{transform:scale(1) translate(0,0)}to{transform:scale(1.14) translate(-2%,-2%)}}
+@keyframes pmFloat{from{transform:translateY(0)}to{transform:translateY(-8px)}}
+@keyframes pmBreath{from{transform:scale(1)}to{transform:scale(1.05)}}
+.pm-kenburns{animation:pmKen 14s ease-in-out infinite alternate}
+.pm-flutuar{animation:pmFloat 3.2s ease-in-out infinite alternate}
+.pm-respirar{animation:pmBreath 4s ease-in-out infinite alternate}
+@keyframes fxFall{0%{transform:translate(0,-40px) rotate(0);opacity:0}10%{opacity:var(--o,.85)}90%{opacity:var(--o,.85)}100%{transform:translate(var(--dx,0px),900px) rotate(var(--r,360deg));opacity:0}}
+@keyframes fxRise{0%{transform:translate(0,0) scale(.8);opacity:0}10%{opacity:var(--o,.7)}90%{opacity:var(--o,.7)}100%{transform:translate(var(--dx,0px),-920px) scale(1.1);opacity:0}}
+@keyframes fxTwinkle{0%,100%{transform:scale(.3) rotate(0);opacity:0}50%{transform:scale(1) rotate(45deg);opacity:var(--o,.9)}}
+.fx-fall{animation:fxFall var(--t,9s) linear var(--dl,0s) infinite}
+.fx-rise{animation:fxRise var(--t,10s) ease-in var(--dl,0s) infinite}
+.fx-twinkle{animation:fxTwinkle var(--t,3s) ease-in-out var(--dl,0s) infinite}
+@keyframes auA{from{transform:translate(0,0) scale(1)}to{transform:translate(60px,40px) scale(1.15)}}
+@keyframes auB{from{transform:translate(0,0) scale(1.1)}to{transform:translate(-50px,-60px) scale(.95)}}
+.au-a{animation:auA 14s ease-in-out infinite alternate}.au-b{animation:auB 17s ease-in-out infinite alternate}
+.gal-scroll{scrollbar-width:none}.gal-scroll::-webkit-scrollbar{display:none}
 .gf{width:100%;box-sizing:border-box;min-height:46px;padding:11px 13px;border-radius:12px;font:inherit;font-size:15px}
-@media (prefers-reduced-motion: reduce){.a-surgir,.a-deslizar,.a-zoom,.pg-in{animation:none}.ci-spin{animation-duration:3s}}
+@media (prefers-reduced-motion: reduce){.a-surgir,.a-deslizar,.a-zoom,.a-lateral,.a-desfoque,.a-girar,.a-quicar,.a-maquina,.pg-in,.pg-deslizar-n,.pg-deslizar-p,.pg-zoom,.pg-virar-n,.pg-virar-p,.pg-subir,.pm-kenburns,.pm-flutuar,.pm-respirar,.au-a,.au-b{animation:none}.fx-fall,.fx-rise,.fx-twinkle{display:none}.ci-spin{animation-duration:3s}}
 </style>
 </helmet>
 <div style="{{L.root}}">
@@ -48,14 +82,39 @@ body{margin:0}
   <div key="camada-paginas">
     <sc-if value="{{isPages}}" hint-placeholder-val="{{ false }}">
       <div key="paginas" inert="{{L.inert}}" style="{{L.pages}}" onTouchStart="{{swipe.start}}" onTouchEnd="{{swipe.end}}">
+        <sc-if value="{{deco.aurora}}" hint-placeholder-val="{{ false }}">
+          <div aria-hidden="true" data-testid="aurora" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none">
+            <div class="au-a" style="position: absolute; left: -30%; top: -12%; width: 90%; aspect-ratio: 1; border-radius: 50%; background: {{T.accent}}; filter: blur(60px); opacity: 0.55"></div>
+            <div class="au-b" style="position: absolute; right: -35%; top: 28%; width: 95%; aspect-ratio: 1; border-radius: 50%; background: {{T.ph}}; filter: blur(70px); opacity: 0.8"></div>
+            <div class="au-a" style="position: absolute; left: -10%; bottom: -20%; width: 80%; aspect-ratio: 1; border-radius: 50%; background: color-mix(in srgb, {{T.accent}} 45%, {{T.fg}}); filter: blur(70px); opacity: 0.35"></div>
+          </div>
+        </sc-if>
         <sc-if value="{{pageBg.has}}" hint-placeholder-val="{{ false }}">
           <div key="{{pageBg.key}}" class="pg-in" aria-hidden="true" data-testid="page-bg" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none">
             <img src="{{pageBg.url}}" alt="" style="{{pageBg.imgStyle}}">
             <div style="position: absolute; inset: 0; background: {{T.bg}}; opacity: {{pageBg.dimOpacity}}"></div>
           </div>
         </sc-if>
+        <sc-if value="{{fx.has}}" hint-placeholder-val="{{ false }}">
+          <div aria-hidden="true" data-testid="fx" data-fx="{{fx.kind}}" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0">
+            <sc-for list="{{fx.items}}" as="fp" hint-placeholder-count="12">
+              <span class="{{fp.cls}}" style="{{fp.style}}">{{fp.ch}}</span>
+            </sc-for>
+          </div>
+        </sc-if>
         <main key="{{pageKey}}" class="{{L.mainClass}}" style="{{L.main}}">
           <div data-page-inner="1" style="{{L.inner}}">
+            <sc-if value="{{deco.botanico}}" hint-placeholder-val="{{ false }}">
+              <svg aria-hidden="true" viewBox="0 0 100 100" style="position: absolute; left: -6px; top: -6px; width: 120px; pointer-events: none; transform: scaleY(-1); opacity: 0.55"><path d="M6 94C26 70 52 44 94 8" stroke="{{T.accent}}" stroke-width="1.6" fill="none"></path><g fill="{{T.accent}}"><path d="M24 74c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M24 74c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M46 52c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M46 52c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M68 30c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M68 30c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path></g></svg>
+            </sc-if>
+            <sc-if value="{{deco.decoCorners}}" hint-placeholder-val="{{ false }}">
+              <div aria-hidden="true" style="position: absolute; inset: {{T.frameInset}}; pointer-events: none">
+                <svg viewBox="0 0 60 60" style="position: absolute; left: 6px; top: 6px; width: 46px"><path d="M3 57V3h54" stroke="{{T.accent}}" stroke-width="1.6" fill="none"></path><path d="M11 57V11h46" stroke="{{T.accent}}" stroke-width="0.9" fill="none"></path><path d="M17 17l4 4-4 4-4-4z" fill="{{T.accent}}"></path></svg>
+                <svg viewBox="0 0 60 60" style="position: absolute; right: 6px; top: 6px; width: 46px; transform: scaleX(-1)"><path d="M3 57V3h54" stroke="{{T.accent}}" stroke-width="1.6" fill="none"></path><path d="M11 57V11h46" stroke="{{T.accent}}" stroke-width="0.9" fill="none"></path><path d="M17 17l4 4-4 4-4-4z" fill="{{T.accent}}"></path></svg>
+                <svg viewBox="0 0 60 60" style="position: absolute; left: 6px; bottom: 6px; width: 46px; transform: scaleY(-1)"><path d="M3 57V3h54" stroke="{{T.accent}}" stroke-width="1.6" fill="none"></path><path d="M11 57V11h46" stroke="{{T.accent}}" stroke-width="0.9" fill="none"></path><path d="M17 17l4 4-4 4-4-4z" fill="{{T.accent}}"></path></svg>
+                <svg viewBox="0 0 60 60" style="position: absolute; right: 6px; bottom: 6px; width: 46px; transform: scale(-1, -1)"><path d="M3 57V3h54" stroke="{{T.accent}}" stroke-width="1.6" fill="none"></path><path d="M11 57V11h46" stroke="{{T.accent}}" stroke-width="0.9" fill="none"></path><path d="M17 17l4 4-4 4-4-4z" fill="{{T.accent}}"></path></svg>
+              </div>
+            </sc-if>
             <sc-if value="{{L.hasDecor}}" hint-placeholder-val="{{ false }}">
               <div aria-hidden="true" style="position: absolute; inset: {{T.frameInset}}; border: {{T.frame}}; border-left: {{T.band}}; pointer-events: none"></div>
             </sc-if>
@@ -63,15 +122,96 @@ body{margin:0}
               <div key="{{b.key}}" data-bid="{{b.id}}" class="{{b.animClass}}" style="{{b.wrap}}">
 
                 <sc-if value="{{b.showFoto}}" hint-placeholder-val="{{ false }}">
-                  <div style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; box-sizing: border-box; overflow: hidden; aspect-ratio: {{b.ratio}}; width: {{T.photoW}}; margin: {{T.photoM}}; border-radius: {{T.photoR}}; transform: {{T.photoRot}}; border: {{T.photoBorder}}; background: {{T.ph}}; font-size: calc(13px * var(--k, 1))">
-                    <sc-if value="{{b.hasMedia}}" hint-placeholder-val="{{ false }}">
-                      <img src="{{b.mediaUrl}}" alt="{{b.label}}" style="{{b.imgStyle}}">
+                  <div data-photo-frame="{{b.pl.frame}}" data-photo-shape="{{b.pl.shape}}" style="{{b.pl.outer}}">
+                    <sc-if value="{{b.pl.offset}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="{{b.pl.offsetStyle}}"></span></sc-if>
+                    <div style="{{b.pl.inner}}; aspect-ratio: {{b.ratio}}; font-size: calc(13px * var(--k, 1))">
+                      <sc-if value="{{b.hasMedia}}" hint-placeholder-val="{{ false }}">
+                        <div class="{{b.pl.motion}}" style="position: absolute; inset: 0">
+                          <img src="{{b.mediaUrl}}" alt="{{b.label}}" style="{{b.imgStyle}}">
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{b.noMedia}}" hint-placeholder-val="{{ true }}">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.6"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
+                        <span style="opacity: 0.8">{{b.label}}</span>
+                      </sc-if>
+                    </div>
+                    <sc-if value="{{b.pl.tape}}" hint-placeholder-val="{{ false }}">
+                      <span aria-hidden="true" style="position: absolute; left: 12%; top: -9px; width: 64px; height: 20px; background: color-mix(in srgb, {{T.accent}} 45%, rgba(255, 255, 255, 0.55)); transform: rotate(-8deg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12)"></span>
+                      <span aria-hidden="true" style="position: absolute; right: 10%; top: -8px; width: 58px; height: 20px; background: color-mix(in srgb, {{T.accent}} 45%, rgba(255, 255, 255, 0.55)); transform: rotate(7deg); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12)"></span>
                     </sc-if>
-                    <sc-if value="{{b.noMedia}}" hint-placeholder-val="{{ true }}">
-                      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.6"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg>
-                      <span style="opacity: 0.8">{{b.label}}</span>
+                    <sc-if value="{{b.capOnFrame}}" hint-placeholder-val="{{ false }}">
+                      <span style="position: absolute; left: 10px; right: 10px; bottom: 8px; height: 30px; display: flex; align-items: center; justify-content: center; font-family: 'Caveat', cursive; font-size: calc(24px * var(--k, 1)); font-weight: 700; color: #2A2622; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{b.label}}</span>
                     </sc-if>
                   </div>
+                  <sc-if value="{{b.capBelow}}" hint-placeholder-val="{{ false }}">
+                    <p style="margin: 10px 0 0; font-size: calc(13px * var(--k, 1)); font-style: italic; opacity: 0.85; text-align: center">{{b.label}}</p>
+                  </sc-if>
+                </sc-if>
+
+                <sc-if value="{{b.isGaleria}}" hint-placeholder-val="{{ false }}">
+                  <div data-gallery="{{b.g.style}}" style="{{b.g.wrap}}">
+                    <sc-if value="{{b.g.scroller}}" hint-placeholder-val="{{ false }}">
+                      <div class="gal-scroll" data-noswipe="1" onScroll="{{b.g.onScroll}}" style="{{b.g.track}}">
+                        <sc-for list="{{b.g.items}}" as="gi" hint-placeholder-count="3">
+                          <button type="button" onClick="{{gi.open}}" aria-label="{{gi.aria}}" style="{{gi.box}}">
+                            <sc-if value="{{gi.has}}" hint-placeholder-val="{{ true }}"><img src="{{gi.url}}" alt="" loading="lazy" style="{{gi.img}}"></sc-if>
+                            <sc-if value="{{gi.empty}}" hint-placeholder-val="{{ false }}"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.55"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg></sc-if>
+                          </button>
+                        </sc-for>
+                      </div>
+                      <sc-if value="{{b.g.hasDots}}" hint-placeholder-val="{{ false }}">
+                        <div aria-hidden="true" style="display: flex; justify-content: center; gap: 5px; margin-top: 10px">
+                          <sc-for list="{{b.g.dots}}" as="gd" hint-placeholder-count="3"><span style="width: {{gd.w}}; height: 6px; border-radius: 3px; background: {{gd.c}}; transition: width .3s ease"></span></sc-for>
+                        </div>
+                      </sc-if>
+                    </sc-if>
+                    <sc-if value="{{b.g.grid}}" hint-placeholder-val="{{ true }}">
+                      <div style="{{b.g.track}}">
+                        <sc-for list="{{b.g.items}}" as="gi" hint-placeholder-count="3">
+                          <button type="button" onClick="{{gi.open}}" aria-label="{{gi.aria}}" style="{{gi.box}}">
+                            <sc-if value="{{gi.has}}" hint-placeholder-val="{{ true }}"><img src="{{gi.url}}" alt="" loading="lazy" style="{{gi.img}}"></sc-if>
+                            <sc-if value="{{gi.empty}}" hint-placeholder-val="{{ false }}"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.55"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg></sc-if>
+                            <sc-if value="{{gi.tape}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="position: absolute; left: 50%; top: -9px; width: 54px; height: 18px; margin-left: -27px; background: color-mix(in srgb, {{T.accent}} 45%, rgba(255, 255, 255, 0.55)); transform: rotate(-5deg)"></span></sc-if>
+                          </button>
+                        </sc-for>
+                      </div>
+                    </sc-if>
+                  </div>
+                </sc-if>
+
+                <sc-if value="{{b.isOrnamento}}" hint-placeholder-val="{{ false }}">
+                  <svg viewBox="0 0 240 30" role="presentation" aria-hidden="true" style="display: block; width: 100%; max-width: calc(260px * var(--k, 1)); height: auto; margin: 0 auto; overflow: visible" fill="none" stroke="{{T.accent}}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="{{b.orn.d}}"></path>
+                    <path d="{{b.orn.f}}" fill="{{T.accent}}" stroke="none"></path>
+                  </svg>
+                </sc-if>
+
+                <sc-if value="{{b.isProgramacao}}" hint-placeholder-val="{{ false }}">
+                  <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; text-align: left">
+                    <sc-for list="{{b.prog}}" as="pr" hint-placeholder-count="3">
+                      <li style="display: grid; grid-template-columns: 70px 22px minmax(0, 1fr); column-gap: 6px; min-height: 58px">
+                        <span style="padding-top: 1px; text-align: right; font-family: {{T.font}}; font-size: calc(19px * var(--k, 1)); font-weight: {{T.weight}}; color: {{T.accent}}; line-height: 1.2">{{pr.time}}</span>
+                        <span aria-hidden="true" style="position: relative; display: block">
+                          <span style="position: absolute; left: 50%; top: 7px; width: 11px; height: 11px; margin-left: -5.5px; border-radius: 50%; background: {{T.bg}}; border: 2px solid {{T.accent}}; box-sizing: border-box; z-index: 1"></span>
+                          <span style="position: absolute; left: 50%; top: 18px; bottom: {{pr.lineBottom}}; width: 1.5px; margin-left: -0.75px; background: {{T.line}}"></span>
+                        </span>
+                        <span style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 16px">
+                          <strong style="font-size: calc(16px * var(--k, 1)); line-height: 1.3">{{pr.title}}</strong>
+                          <sc-if value="{{pr.hasDesc}}" hint-placeholder-val="{{ false }}"><span style="font-size: calc(13px * var(--k, 1)); opacity: 0.8">{{pr.desc}}</span></sc-if>
+                        </span>
+                      </li>
+                    </sc-for>
+                  </ol>
+                </sc-if>
+
+                <sc-if value="{{b.isCitacao}}" hint-placeholder-val="{{ false }}">
+                  <figure style="margin: 0; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center">
+                    <span aria-hidden="true" style="font-family: {{T.font}}; font-size: calc(72px * var(--k, 1)); line-height: 0.6; height: calc(34px * var(--k, 1)); color: {{T.accent}}">“</span>
+                    <blockquote style="margin: 0; font-family: {{T.font}}; font-size: calc(22px * var(--k, 1)); line-height: 1.35; font-style: italic; font-weight: {{T.weight}}; white-space: pre-line">{{b.text}}</blockquote>
+                    <sc-if value="{{b.hasAuthor}}" hint-placeholder-val="{{ false }}">
+                      <figcaption style="display: flex; align-items: center; gap: 10px; font-size: calc(12px * var(--k, 1)); letter-spacing: 0.18em; text-transform: uppercase; font-weight: 700; opacity: 0.85"><span style="width: 18px; height: 1.5px; background: {{T.accent}}"></span>{{b.label}}<span style="width: 18px; height: 1.5px; background: {{T.accent}}"></span></figcaption>
+                    </sc-if>
+                  </figure>
                 </sc-if>
 
                 <sc-if value="{{b.showVideoPlayer}}" hint-placeholder-val="{{ false }}">
@@ -90,7 +230,7 @@ body{margin:0}
                 </sc-if>
 
                 <sc-if value="{{b.isTitulo}}" hint-placeholder-val="{{ false }}">
-                  <h1 style="margin: 0; font-family: {{T.font}}; font-size: calc({{T.titleSize}} * var(--k, 1)); line-height: 1.05; font-weight: {{T.weight}}; font-style: {{T.fstyle}}">{{b.text}}</h1>
+                  <h1 style="margin: 0; font-family: {{T.font}}; font-size: calc({{T.titleSize}} * var(--k, 1)); line-height: 1.05; font-weight: {{T.weight}}; font-style: {{T.fstyle}}; text-transform: {{T.titleCase}}; letter-spacing: {{T.titleTrack}}">{{b.text}}</h1>
                 </sc-if>
                 <sc-if value="{{b.isTexto}}" hint-placeholder-val="{{ false }}">
                   <p style="margin: 0; font-size: calc(15px * var(--k, 1)); line-height: 1.55; opacity: 0.9; white-space: pre-line">{{b.text}}</p>
@@ -108,11 +248,11 @@ body{margin:0}
 
                 <sc-if value="{{b.isContagem}}" hint-placeholder-val="{{ false }}">
                   <sc-if value="{{b.cdRunning}}" hint-placeholder-val="{{ true }}">
-                    <div aria-label="Contagem regressiva" style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: center">
-                      <div style="padding: 10px 0 8px; border-radius: 12px; border: 1px solid {{T.line}}; background: {{T.surface}}; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{T.font}}; font-size: calc(30px * var(--k, 1)); line-height: 1; font-weight: 600">{{b.cd.d}}</span><span style="font-size: calc(11px * var(--k, 1)); opacity: 0.8">dias</span></div>
-                      <div style="padding: 10px 0 8px; border-radius: 12px; border: 1px solid {{T.line}}; background: {{T.surface}}; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{T.font}}; font-size: calc(30px * var(--k, 1)); line-height: 1; font-weight: 600">{{b.cd.h}}</span><span style="font-size: calc(11px * var(--k, 1)); opacity: 0.8">horas</span></div>
-                      <div style="padding: 10px 0 8px; border-radius: 12px; border: 1px solid {{T.line}}; background: {{T.surface}}; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{T.font}}; font-size: calc(30px * var(--k, 1)); line-height: 1; font-weight: 600">{{b.cd.m}}</span><span style="font-size: calc(11px * var(--k, 1)); opacity: 0.8">min</span></div>
-                      <div style="padding: 10px 0 8px; border-radius: 12px; border: 1px solid {{T.line}}; background: {{T.surface}}; display: flex; flex-direction: column; gap: 2px"><span style="font-family: {{T.font}}; font-size: calc(30px * var(--k, 1)); line-height: 1; font-weight: 600">{{b.cd.s}}</span><span style="font-size: calc(11px * var(--k, 1)); opacity: 0.8">seg</span></div>
+                    <div aria-label="Contagem regressiva" data-cd-style="{{b.cdStyle}}" style="{{b.cdWrap}}">
+                      <sc-for list="{{b.cdItems}}" as="ci" hint-placeholder-count="4">
+                        <sc-if value="{{ci.isSep}}" hint-placeholder-val="{{ false }}"><span aria-hidden="true" style="{{ci.sep}}">:</span></sc-if>
+                        <sc-if value="{{ci.isNum}}" hint-placeholder-val="{{ true }}"><div style="{{ci.box}}"><span style="{{ci.num}}">{{ci.v}}</span><span style="{{ci.lab}}">{{ci.l}}</span></div></sc-if>
+                      </sc-for>
                     </div>
                   </sc-if>
                   <sc-if value="{{b.cdDone}}" hint-placeholder-val="{{ false }}">
@@ -269,6 +409,9 @@ body{margin:0}
 
               </div>
             </sc-for>
+            <sc-if value="{{deco.botanico}}" hint-placeholder-val="{{ false }}">
+              <svg aria-hidden="true" viewBox="0 0 100 100" style="position: absolute; right: -6px; bottom: -6px; width: 120px; pointer-events: none; transform: scaleX(-1); opacity: 0.55"><path d="M6 94C26 70 52 44 94 8" stroke="{{T.accent}}" stroke-width="1.6" fill="none"></path><g fill="{{T.accent}}"><path d="M24 74c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M24 74c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M46 52c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M46 52c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M68 30c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M68 30c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path></g></svg>
+            </sc-if>
           </div>
         </main>
 
@@ -302,9 +445,21 @@ body{margin:0}
     </sc-if>
   </div>
 
+  <sc-if value="{{lb.open}}" hint-placeholder-val="{{ false }}">
+    <div role="dialog" aria-modal="true" aria-label="Foto ampliada" data-testid="lightbox" data-noswipe="1" onKeyDown="{{lb.key}}" style="position: absolute; inset: 0; z-index: 30; background: rgba(8, 8, 10, 0.94); display: flex; flex-direction: column; align-items: center; justify-content: center" class="pg-in">
+      <img src="{{lb.url}}" alt="{{lb.alt}}" style="max-width: 100%; max-height: 78%; object-fit: contain; display: block">
+      <span style="margin-top: 14px; color: #FFFFFF; font-size: 13px; font-weight: 600; opacity: 0.85">{{lb.count}}</span>
+      <button onClick="{{lb.close}}" aria-label="Fechar foto" style="position: absolute; top: 14px; right: 14px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.16); color: #FFFFFF; font-size: 22px; cursor: pointer">×</button>
+      <sc-if value="{{lb.multi}}" hint-placeholder-val="{{ true }}">
+        <button onClick="{{lb.prev}}" aria-label="Foto anterior" style="position: absolute; left: 10px; top: 50%; margin-top: -22px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.16); color: #FFFFFF; font-size: 22px; cursor: pointer">‹</button>
+        <button onClick="{{lb.next}}" aria-label="Próxima foto" style="position: absolute; right: 10px; top: 50%; margin-top: -22px; width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.16); color: #FFFFFF; font-size: 22px; cursor: pointer">›</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
   <sc-if value="{{isClosed}}" hint-placeholder-val="{{ true }}">
     <div key="abertura" style="position: absolute; inset: 0; z-index: 5">
-      <dc-import name="Abertura" reveal="{{ true }}" recipient="{{opening.recipient}}" headline="{{opening.headline}}" hint="{{opening.hint}}" trigger="{{opening.trigger}}" initials="{{opening.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{opening.title}}" data="{{opening.subtitle}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
+      <dc-import name="Abertura" reveal="{{ true }}" photo="{{opening.photo}}" recipient="{{opening.recipient}}" headline="{{opening.headline}}" hint="{{opening.hint}}" trigger="{{opening.trigger}}" initials="{{opening.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{opening.title}}" data="{{opening.subtitle}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
     </div>
   </sc-if>
 </div>
@@ -536,9 +691,122 @@ class Component extends DCLogic {
     this.setState((s) => ({ forms: Object.assign({}, s.forms, { [bid]: Object.assign({}, this.form(bid), s.forms[bid] || {}, patch) }) }));
   }
 
+  // ---------- enfeites: divisores, galeria, contagem e efeitos ----------
+  ornament(key) {
+    const o = api.design.ornaments.find((x) => x.key === key) || api.design.ornaments[0];
+    return { d: o.d, f: o.f };
+  }
+
+  gallery(x, items, T, edit) {
+    const st = this.state;
+    const style = ['carrossel', 'grade', 'mosaico', 'colagem', 'filme'].indexOf(x.gstyle) !== -1 ? x.gstyle : 'carrossel';
+    const list = items.length ? items : [{}, {}, {}];
+    const n = list.length;
+    const cur = (st.gal && st.gal[x.id]) || 0;
+    const fill = 'position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block';
+    const btn = 'position: relative; border: 0; padding: 0; margin: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; background: ' + T.ph + '; color: ' + T.fg + '; cursor: ' + (edit ? 'default' : 'zoom-in') + '; font: inherit';
+    const spots = [['3%', '2%', '52%', -6], ['46%', '6%', '50%', 5], ['8%', '46%', '48%', 4], ['49%', '52%', '46%', -5], ['27%', '25%', '44%', -2]];
+    const look = (i) => {
+      if (style === 'carrossel') return btn + '; flex: 0 0 84%; aspect-ratio: 4 / 5; border-radius: 16px; scroll-snap-align: center';
+      if (style === 'filme') return btn + '; flex: 0 0 150px; aspect-ratio: 4 / 3; border-radius: 3px; scroll-snap-align: start';
+      if (style === 'grade') return btn + '; aspect-ratio: ' + (n % 2 && i === 0 ? '2 / 1' : '1 / 1') + '; border-radius: 10px' + (n % 2 && i === 0 ? '; grid-column: span 2' : '');
+      if (style === 'mosaico') {
+        // a primeira foto ocupa 2×2; a última se estica para não sobrar buraco na linha
+        const r = (n - 3) % 3;
+        const span = i === 0 ? '; grid-column: span ' + (n === 1 ? 3 : 2) + '; grid-row: span 2' : (i === n - 1 && n > 3 && r ? '; grid-column: span ' + (r === 1 ? 3 : 2) : (n === 2 && i === 1 ? '; grid-row: span 2' : ''));
+        return btn + '; border-radius: 8px' + span;
+      }
+      const sp = spots[i % spots.length];
+      return btn + '; position: absolute; left: ' + sp[0] + '; top: ' + sp[1] + '; width: ' + sp[2] + '; aspect-ratio: 0.86; box-sizing: border-box; padding: 7px 7px 26px; background: #FFFFFF; box-shadow: 0 10px 22px rgba(0, 0, 0, 0.22); transform: rotate(' + sp[3] + 'deg); overflow: visible; z-index: ' + (i + 1);
+    };
+    const shown = style === 'colagem' ? list.slice(0, 5) : list;
+    return {
+      style,
+      scroller: style === 'carrossel' || style === 'filme', grid: style !== 'carrossel' && style !== 'filme',
+      wrap: style === 'filme'
+        ? 'padding: 16px 0; border-radius: 4px; background-color: #141414; background-image: repeating-linear-gradient(90deg, rgba(255,255,255,0.82) 0 7px, transparent 7px 18px), repeating-linear-gradient(90deg, rgba(255,255,255,0.82) 0 7px, transparent 7px 18px); background-size: 100% 6px, 100% 6px; background-position: 0 5px, 0 calc(100% - 5px); background-repeat: repeat-x'
+        : '',
+      track: style === 'carrossel' ? 'display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; padding: 2px 8% 6px; margin: 0 -2px'
+        : style === 'filme' ? 'display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 0 10px'
+        : style === 'grade' ? 'display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px'
+        : style === 'mosaico' ? 'display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 104px; gap: 6px'
+        : 'position: relative; height: 380px',
+      hasDots: style === 'carrossel' && n > 1,
+      dots: list.map((_, i) => ({ w: i === cur ? '18px' : '6px', c: i === cur ? T.accent : 'color-mix(in srgb, ' + T.fg + ' 30%, transparent)' })),
+      onScroll: (e) => {
+        const el = e.currentTarget, first = el.firstElementChild;
+        if (!first) return;
+        const i = Math.max(0, Math.min(n - 1, Math.round(el.scrollLeft / (first.offsetWidth + 10))));
+        if (i !== cur) this.setState((s) => ({ gal: Object.assign({}, s.gal, { [x.id]: i }) }));
+      },
+      items: shown.map((it, i) => ({
+        has: !!it.url, empty: !it.url, url: it.url || '',
+        img: style === 'colagem' ? 'position: relative; width: 100%; height: 100%; object-fit: cover; display: block' : fill,
+        box: look(i), tape: style === 'colagem' && i % 2 === 0,
+        aria: 'Ampliar foto ' + (i + 1) + ' de ' + n,
+        open: () => { if (!edit && it.url) { this.setState({ lb: { bid: x.id, i } }); setTimeout(() => { try { const b = document.querySelector('[data-testid="lightbox"] button'); if (b) b.focus(); } catch (err) {} }, 40); } }
+      }))
+    };
+  }
+
+  lightbox(allPages, edit) {
+    const lb = this.state.lb;
+    const blk = lb && !edit ? allPages.reduce((f, p) => f || (p.blocks || []).find((b) => b.id === lb.bid), null) : null;
+    const items = blk ? (blk.items || []).filter((it) => it && it.url) : [];
+    if (!items.length) return { open: false };
+    const i = ((lb.i % items.length) + items.length) % items.length;
+    const go = (d) => this.setState({ lb: { bid: lb.bid, i: i + d } });
+    return {
+      open: true, url: items[i].url, alt: 'Foto ' + (i + 1), count: (i + 1) + ' de ' + items.length, multi: items.length > 1,
+      close: () => this.setState({ lb: null }), prev: () => go(-1), next: () => go(1),
+      key: (e) => { if (e.key === 'Escape') this.setState({ lb: null }); else if (e.key === 'ArrowLeft') go(-1); else if (e.key === 'ArrowRight') go(1); }
+    };
+  }
+
+  cdLook(key, cd, T) {
+    const style = ['cartoes', 'minimal', 'circulos', 'flip'].indexOf(key) !== -1 ? key : 'cartoes';
+    const k = (px) => 'calc(' + px + 'px * var(--k, 1))';
+    const parts = [[cd.d, 'dias'], [cd.h, 'horas'], [cd.m, 'min'], [cd.s, 'seg']];
+    const S = {
+      cartoes: { wrap: 'display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: center', box: 'padding: 10px 0 8px; border-radius: 12px; border: 1px solid ' + T.line + '; background: ' + T.surface + '; display: flex; flex-direction: column; gap: 2px', num: 'font-family: ' + T.font + '; font-size: ' + k(30) + '; line-height: 1; font-weight: 600', lab: 'font-size: ' + k(11) + '; opacity: 0.8' },
+      minimal: { wrap: 'display: flex; align-items: flex-start; justify-content: center; gap: 2px; text-align: center', box: 'display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 58px', num: 'font-family: ' + T.font + '; font-size: ' + k(42) + '; line-height: 1; font-weight: ' + T.weight, lab: 'font-size: ' + k(10) + '; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700; opacity: 0.75' },
+      circulos: { wrap: 'display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: center', box: 'aspect-ratio: 1; border-radius: 50%; border: 1.5px solid ' + T.accent + '; box-shadow: inset 0 0 0 4px color-mix(in srgb, ' + T.accent + ' 14%, transparent); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px', num: 'font-family: ' + T.font + '; font-size: ' + k(26) + '; line-height: 1; font-weight: 600', lab: 'font-size: ' + k(10) + '; opacity: 0.8' },
+      flip: { wrap: 'display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-align: center', box: 'position: relative; padding: 12px 0 8px; border-radius: 10px; background: ' + T.fg + '; color: ' + T.bg + '; background-image: linear-gradient(180deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.08) 49%, rgba(0,0,0,0.28) 49.5%, rgba(0,0,0,0) 51%, rgba(0,0,0,0.06) 100%); box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); display: flex; flex-direction: column; gap: 4px', num: 'font-family: ' + T.font + '; font-size: ' + k(32) + '; line-height: 1; font-weight: 700', lab: 'font-size: ' + k(10) + '; letter-spacing: 0.12em; text-transform: uppercase; opacity: 0.7' }
+    }[style];
+    const items = [];
+    parts.forEach((p, i) => {
+      if (i && style === 'minimal') items.push({ isSep: true, isNum: false, sep: 'font-family: ' + T.font + '; font-size: ' + k(36) + '; line-height: 1.05; color: ' + T.accent + '; opacity: 0.7; padding: 0 2px' });
+      items.push({ isNum: true, isSep: false, v: p[0], l: p[1], box: S.box, num: S.num, lab: S.lab });
+    });
+    return { cdStyle: style, cdWrap: S.wrap, cdItems: items };
+  }
+
+  fxItems(T, rnd) {
+    const kind = T.fx;
+    if (!kind || kind === 'nenhum') return { has: false, items: [], kind: '' };
+    const fest = [T.accent, '#FFD166', '#EF476F', '#06D6A0', '#4CC9F0', '#B388FF'];
+    const pinks = ['#F6C9D2', '#FBE3E8', '#F2A7B8', 'color-mix(in srgb, ' + T.accent + ' 55%, #FFFFFF)'];
+    const N = { neve: 28, petalas: 16, confete: 22, bolhas: 14, coracoes: 12, brilhos: 18, estrelas: 34 }[kind] || 0;
+    const items = Array.from({ length: N }, (_, i) => {
+      const left = (rnd(i, 1) * 100).toFixed(1) + '%';
+      const base = 'position: absolute; left: ' + left + '; display: block; pointer-events: none; ';
+      const t = (a, b) => (a + rnd(i, 3) * (b - a)).toFixed(2) + 's';
+      const dl = (m) => '-' + (rnd(i, 4) * m).toFixed(2) + 's';
+      if (kind === 'neve') { const z = Math.round(3 + rnd(i, 2) * 5); return { cls: 'fx-fall', ch: '', style: base + 'top: -20px; width: ' + z + 'px; height: ' + z + 'px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 0 6px rgba(255,255,255,0.6); --o: 0.85; --dx: ' + Math.round(rnd(i, 5) * 80 - 40) + 'px; --r: 0deg; --t: ' + t(9, 15) + '; --dl: ' + dl(15) }; }
+      if (kind === 'petalas') { const z = Math.round(10 + rnd(i, 2) * 9); return { cls: 'fx-fall', ch: '', style: base + 'top: -30px; width: ' + z + 'px; height: ' + Math.round(z * 1.3) + 'px; border-radius: 80% 0 80% 0; background: ' + pinks[i % pinks.length] + '; --o: 0.8; --dx: ' + Math.round(rnd(i, 5) * 140 - 70) + 'px; --r: ' + Math.round(300 + rnd(i, 6) * 400) + 'deg; --t: ' + t(11, 17) + '; --dl: ' + dl(17) }; }
+      if (kind === 'confete') { const z = Math.round(6 + rnd(i, 2) * 5); return { cls: 'fx-fall', ch: '', style: base + 'top: -20px; width: ' + z + 'px; height: ' + Math.round(z * 1.6) + 'px; border-radius: 1px; background: ' + fest[i % fest.length] + '; --o: 0.9; --dx: ' + Math.round(rnd(i, 5) * 100 - 50) + 'px; --r: ' + Math.round(500 + rnd(i, 6) * 600) + 'deg; --t: ' + t(8, 13) + '; --dl: ' + dl(13) }; }
+      if (kind === 'bolhas') { const z = Math.round(10 + rnd(i, 2) * 26); return { cls: 'fx-rise', ch: '', style: base + 'top: 100%; width: ' + z + 'px; height: ' + z + 'px; border-radius: 50%; border: 1.5px solid color-mix(in srgb, ' + T.fg + ' 45%, transparent); background: radial-gradient(circle at 32% 30%, rgba(255,255,255,0.55) 0 14%, transparent 16%), color-mix(in srgb, ' + T.accent + ' 12%, transparent); --o: 0.75; --dx: ' + Math.round(rnd(i, 5) * 80 - 40) + 'px; --t: ' + t(10, 16) + '; --dl: ' + dl(16) }; }
+      if (kind === 'coracoes') { const z = Math.round(12 + rnd(i, 2) * 14); return { cls: 'fx-rise', ch: '♥', style: base + 'top: 100%; font-size: ' + z + 'px; line-height: 1; color: ' + (i % 3 ? T.accent : '#F2A7B8') + '; --o: 0.7; --dx: ' + Math.round(rnd(i, 5) * 90 - 45) + 'px; --t: ' + t(9, 15) + '; --dl: ' + dl(15) }; }
+      if (kind === 'brilhos') { const z = Math.round(8 + rnd(i, 2) * 10); return { cls: 'fx-twinkle', ch: '', style: base + 'top: ' + (rnd(i, 7) * 96).toFixed(1) + '%; width: ' + z + 'px; height: ' + z + 'px; background: ' + T.accent + '; clip-path: polygon(50% 0, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0 50%, 38% 38%); --o: 0.9; --t: ' + t(2.4, 4.6) + '; --dl: ' + dl(4.6) }; }
+      const z = rnd(i, 2) > 0.8 ? 3 : 2;
+      return { cls: 'fx-twinkle', ch: '', style: base + 'top: ' + (rnd(i, 7) * 98).toFixed(1) + '%; width: ' + z + 'px; height: ' + z + 'px; border-radius: 50%; background: ' + (i % 4 ? '#FFFFFF' : T.accent) + '; box-shadow: 0 0 4px rgba(255,255,255,0.8); --o: 0.95; --t: ' + t(2, 5) + '; --dl: ' + dl(5) };
+    });
+    return { has: N > 0, items, kind };
+  }
+
   // Estilos da estrutura da página. No editor (edit) a página não rola nem tem menu:
   // ela é desenhada inteira, na mesma largura do convidado (390px), para medir os blocos.
-  layout(T, edit, free, cur, multi) {
+  layout(T, edit, free, cur, multi, dir) {
     const font = "font-family: 'Plus Jakarta Sans', system-ui, sans-serif; color: " + T.fg + ';';
     const screenH = multi ? 784 : 844;
     const freeH = Math.max(screenH, Math.round(cur.freeH || 0));
@@ -551,12 +819,12 @@ class Component extends DCLogic {
         ? 'position: relative; display: flex; flex-direction: column; min-height: ' + screenH + 'px'
         : 'position: absolute; inset: 0; display: flex; flex-direction: column',
       inert: edit,
-      mainClass: edit ? '' : 'pg-in',
+      mainClass: edit ? '' : ({ deslizar: 'pg-deslizar-' + (dir || 'n'), zoom: 'pg-zoom', virar: 'pg-virar-' + (dir || 'n'), subir: 'pg-subir' }[T.pageFx] || 'pg-in'),
       main: 'position: relative; flex: ' + (edit ? '1 0 auto' : '1 1 auto') + '; ' + (edit ? '' : 'overflow-y: auto; ') +
         (free ? 'padding: 0; display: block; ' : 'padding: 22px 20px 28px; display: flex; flex-direction: column; ') + 'font-family: ' + T.body,
       inner: free
         ? 'position: relative; height: ' + freeH + 'px; text-align: ' + T.align
-        : 'flex: 1 0 auto; display: flex; flex-direction: column; gap: 14px; padding: ' + T.framePad + '; border: ' + T.frame + '; border-left: ' + T.band + '; text-align: ' + T.align,
+        : 'position: relative; flex: 1 0 auto; display: flex; flex-direction: column; gap: 14px; padding: ' + T.framePad + '; border: ' + T.frame + '; border-left: ' + T.band + '; text-align: ' + T.align,
       hasDecor
     };
   }
@@ -571,10 +839,16 @@ class Component extends DCLogic {
     const cur = (edit ? pages.find((p) => p.id === this.props.editPage) : pages.find((p) => p.id === st.page)) || pages[0] || { id: 'vazio', blocks: [] };
     const free = !!cur.free;
     const hasNav = !edit && pages.length > 1;
-    const L = this.layout(T, edit, free, cur, pages.length > 1);
+    const L = this.layout(T, edit, free, cur, pages.length > 1, st.dir);
     const base = { T, L, isLoading: st.phase === 'loading', isError: st.phase === 'error', error: st.error, isClosed: false, isPages: false, noMusic: { kind: 'nenhuma' } };
     if (!inv) return base;
-    const goPage = (id) => this.setState({ page: id, hintGone: true });
+    const goPage = (id) => {
+      const a = pages.findIndex((p) => p.id === cur.id), b = pages.findIndex((p) => p.id === id);
+      this.setState({ page: id, hintGone: true, dir: b < a ? 'p' : 'n' });
+    };
+    const rnd = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    const okUrl = (u) => /^(https?:|blob:|\/)/i.test(String(u || ''));
+    let fotoIdx = 0;
     const preview = !!this.props.preview;
     const lastIndex = {};
 
@@ -588,8 +862,8 @@ class Component extends DCLogic {
           '--k: ' + api.fontScale(x, T) + '; animation-delay: ' + (i * 0.08).toFixed(2) + 's',
         text: this.nm(x.text), label: this.nm(x.label), url: x.url || '', address: x.address || '',
         mediaUrl: url, hasMedia: !!url, noMedia: !url,
-        ratio: x.type === 'foto' ? String(api.photo.ratio(x.edit, T.layout)) : '',
-        imgStyle: x.type === 'foto' ? api.photo.style(x.edit, api.photo.ratio(x.edit, T.layout)) : '',
+        ratio: x.type === 'foto' ? String(api.photo.ratio(x.edit, T.layout, x.shape)) : '',
+        imgStyle: x.type === 'foto' ? api.photo.style(x.edit, api.photo.ratio(x.edit, T.layout, x.shape)) : '',
         showFoto: x.type === 'foto' && (!!url || preview),
         showVideoPlayer: x.type === 'video' && !!url,
         showVideoLink: x.type === 'video' && !url && /^https?:\/\//.test(x.url || '') && x.src === 'link',
@@ -597,13 +871,38 @@ class Component extends DCLogic {
         autoplay: !!x.autoplay, loopVid: !!x.loopVid,
         isTitulo: x.type === 'titulo', isTexto: x.type === 'texto', isOrient: x.type === 'orientacoes',
         lines: this.nm(x.text).split('\n').map((l) => l.trim()).filter(Boolean),
-        isContagem: x.type === 'contagem', isMapa: x.type === 'mapa', isBotao: x.type === 'botao', isRsvp: x.type === 'rsvp'
+        isContagem: x.type === 'contagem', isMapa: x.type === 'mapa', isBotao: x.type === 'botao', isRsvp: x.type === 'rsvp',
+        isOrnamento: x.type === 'ornamento', isProgramacao: x.type === 'programacao', isCitacao: x.type === 'citacao',
+        isGaleria: x.type === 'galeria'
       };
+      if (x.type === 'foto') {
+        o.pl = api.photo.look(x, T, fotoIdx++);
+        o.capOnFrame = o.pl.polaroid && o.pl.caption;
+        o.capBelow = o.pl.caption && !o.pl.polaroid;
+      }
+      if (o.isCitacao) o.hasAuthor = !!String(x.label || '').trim();
+      if (o.isOrnamento) o.orn = this.ornament(x.ostyle);
+      if (o.isProgramacao) {
+        const rows = this.nm(x.text).split('\n').map((l) => l.trim()).filter(Boolean).map((l) => {
+          const m = l.match(/^(\d{1,2}(?:[:h]\d{2})?h?)\s*[-–—·:|]?\s*(.*)$/i);
+          const rest = m ? m[2] : l;
+          const parts = rest.split('|');
+          return { time: m ? m[1].replace(/^(\d{1,2}):(\d{2})$/, '$1h$2').replace(/h00$/, 'h') : '', title: parts[0].trim(), desc: parts.slice(1).join('|').trim() };
+        });
+        o.prog = rows.map((r, j) => Object.assign(r, { hasDesc: !!r.desc, lineBottom: j === rows.length - 1 ? '100%' : '-2px' }));
+        if (!rows.length && !preview) o.isProgramacao = false;
+      }
+      if (o.isGaleria) {
+        const items = (x.items || []).filter((it) => it && okUrl(it.url));
+        if (!items.length && !preview) o.isGaleria = false;
+        o.g = this.gallery(x, items, T, edit);
+      }
       if (o.isContagem) {
         const cd = this.countdown(x.target || inv.eventDate);
         o.cd = cd && !cd.done ? cd : { d: '--', h: '--', m: '--', s: '--' };
         o.cdDone = !!(cd && cd.done);
         o.cdRunning = !o.cdDone;
+        Object.assign(o, this.cdLook(x.cdStyle, o.cd, T));
         o.endText = x.endText == null ? 'O grande dia chegou!' : this.nm(x.endText);
         if (!cd && !preview) o.isContagem = false;
       }
@@ -806,6 +1105,7 @@ class Component extends DCLogic {
           recipient,
           headline: this.nm(o.headline === undefined ? 'Você recebeu um convite' : o.headline),
           hint: this.nm(o.hint || ''), trigger: o.trigger || 'toque', initials: o.initials || '',
+          photo: o.photoUrl && /^(https?:|blob:|\/)/i.test(o.photoUrl) ? o.photoUrl : '',
           title: this.nm(o.title || inv.coverTitle || inv.title),
           subtitle: this.nm(o.subtitle || api.fmt.dots(inv.eventDate))
         };
@@ -816,7 +1116,12 @@ class Component extends DCLogic {
       showSwipeHint: hasNav && !edit && st.phase === 'pages' && !st.swiped && !st.hintGone && cur.id === pages[0].id,
       dots: pages.map((p) => ({ w: p.id === cur.id ? '16px' : '6px', c: p.id === cur.id ? '#FFFFFF' : 'rgba(255,255,255,0.5)' })),
       swipe: {
-        start: (e) => { const t = e.touches && e.touches[0]; this.touch = t ? { x: t.clientX, y: t.clientY, at: Date.now() } : null; },
+        start: (e) => {
+          const t = e.touches && e.touches[0];
+          // carrossel e filme de fotos rolam na horizontal: não trocam de página
+          const inside = e.target && e.target.closest && e.target.closest('[data-noswipe]');
+          this.touch = t && !inside ? { x: t.clientX, y: t.clientY, at: Date.now() } : null;
+        },
         end: (e) => {
           const s0 = this.touch; this.touch = null;
           const t = e.changedTouches && e.changedTouches[0];
@@ -828,7 +1133,7 @@ class Component extends DCLogic {
           const i = ids.indexOf(this.curPageId);
           const j = dx < 0 ? i + 1 : i - 1;
           if (i < 0 || j < 0 || j >= ids.length) return;
-          this.setState({ page: ids[j], swiped: true });
+          this.setState({ page: ids[j], swiped: true, dir: dx < 0 ? 'n' : 'p' });
         }
       },
       pageBg: (() => {
@@ -841,6 +1146,13 @@ class Component extends DCLogic {
         };
       })(),
       pageKey: cur.id,
+      deco: {
+        aurora: T.decor === 'aurora' && !(cur.bg && cur.bg.url),
+        botanico: T.decor === 'botanico',
+        decoCorners: T.decor === 'deco' && free
+      },
+      fx: this.fxItems(T, rnd),
+      lb: this.lightbox(allPages, edit),
       onOpen: () => { const ok = this.musicStart(); this.setState({ musicPlaying: ok, phase: 'opening' }); },
       onOpened: () => this.setState({ phase: 'pages' }),
       hasMusic: !edit && st.phase === 'pages' && cfg.kind !== 'nenhuma',

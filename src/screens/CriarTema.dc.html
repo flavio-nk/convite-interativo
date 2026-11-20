@@ -8,7 +8,7 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&amp;family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;family=Cinzel:wght@500;600;700&amp;family=Fraunces:ital,wght@0,400;0,600;1,400&amp;family=Pinyon+Script&amp;family=Unbounded:wght@600;700;800&amp;display=swap">
 <style>
 body{margin:0;background:#F5F4F8}
 a{color:#4A32C4}a:hover{color:#2F1F8F}
@@ -157,17 +157,7 @@ button,input,select{font-family:inherit}
           <div>
             <label class="lbl" for="t-font">Fonte dos títulos</label>
             <select class="fld" id="t-font" value="{{fontKey}}" onChange="{{onFont}}">
-              <option value="cormorant">Cormorant Garamond (clássica)</option>
-              <option value="playfair">Playfair Display (elegante)</option>
-              <option value="bodoni">Bodoni Moda (sofisticada)</option>
-              <option value="dmserif">DM Serif Display (marcante)</option>
-              <option value="italiana">Italiana (leve)</option>
-              <option value="greatvibes">Great Vibes (cursiva)</option>
-              <option value="caveat">Caveat (manuscrita)</option>
-              <option value="bricolage">Bricolage Grotesque (divertida)</option>
-              <option value="syne">Syne (moderna)</option>
-              <option value="josefin">Josefin Sans (geométrica)</option>
-              <option value="jakarta">Plus Jakarta Sans (neutra)</option>
+              <sc-for list="{{fontOptions}}" as="fo" hint-placeholder-count="16"><option value="{{fo.key}}">{{fo.label}}</option></sc-for>
             </select>
           </div>
           <div>
@@ -230,6 +220,18 @@ button,input,select{font-family:inherit}
           </sc-for>
         </div>
         <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px">
+          <div>
+            <label class="lbl" for="t-fx">Efeito animado de fundo</label>
+            <select class="fld" id="t-fx" value="{{fx}}" onChange="{{onFx}}">
+              <sc-for list="{{fxOptions}}" as="fx" hint-placeholder-count="8"><option value="{{fx.key}}">{{fx.label}}</option></sc-for>
+            </select>
+          </div>
+          <div>
+            <label class="lbl" for="t-pagefx">Transição entre páginas</label>
+            <select class="fld" id="t-pagefx" value="{{pageFx}}" onChange="{{onPageFx}}">
+              <sc-for list="{{pageFxOptions}}" as="px" hint-placeholder-count="5"><option value="{{px.key}}">{{px.label}}</option></sc-for>
+            </select>
+          </div>
           <div>
             <label class="lbl" for="t-trigger">Como o convidado abre</label>
             <select class="fld" id="t-trigger">
@@ -301,14 +303,14 @@ class Component extends DCLogic {
       ...(t.canEdit === false ? { themeId: null, editing: false } : {}),
       name: t.canEdit === false ? 'Cópia de ' + t.name : t.name, cat: t.cat || 'Casamento', bg: t.bg, fg: t.fg, accent: t.accent, btnFg: t.btnFg, paper: t.paper, ph: t.ph,
       fontKey: t.fontKey || 'cormorant', bodyKey: t.bodyKey || 'jakarta', italic: !!t.italic, layout: t.layout || 'centro',
-      anim: t.anim || 'envelope', radiusKey: t.radiusKey || 'pilula', titleScale: t.titleScale || 1
+      anim: t.anim || 'envelope', radiusKey: t.radiusKey || 'pilula', titleScale: t.titleScale || 1, fx: t.fx || 'nenhum', pageFx: t.pageFx || 'suave'
     })).catch((e) => this.setState({ error: e.message }));
   }
   themeData() {
     const st = this.state;
     return {
       id: st.themeId || undefined, name: st.name, cat: st.cat, bg: st.bg, fg: st.fg, accent: st.accent, btnFg: st.btnFg, paper: st.paper, ph: st.ph,
-      fontKey: st.fontKey, bodyKey: st.bodyKey, italic: st.italic, layout: st.layout, radiusKey: st.radiusKey, anim: st.anim, titleScale: st.titleScale
+      fontKey: st.fontKey, bodyKey: st.bodyKey, italic: st.italic, layout: st.layout, radiusKey: st.radiusKey, anim: st.anim, titleScale: st.titleScale, fx: st.fx || 'nenhum', pageFx: st.pageFx || 'suave'
     };
   }
   palettes() {
@@ -341,13 +343,7 @@ class Component extends DCLogic {
     ];
   }
   fonts() {
-    return {
-      cormorant: ["'Cormorant Garamond', Georgia, serif", '500'], playfair: ["'Playfair Display', Georgia, serif", '600'],
-      bodoni: ["'Bodoni Moda', Georgia, serif", '500'], dmserif: ["'DM Serif Display', Georgia, serif", '400'],
-      italiana: ["'Italiana', serif", '400'], greatvibes: ["'Great Vibes', cursive", '400'], caveat: ["'Caveat', cursive", '700'],
-      bricolage: ["'Bricolage Grotesque', sans-serif", '800'], syne: ["'Syne', sans-serif", '800'],
-      josefin: ["'Josefin Sans', sans-serif", '700'], jakarta: ["'Plus Jakarta Sans', sans-serif", '800']
-    };
+    return api.FONTS;
   }
   presets() {
     const p = (bg, fg, accent, btnFg, paper, ph, fontKey, layout, anim, extra) => Object.assign({ bg, fg, accent, btnFg, paper, ph, fontKey, layout, anim }, extra || {});
@@ -431,27 +427,17 @@ class Component extends DCLogic {
     };
     const payload = {
       name: st.name, baseName: st.name, cat: st.cat, bg: st.bg, fg: st.fg, accent: st.accent, btnFg: st.btnFg, paper: st.paper, ph: st.ph,
-      fontKey: st.fontKey, italic: st.italic, layout: st.layout, radiusKey: st.radiusKey, anim: st.anim,
+      fontKey: st.fontKey, italic: st.italic, layout: st.layout, radiusKey: st.radiusKey, anim: st.anim, fx: st.fx || 'nenhum', pageFx: st.pageFx || 'suave',
       kicker: st.cat, sample: 'Título do evento', date: 'Data do evento'
     };
 
-    const layoutDefs = [['centro', 'Centralizado'], ['foto-topo', 'Foto no topo'], ['foto-fundo', 'Foto de fundo'], ['moldura', 'Moldura'], ['fina', 'Moldura fina'], ['dividido', 'Dividido'], ['editorial', 'Editorial'], ['arco', 'Arco'], ['polaroid', 'Polaroid']];
+    const layoutDefs = api.design.layouts.map((l) => [l.key, l.label]);
     const layouts = layoutDefs.map((d) => {
       const on = d[0] === st.layout;
       return { id: d[0], label: d[1], pressed: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', pick: () => this.setState({ layout: d[0], saved: false }) };
     });
 
-    const animDefs = [
-      ['envelope', 'Carta', 'O envelope abre e o cartão sobe', 'M3 7l9 6 9-6M3 7h18v12H3z'],
-      ['cortina', 'Cortina', 'Cortinas se abrem para os lados', 'M3 3h18M5 3v18c3-4 4-10 4-18M19 3v18c-3-4-4-10-4-18'],
-      ['portas', 'Portas', 'Portas duplas se abrem em 3D', 'M4 21V3h16v18M12 3v18M9.5 12h.01M14.5 12h.01'],
-      ['lacre', 'Lacre de cera', 'O selo se rompe e o papel se abre', 'M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10ZM9 12l-2 9 5-3 5 3-2-9'],
-      ['presente', 'Presente', 'O laço se desfaz e a tampa sobe', 'M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9c-2-4-6-4-6-1s6 1 6 1Zm0 0c2-4 6-4 6-1s-6 1-6 1Z'],
-      ['livro', 'Livro', 'A capa vira como um livro', 'M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z'],
-      ['iris', 'Íris', 'Um círculo se fecha e revela o convite', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z'],
-      ['neblina', 'Neblina', 'O véu se dissipa e o convite ganha foco', 'M3 8h12M6 12h15M3 16h12M8 20h10'],
-      ['nenhuma', 'Sem abertura', 'O convite já aparece aberto', 'M5 5l14 14M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z']
-    ];
+    const animDefs = api.design.anims.map((x) => [x.key, x.label, x.desc, x.icon]);
     const anims = animDefs.map((d) => {
       const on = d[0] === st.anim;
       return { label: d[1], desc: d[2], icon: d[3], pressed: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', bgTile: on ? '#F7F5FE' : '#FFFFFF', pick: () => this.setState({ anim: d[0], tab: 'abertura', saved: false }) };
@@ -501,7 +487,11 @@ class Component extends DCLogic {
       noMusic: { kind: 'nenhuma' },
       lowContrast: !!msg, contrastMsg: msg,
       fontKey: st.fontKey, bodyKey: st.bodyKey,
-      onFont: (e) => { const k = e.target.value; this.setState({ fontKey: k, titleScale: k === 'greatvibes' ? 1.25 : (k === 'caveat' ? 1.15 : st.titleScale), saved: false }); },
+      onFont: (e) => { const k = e.target.value; this.setState({ fontKey: k, titleScale: k === 'greatvibes' || k === 'pinyon' ? 1.25 : (k === 'caveat' ? 1.15 : (k === 'unbounded' ? 0.85 : st.titleScale)), saved: false }); },
+      fontOptions: api.design.fonts.map((f) => ({ key: f.key, label: f.label + ' (' + f.desc + ')' })),
+      fx: st.fx || 'nenhum', pageFx: st.pageFx || 'suave',
+      fxOptions: api.design.fx, pageFxOptions: api.design.pageFx,
+      onFx: set('fx'), onPageFx: set('pageFx'),
       onBody: set('bodyKey'),
       font: font[0], weight: font[1], bodyFont: bodyFonts[st.bodyKey],
       fstyle: st.italic ? 'italic' : 'normal',

@@ -8,9 +8,23 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&amp;family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;family=Cinzel:wght@500;600;700&amp;family=Fraunces:ital,wght@0,400;0,600;1,400&amp;family=Pinyon+Script&amp;family=Unbounded:wght@600;700;800&amp;display=swap">
 <style>
 body{margin:0}
+@keyframes abBurst{0%{transform:translate(0,0) rotate(0deg) scale(.3);opacity:1}55%{transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(1);opacity:1}100%{transform:translate(calc(var(--dx) * 1.12),calc(var(--dy) + 320px)) rotate(calc(var(--r) * 2)) scale(1);opacity:0}}
+.ab-burst{animation:abBurst var(--t,1.5s) cubic-bezier(.15,.7,.4,1) var(--dl,0s) both}
+@keyframes abFall{0%{transform:translate(0,-60px) rotate(0deg);opacity:0}8%{opacity:1}100%{transform:translate(var(--dx),980px) rotate(var(--r));opacity:.9}}
+.ab-fall{animation:abFall var(--t,2s) linear var(--dl,0s) both}
+.ab-fall-loop{animation:abFall var(--t,8s) linear var(--dl,0s) infinite}
+@keyframes abBob{from{transform:translateY(0) rotate(var(--r0,0deg))}to{transform:translateY(-14px) rotate(calc(var(--r0,0deg) * -1))}}
+.ab-bob{animation:abBob var(--t,2.6s) ease-in-out var(--dl,0s) infinite alternate}
+@keyframes abRise{from{transform:translate(0,0)}to{transform:translate(var(--dx),-1150px)}}
+.ab-rise{animation:abRise var(--t,1.8s) cubic-bezier(.5,0,.7,1) var(--dl,0s) both}
+@keyframes abPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.05)}}
+.ab-pulse{animation:abPulse 1.8s ease-in-out infinite}
+@keyframes abRing{0%{transform:scale(1);opacity:.9}100%{transform:scale(1.18);opacity:0}}
+.ab-ring{animation:abRing 2.4s ease-out infinite}
+@media (prefers-reduced-motion: reduce){.ab-bob,.ab-pulse,.ab-ring{animation:none}.ab-fall,.ab-burst,.ab-rise{animation-duration:.01s}.ab-fall-loop{animation:none;opacity:0}}
 </style>
 </helmet>
 <div style="position: relative; width: 390px; height: 844px; overflow: hidden; background: {{rootBg}}; color: {{fg}}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
@@ -174,10 +188,210 @@ body{margin:0}
         </span>
       </sc-if>
 
-      <sc-if value="{{hasHeadline}}" hint-placeholder-val="{{ true }}">
-        <span style="position: absolute; left: 50%; top: 72px; transform: translateX(-50%); max-width: calc(100% - 48px); box-sizing: border-box; display: inline-block; padding: 8px 16px; border-radius: 999px; background: rgba(20, 20, 20, 0.55); color: #FFFFFF; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; opacity: {{fadeOut}}; transition: opacity .3s ease; pointer-events: none">{{headline}}</span>
+
+      <sc-if value="{{isDobradura}}" hint-placeholder-val="{{ false }}">
+        <span style="position: absolute; inset: 0; display: block">
+          <span style="position: absolute; inset: 0; display: block; background: radial-gradient(120% 80% at 50% 45%, color-mix(in srgb, {{bg}} 82%, #FFFFFF) 0%, {{bg}} 70%); opacity: {{fadeOut}}; transition: opacity .6s ease 1.5s"></span>
+          <span style="position: absolute; left: 45px; top: 137px; width: 300px; height: 570px; display: block; transform: {{foldGroup}}; opacity: {{fadeOut}}; transition: transform .6s ease 1.45s, opacity .5s ease 1.55s; filter: drop-shadow(0 22px 30px rgba(0, 0, 0, 0.3))">
+            <span style="position: absolute; left: 0; top: 190px; width: 300px; height: 190px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: {{paperLight}}; color: {{paperInk}}; z-index: 1; box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.08), inset 0 -1px 0 rgba(0, 0, 0, 0.08)">
+              <span style="font-family: {{font}}; font-size: 40px; line-height: 1; font-weight: {{weight}}; font-style: {{fstyle}}; padding: 0 18px; text-align: center">{{titulo}}</span>
+              <span style="width: 46px; height: 1.5px; background: {{accent}}"></span>
+            </span>
+            <span style="position: absolute; left: 0; top: 380px; width: 300px; height: 190px; display: block; z-index: 2; transform-origin: center top; transform: {{foldBottom}}; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.4,.1,.2,1) .6s">
+              <span style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; background: {{paperLight}}; color: {{paperInk}}; backface-visibility: hidden; -webkit-backface-visibility: hidden">
+                <span style="font-size: 14px; font-weight: 700; letter-spacing: 0.14em">{{data}}</span>
+                <sc-if value="{{hasRecipient}}" hint-placeholder-val="{{ false }}"><span data-testid="destinatario" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; max-width: 100%; min-width: 0; "><sc-if value="{{recipient.hasPre}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; opacity: 0.8">{{recipient.pre}}</span></sc-if><span style="max-width: 100%; font-family: {{font}}; font-size: calc(22px * {{recipient.k}}); line-height: 1.1; font-weight: {{weight}}; font-style: {{fstyle}}; overflow-wrap: anywhere">{{recipient.name}}</span><sc-if value="{{recipient.hasPost}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; opacity: 0.85">{{recipient.post}}</span></sc-if></span></sc-if>
+              </span>
+              <span style="position: absolute; inset: 0; display: block; background: {{paper}}; transform: rotateX(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden"></span>
+            </span>
+            <span style="position: absolute; left: 0; top: 0; width: 300px; height: 190px; display: block; z-index: 3; transform-origin: center bottom; transform: {{foldTop}}; transform-style: preserve-3d; transition: transform .7s cubic-bezier(.4,.1,.2,1) .05s">
+              <span style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: {{paperLight}}; color: {{paperInk}}; backface-visibility: hidden; -webkit-backface-visibility: hidden">
+                <span style="font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 700; color: {{paperAccent}}">{{kicker}}</span>
+                <svg width="90" height="14" viewBox="0 0 90 14" fill="none" stroke="{{accent}}" stroke-width="1.2" aria-hidden="true"><path d="M2 7h32M56 7h32M45 1l6 6-6 6-6-6z"></path></svg>
+              </span>
+              <span style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; background: {{paper}}; color: {{paperInk}}; transform: rotateX(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; box-shadow: inset 0 -18px 30px rgba(0, 0, 0, 0.06)">
+                <span style="font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; font-weight: 700">{{kicker}}</span>
+                <span style="font-family: {{font}}; font-size: 32px; line-height: 1; font-weight: {{weight}}; font-style: {{fstyle}}; padding: 0 16px; text-align: center">{{titulo}}</span>
+                <span style="position: absolute; left: 50%; bottom: -26px; width: 52px; height: 52px; margin-left: -26px; border-radius: 47% 53% 50% 50% / 52% 48% 52% 48%; display: flex; align-items: center; justify-content: center; background: {{accent}}; color: {{btnFg}}; font-family: {{font}}; font-size: 16px; font-weight: 600; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25), inset 0 0 0 5px rgba(0, 0, 0, 0.1)">{{initials}}</span>
+              </span>
+            </span>
+          </span>
+        </span>
       </sc-if>
-      <button onClick="{{open}}" aria-label="{{openAria}}" style="position: absolute; left: 50%; bottom: 64px; transform: translateX(-50%); display: inline-flex; align-items: center; gap: 8px; min-height: 44px; max-width: calc(100% - 48px); box-sizing: border-box; padding: 10px 20px; border-radius: 999px; border: 0; background: {{hintBg}}; color: {{hintFg}}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; opacity: {{fadeOut}}; transition: opacity .3s ease">
+
+      <sc-if value="{{isIngresso}}" hint-placeholder-val="{{ false }}">
+        <span style="position: absolute; inset: 0; display: block; overflow: hidden">
+          <span style="position: absolute; inset: 0; display: block; background: radial-gradient(90% 60% at 50% 40%, color-mix(in srgb, {{bg}} 75%, #FFFFFF) 0%, {{bg}} 75%); opacity: {{fadeOut}}; transition: opacity .5s ease 1.2s"></span>
+          <span style="position: absolute; left: 35px; top: 150px; width: 320px; height: 560px; display: block; transform: {{tkGroup}}; transition: transform .5s ease">
+            <span style="position: absolute; left: 0; top: 0; width: 320px; height: 420px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; padding: 26px 26px 30px; border-radius: 20px 20px 6px 6px; background: {{paper}}; color: {{paperInk}}; box-shadow: 0 24px 40px rgba(0, 0, 0, 0.28); transform: {{tkMain}}; transition: transform .8s cubic-bezier(.6,0,.3,1) .65s">
+              <span style="position: absolute; inset: 12px 12px 14px; border: 1.5px dashed {{accent}}; border-radius: 12px 12px 4px 4px; opacity: 0.8"></span>
+              <span style="font-size: 10px; letter-spacing: 0.34em; text-transform: uppercase; font-weight: 800; color: {{paperAccent}}">{{kicker}}</span>
+              <span style="font-family: {{font}}; font-size: 44px; line-height: 1; font-weight: {{weight}}; font-style: {{fstyle}}; text-align: center">{{titulo}}</span>
+              <span style="display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 700; letter-spacing: 0.12em"><span style="width: 22px; height: 1.5px; background: {{accent}}"></span>{{data}}<span style="width: 22px; height: 1.5px; background: {{accent}}"></span></span>
+              <span style="margin-top: 10px; width: 170px; height: 34px; background: repeating-linear-gradient(90deg, {{paperInk}} 0 2px, transparent 2px 4px, {{paperInk}} 4px 7px, transparent 7px 9px, {{paperInk}} 9px 10px, transparent 10px 13px); opacity: 0.75"></span>
+              <span style="position: absolute; left: -14px; bottom: -14px; width: 28px; height: 28px; border-radius: 50%; background: {{bg}}"></span>
+              <span style="position: absolute; right: -14px; bottom: -14px; width: 28px; height: 28px; border-radius: 50%; background: {{bg}}"></span>
+            </span>
+            <span style="position: absolute; left: 0; top: 420px; width: 320px; height: 140px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 14px 24px; border-radius: 6px 6px 20px 20px; border-top: 2px dashed rgba(0, 0, 0, 0.28); background: {{paper}}; color: {{paperInk}}; box-shadow: 0 24px 40px rgba(0, 0, 0, 0.28), inset 0 0 0 999px rgba(0, 0, 0, 0.05); transform-origin: 20% 0; transform: {{tkStub}}; transition: transform .9s cubic-bezier(.5,0,.75,0) .1s">
+              <span style="position: absolute; left: -14px; top: -15px; width: 28px; height: 28px; border-radius: 50%; background: {{bg}}"></span>
+              <span style="position: absolute; right: -14px; top: -15px; width: 28px; height: 28px; border-radius: 50%; background: {{bg}}"></span>
+              <sc-if value="{{noRecipient}}" hint-placeholder-val="{{ true }}">
+                <span style="font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 800; opacity: 0.85">Entrada</span>
+                <span style="font-family: {{font}}; font-size: 24px; line-height: 1.05; font-weight: {{weight}}; font-style: {{fstyle}}">Seu lugar está reservado</span>
+              </sc-if>
+              <sc-if value="{{hasRecipient}}" hint-placeholder-val="{{ false }}"><span data-testid="destinatario" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; max-width: 100%; min-width: 0; "><sc-if value="{{recipient.hasPre}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; opacity: 0.8">{{recipient.pre}}</span></sc-if><span style="max-width: 100%; font-family: {{font}}; font-size: calc(24px * {{recipient.k}}); line-height: 1.1; font-weight: {{weight}}; font-style: {{fstyle}}; overflow-wrap: anywhere">{{recipient.name}}</span><sc-if value="{{recipient.hasPost}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; opacity: 0.85">{{recipient.post}}</span></sc-if></span></sc-if>
+            </span>
+          </span>
+        </span>
+      </sc-if>
+
+      <sc-if value="{{isRaspadinha}}" hint-placeholder-val="{{ false }}">
+        <span style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; background: {{paper}}; color: {{paperInk}}; opacity: {{fadeOut}}; transition: opacity .7s ease .5s">
+          <span style="font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 800; color: {{paperAccent}}">{{kicker}}</span>
+          <span style="font-family: {{font}}; font-size: 40px; line-height: 1; font-weight: {{weight}}; font-style: {{fstyle}}; text-align: center; padding: 0 28px">{{titulo}}</span>
+          <sc-if value="{{hasRecipient}}" hint-placeholder-val="{{ false }}"><span data-testid="destinatario" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; max-width: 100%; min-width: 0; padding: 0 36px; box-sizing: border-box"><sc-if value="{{recipient.hasPre}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; opacity: 0.8">{{recipient.pre}}</span></sc-if><span style="max-width: 100%; font-family: {{font}}; font-size: calc(22px * {{recipient.k}}); line-height: 1.1; font-weight: {{weight}}; font-style: {{fstyle}}; overflow-wrap: anywhere">{{recipient.name}}</span><sc-if value="{{recipient.hasPost}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; opacity: 0.85">{{recipient.post}}</span></sc-if></span></sc-if>
+          <span style="position: relative; width: 300px; height: 230px; border-radius: 22px; overflow: hidden; display: block; background: {{paperLight}}; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22), inset 0 0 0 2px {{accent}}">
+            <span style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; color: {{paperInk}}">
+              <span style="font-size: 11px; letter-spacing: 0.26em; text-transform: uppercase; font-weight: 800; color: {{paperAccent}}">Anote na agenda</span>
+              <span style="font-family: {{font}}; font-size: 46px; line-height: 1; font-weight: {{weight}}; font-style: {{fstyle}}">{{data}}</span>
+              <span style="font-size: 13px; font-weight: 600; opacity: 0.85">Você está convidado!</span>
+            </span>
+            <canvas data-scratch="{{uid}}" width="600" height="460" onPointerDown="{{scratch.down}}" onPointerMove="{{scratch.move}}" onPointerUp="{{scratch.up}}" onPointerCancel="{{scratch.up}}" aria-label="Cartão para raspar: passe o dedo para descobrir a data" role="img" style="position: absolute; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; cursor: grab; opacity: {{scratchOpacity}}; transition: opacity .5s ease"></canvas>
+          </span>
+          <span style="font-size: 13px; font-weight: 600; opacity: 0.8">Passe o dedo no cartão para raspar</span>
+        </span>
+      </sc-if>
+
+      <sc-if value="{{isConfete}}" hint-placeholder-val="{{ false }}">
+        <span style="position: absolute; inset: 0; display: block; overflow: hidden">
+          <span style="position: absolute; inset: 0; display: block; background: radial-gradient(110% 70% at 50% 48%, {{paperLight}} 0%, {{paper}} 70%); opacity: {{fadeOut}}; transition: opacity .6s ease .55s"></span>
+          <span style="position: absolute; left: 50%; top: 270px; width: 250px; margin-left: -125px; display: flex; flex-direction: column; align-items: center; gap: 14px; color: {{paperInk}}; transform: {{cfBadge}}; opacity: {{fadeOut}}; transition: transform .45s cubic-bezier(.3,1.6,.5,1), opacity .35s ease .15s">
+            <span class="ab-pulse" style="width: 170px; height: 170px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; background: {{accent}}; color: {{btnFg}}; box-shadow: 0 16px 34px rgba(0, 0, 0, 0.25), inset 0 0 0 8px rgba(255, 255, 255, 0.22)">
+              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 19l4-11 7 7zM14 4v2M19 9h2M17 6l1.5-1.5M12 2l.5 1M20 13l1 .5"></path></svg>
+              <span style="font-family: {{font}}; font-size: 34px; line-height: 1; font-weight: 600">{{initials}}</span>
+            </span>
+            <span style="font-size: 11px; letter-spacing: 0.28em; text-transform: uppercase; font-weight: 800">{{kicker}}</span>
+            <span style="font-family: {{font}}; font-size: 36px; line-height: 1; font-weight: {{weight}}; font-style: {{fstyle}}; text-align: center">{{titulo}}</span>
+            <sc-if value="{{hasRecipient}}" hint-placeholder-val="{{ false }}"><span data-testid="destinatario" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; max-width: 100%; min-width: 0; "><sc-if value="{{recipient.hasPre}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; opacity: 0.8">{{recipient.pre}}</span></sc-if><span style="max-width: 100%; font-family: {{font}}; font-size: calc(22px * {{recipient.k}}); line-height: 1.1; font-weight: {{weight}}; font-style: {{fstyle}}; overflow-wrap: anywhere">{{recipient.name}}</span><sc-if value="{{recipient.hasPost}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; opacity: 0.85">{{recipient.post}}</span></sc-if></span></sc-if>
+          </span>
+          <sc-for list="{{confetti}}" as="c" hint-placeholder-count="10">
+            <span class="{{c.cls}}" style="{{c.style}}"></span>
+          </sc-for>
+        </span>
+      </sc-if>
+
+      <sc-if value="{{isBaloes}}" hint-placeholder-val="{{ false }}">
+        <span style="position: absolute; inset: 0; display: block; overflow: hidden">
+          <span style="position: absolute; inset: 0; display: block; background: linear-gradient(180deg, {{paperLight}} 0%, {{paper}} 100%); opacity: {{fadeOut}}; transition: opacity .7s ease 1.2s"></span>
+          <span style="position: absolute; left: 0; right: 0; top: 0; height: 844px; display: block; transform: {{blGroup}}; transition: transform 1.6s cubic-bezier(.5,0,.6,1) .15s">
+            <sc-for list="{{balloons}}" as="bl" hint-placeholder-count="7">
+              <span class="{{bl.cls}}" style="{{bl.style}}">
+                <span style="position: absolute; left: 50%; top: 100%; width: 1px; height: {{bl.cord}}; background: rgba(0, 0, 0, 0.35); transform-origin: top; transform: rotate({{bl.cordRot}})"></span>
+                <span style="position: absolute; left: 50%; top: calc(100% - 2px); width: 10px; height: 8px; margin-left: -5px; background: {{bl.c}}; clip-path: polygon(50% 0, 100% 100%, 0 100%)"></span>
+                <span style="position: absolute; left: 22%; top: 16%; width: 18%; height: 26%; border-radius: 50%; background: rgba(255, 255, 255, 0.45); transform: rotate(25deg)"></span>
+              </span>
+            </sc-for>
+            <span style="position: absolute; left: 50%; top: 512px; width: 270px; margin-left: -135px; box-sizing: border-box; padding: 22px 18px; border-radius: 18px; display: flex; flex-direction: column; align-items: center; gap: 8px; background: #FFFFFF; color: {{cardInk}}; box-shadow: 0 16px 34px rgba(0, 0, 0, 0.2); transform: rotate(-2deg)">
+              <span style="font-size: 10px; letter-spacing: 0.26em; text-transform: uppercase; font-weight: 800; color: {{cardAccent}}">{{kicker}}</span>
+              <span style="font-family: {{font}}; font-size: 34px; line-height: 1; font-weight: {{weight}}; font-style: {{fstyle}}; text-align: center">{{titulo}}</span>
+              <span style="font-size: 13px; font-weight: 700">{{data}}</span>
+              <sc-if value="{{hasRecipient}}" hint-placeholder-val="{{ false }}"><span data-testid="destinatario" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; max-width: 100%; min-width: 0; margin-top: 6px"><sc-if value="{{recipient.hasPre}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; opacity: 0.8">{{recipient.pre}}</span></sc-if><span style="max-width: 100%; font-family: {{font}}; font-size: calc(20px * {{recipient.k}}); line-height: 1.1; font-weight: {{weight}}; font-style: {{fstyle}}; overflow-wrap: anywhere">{{recipient.name}}</span><sc-if value="{{recipient.hasPost}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; opacity: 0.85">{{recipient.post}}</span></sc-if></span></sc-if>
+            </span>
+          </span>
+        </span>
+      </sc-if>
+
+      <sc-if value="{{isPetalas}}" hint-placeholder-val="{{ false }}">
+        <span style="position: absolute; inset: 0; display: block; overflow: hidden">
+          <span style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; background: radial-gradient(100% 70% at 50% 45%, {{paperLight}} 0%, {{paper}} 80%); color: {{paperInk}}; opacity: {{fadeOut}}; transition: opacity 1s ease .9s">
+            <span style="position: relative; width: 280px; height: 280px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px">
+              <svg viewBox="0 0 280 280" width="280" height="280" fill="none" aria-hidden="true" style="position: absolute; inset: 0">
+                <circle cx="140" cy="140" r="122" stroke="{{accent}}" stroke-width="1" opacity="0.7"></circle>
+                <g fill="{{accent}}" opacity="0.85">
+                  <path d="M140 14c6 8 6 16 0 22-6-6-6-14 0-22Z"></path><path d="M140 266c6-8 6-16 0-22-6 6-6 14 0 22Z"></path>
+                  <path d="M58 46c10 2 15 9 14 17-8-1-14-8-14-17Z"></path><path d="M222 46c-10 2-15 9-14 17 8-1 14-8 14-17Z"></path>
+                  <path d="M58 234c10-2 15-9 14-17-8 1-14 8-14 17Z"></path><path d="M222 234c-10-2-15-9-14-17 8 1 14 8 14 17Z"></path>
+                  
+                </g>
+              </svg>
+              <span style="font-size: 10px; letter-spacing: 0.3em; text-transform: uppercase; font-weight: 700; color: {{paperAccent}}">{{kicker}}</span>
+              <span style="font-family: {{font}}; font-size: 34px; line-height: 1.05; font-weight: {{weight}}; font-style: {{fstyle}}; text-align: center; padding: 0 46px">{{titulo}}</span>
+              <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.12em">{{data}}</span>
+            </span>
+            <sc-if value="{{hasRecipient}}" hint-placeholder-val="{{ false }}"><span data-testid="destinatario" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; max-width: 100%; min-width: 0; padding: 0 36px; box-sizing: border-box"><sc-if value="{{recipient.hasPre}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; opacity: 0.8">{{recipient.pre}}</span></sc-if><span style="max-width: 100%; font-family: {{font}}; font-size: calc(24px * {{recipient.k}}); line-height: 1.1; font-weight: {{weight}}; font-style: {{fstyle}}; overflow-wrap: anywhere">{{recipient.name}}</span><sc-if value="{{recipient.hasPost}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; opacity: 0.85">{{recipient.post}}</span></sc-if></span></sc-if>
+          </span>
+          <sc-for list="{{drift}}" as="dr" hint-placeholder-count="8">
+            <span class="ab-fall-loop" style="{{dr.style}}"></span>
+          </sc-for>
+          <sc-for list="{{petals}}" as="pt" hint-placeholder-count="10">
+            <span class="{{pt.cls}}" style="{{pt.style}}"></span>
+          </sc-for>
+        </span>
+      </sc-if>
+
+      <sc-if value="{{isPersiana}}" hint-placeholder-val="{{ false }}">
+        <span style="position: absolute; inset: 0; display: block">
+          <sc-for list="{{slats}}" as="sl" hint-placeholder-count="10">
+            <span style="{{sl.style}}"></span>
+          </sc-for>
+          <span style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: {{paperInk}}; opacity: {{fadeOut}}; transition: opacity .3s ease; pointer-events: none">
+            <span style="font-size: 10px; letter-spacing: 0.32em; text-transform: uppercase; font-weight: 700; color: {{paperAccent}}">{{kicker}}</span>
+            <span style="font-family: {{font}}; font-size: 48px; line-height: 1; font-weight: {{weight}}; font-style: {{fstyle}}; text-align: center; padding: 0 26px">{{titulo}}</span>
+            <span style="width: 60px; height: 1.5px; background: {{accent}}"></span>
+            <span style="font-size: 14px; font-weight: 600; letter-spacing: 0.14em">{{data}}</span>
+            <sc-if value="{{hasRecipient}}" hint-placeholder-val="{{ false }}"><span data-testid="destinatario" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; max-width: 100%; min-width: 0; margin-top: 14px; padding: 0 36px; box-sizing: border-box"><sc-if value="{{recipient.hasPre}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; opacity: 0.8">{{recipient.pre}}</span></sc-if><span style="max-width: 100%; font-family: {{font}}; font-size: calc(26px * {{recipient.k}}); line-height: 1.1; font-weight: {{weight}}; font-style: {{fstyle}}; overflow-wrap: anywhere">{{recipient.name}}</span><sc-if value="{{recipient.hasPost}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; opacity: 0.85">{{recipient.post}}</span></sc-if></span></sc-if>
+          </span>
+        </span>
+      </sc-if>
+
+      <sc-if value="{{isPolaroid}}" hint-placeholder-val="{{ false }}">
+        <span style="position: absolute; inset: 0; display: block; overflow: hidden">
+          <span style="position: absolute; inset: 0; display: block; background: radial-gradient(100% 70% at 50% 42%, {{paperLight}} 0%, {{paper}} 80%); opacity: {{fadeOut}}; transition: opacity .6s ease 2.1s"></span>
+          <span style="position: absolute; left: 50%; top: 170px; width: 290px; margin-left: -145px; box-sizing: border-box; padding: 14px 14px 0; background: #FFFFFF; box-shadow: 0 24px 44px rgba(0, 0, 0, 0.3); transform: {{plCard}}; opacity: {{fadeOut}}; transition: transform .8s cubic-bezier(.5,0,.3,1) 1.9s, opacity .6s ease 2.1s">
+            <span style="position: relative; display: block; width: 262px; height: 300px; overflow: hidden; background: {{ph}}">
+              <sc-if value="{{hasPhoto}}" hint-placeholder-val="{{ false }}">
+                <img src="{{photo}}" alt="" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; filter: {{plFilter}}; transition: filter 2s ease .1s">
+              </sc-if>
+              <sc-if value="{{noPhoto}}" hint-placeholder-val="{{ true }}">
+                <span style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: linear-gradient(150deg, {{ph}} 0%, {{accent}} 100%); color: {{btnFg}}; font-family: {{font}}; font-size: 64px; font-weight: 600; filter: {{plFilter}}; transition: filter 2s ease .1s">{{initials}}</span>
+              </sc-if>
+              <span style="position: absolute; inset: 0; display: block; background: linear-gradient(180deg, #2C3437 0%, #3E3A35 100%); opacity: {{plDev}}; transition: opacity 1.8s ease .1s"></span>
+            </span>
+            <span style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 76px; padding: 6px 8px 10px; box-sizing: border-box; color: #2A2622; text-align: center">
+              <sc-if value="{{noRecipient}}" hint-placeholder-val="{{ true }}">
+                <span style="font-family: 'Caveat', cursive; font-size: 30px; line-height: 1; font-weight: 700">{{titulo}}</span>
+                <span style="font-family: 'Caveat', cursive; font-size: 20px; line-height: 1">{{data}}</span>
+              </sc-if>
+              <sc-if value="{{hasRecipient}}" hint-placeholder-val="{{ false }}"><span data-testid="destinatario" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; max-width: 100%; min-width: 0; "><sc-if value="{{recipient.hasPre}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; opacity: 0.8">{{recipient.pre}}</span></sc-if><span style="max-width: 100%; font-family: {{font}}; font-size: calc(24px * {{recipient.k}}); line-height: 1.1; font-weight: {{weight}}; font-style: {{fstyle}}; overflow-wrap: anywhere">{{recipient.name}}</span><sc-if value="{{recipient.hasPost}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; opacity: 0.85">{{recipient.post}}</span></sc-if></span></sc-if>
+            </span>
+          </span>
+        </span>
+      </sc-if>
+
+      <sc-if value="{{isMonograma}}" hint-placeholder-val="{{ false }}">
+        <span style="position: absolute; inset: 0; display: block; overflow: hidden">
+          <span style="position: absolute; inset: 0; display: block; background: radial-gradient(90% 60% at 50% 46%, {{paperLight}} 0%, {{paper}} 75%); opacity: {{fadeOut}}; transition: opacity .5s ease .7s"></span>
+          <span style="position: absolute; left: 0; right: 0; top: 190px; display: flex; flex-direction: column; align-items: center; gap: 22px; color: {{paperInk}}">
+            <span style="font-size: 10px; letter-spacing: 0.34em; text-transform: uppercase; font-weight: 700; color: {{paperAccent}}; opacity: {{fadeOut}}; transition: opacity .3s ease">{{kicker}}</span>
+            <span style="position: relative; width: 250px; height: 250px; display: flex; align-items: center; justify-content: center; transform: {{mnZoom}}; opacity: {{mnFade}}; transition: transform 1.1s cubic-bezier(.6,0,.4,1), opacity .5s ease .6s">
+              <span class="ab-ring" style="position: absolute; inset: 0; border-radius: 50%; border: 1.5px solid {{accent}}"></span>
+              <span style="position: absolute; inset: 12px; border-radius: 50%; border: 1px solid {{accent}}; opacity: 0.55"></span>
+              <span style="position: absolute; inset: 26px; border-radius: 50%; background: {{paperLight}}; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.06)"></span>
+              <span style="position: relative; font-family: {{font}}; font-size: 76px; line-height: 1; font-weight: {{weight}}; font-style: {{fstyle}}; letter-spacing: 0.02em">{{initials}}</span>
+            </span>
+            <span style="display: flex; flex-direction: column; align-items: center; gap: 8px; opacity: {{fadeOut}}; transition: opacity .3s ease; padding: 0 30px; text-align: center">
+              <span style="font-family: {{font}}; font-size: 30px; line-height: 1.05; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+              <span style="font-size: 13px; font-weight: 600; letter-spacing: 0.14em">{{data}}</span>
+              <sc-if value="{{hasRecipient}}" hint-placeholder-val="{{ false }}"><span data-testid="destinatario" style="display: flex; flex-direction: column; align-items: center; gap: 3px; text-align: center; max-width: 100%; min-width: 0; margin-top: 8px"><sc-if value="{{recipient.hasPre}}" hint-placeholder-val="{{ true }}"><span style="font-size: 10px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 700; opacity: 0.8">{{recipient.pre}}</span></sc-if><span style="max-width: 100%; font-family: {{font}}; font-size: calc(22px * {{recipient.k}}); line-height: 1.1; font-weight: {{weight}}; font-style: {{fstyle}}; overflow-wrap: anywhere">{{recipient.name}}</span><sc-if value="{{recipient.hasPost}}" hint-placeholder-val="{{ false }}"><span style="font-size: 11px; opacity: 0.85">{{recipient.post}}</span></sc-if></span></sc-if>
+            </span>
+          </span>
+        </span>
+      </sc-if>
+
+      <sc-if value="{{hasHeadline}}" hint-placeholder-val="{{ true }}">
+        <span style="position: absolute; left: 0; right: 0; top: 72px; margin: 0 auto; width: fit-content; max-width: calc(100% - 48px); box-sizing: border-box; display: block; text-align: center; padding: 8px 16px; border-radius: 999px; background: rgba(20, 20, 20, 0.55); color: #FFFFFF; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; opacity: {{fadeOut}}; transition: opacity .3s ease; pointer-events: none">{{headline}}</span>
+      </sc-if>
+      <button onClick="{{open}}" aria-label="{{openAria}}" style="position: absolute; left: 0; right: 0; bottom: 64px; margin: 0 auto; width: fit-content; display: flex; align-items: center; gap: 8px; min-height: 44px; max-width: calc(100% - 48px); box-sizing: border-box; padding: 10px 20px; border-radius: 999px; border: 0; background: {{hintBg}}; color: {{hintFg}}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; opacity: {{fadeOut}}; transition: opacity .3s ease">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{hintIcon}}"></path></svg>
         {{hint}}
       </button>
@@ -185,17 +399,77 @@ body{margin:0}
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"anim":{"editor":"enum","options":["envelope","cortina","portas","lacre","presente","livro","iris","neblina","nenhuma"],"default":"envelope"},"layout":{"editor":null},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"paper":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"showLink":{"editor":null},"music":{"editor":null},"onOpen":{"editor":null},"onOpened":{"editor":null},"headline":{"editor":null},"hint":{"editor":null},"trigger":{"editor":null},"initials":{"editor":null},"reveal":{"editor":null},"recipient":{"editor":null},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"anim":{"editor":"enum","options":["envelope","cortina","portas","lacre","presente","livro","iris","neblina","dobradura","ingresso","raspadinha","confete","baloes","petalas","persiana","polaroid","monograma","nenhuma"],"default":"envelope"},"layout":{"editor":null},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"paper":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"showLink":{"editor":null},"music":{"editor":null},"onOpen":{"editor":null},"onOpened":{"editor":null},"headline":{"editor":null},"hint":{"editor":null},"trigger":{"editor":null},"initials":{"editor":null},"reveal":{"editor":null},"recipient":{"editor":null},"photo":{"editor":null},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
     this.state = { phase: 'closed', musicPlaying: false, musicError: false };
+    this.uid = 'r' + Math.random().toString(36).slice(2, 9);
   }
   componentDidMount() {
     this.onTapOutside = () => { if (typeof this.tapOutside === 'function') this.tapOutside(); };
     window.addEventListener('ci:tap-outside', this.onTapOutside);
+    this.initScratch();
+  }
+  mixHex(a, b, t) {
+    const p = (h) => { h = String(h || '#000000').replace('#', ''); if (h.length === 3) h = h.split('').map((c) => c + c).join(''); return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16) || 0); };
+    const x = p(a), y = p(b);
+    return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join('');
+  }
+  // Raspadinha: pinta a camada metálica do cartão (uma vez por cartão na tela)
+  initScratch() {
+    if ((this.props.anim ?? 'envelope') !== 'raspadinha' || typeof document === 'undefined') return;
+    let c = null;
+    try { c = document.querySelector('canvas[data-scratch="' + this.uid + '"]'); } catch (e) {}
+    if (!c || c.__ready) return;
+    const g = c.getContext && c.getContext('2d', { willReadFrequently: true });
+    if (!g) return;
+    c.__ready = true;
+    const acc = this.props.accent ?? '#CDAE6B';
+    const w = c.width, h = c.height;
+    const grd = g.createLinearGradient(0, 0, w, h);
+    grd.addColorStop(0, this.mixHex(acc, '#FFFFFF', 0.45));
+    grd.addColorStop(0.45, acc);
+    grd.addColorStop(0.55, this.mixHex(acc, '#FFFFFF', 0.3));
+    grd.addColorStop(1, this.mixHex(acc, '#000000', 0.25));
+    g.fillStyle = grd; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 1400; i++) {
+      g.fillStyle = 'rgba(255,255,255,' + (Math.random() * 0.28).toFixed(2) + ')';
+      g.fillRect(Math.random() * w, Math.random() * h, 2, 2);
+    }
+    g.strokeStyle = 'rgba(255,255,255,0.35)'; g.lineWidth = 3;
+    g.strokeRect(14, 14, w - 28, h - 28);
+    g.fillStyle = 'rgba(255,255,255,0.92)';
+    g.textAlign = 'center';
+    g.font = '800 46px "Plus Jakarta Sans", system-ui, sans-serif';
+    g.fillText('RASPE AQUI', w / 2, h / 2 + 4);
+    g.font = '600 26px "Plus Jakarta Sans", system-ui, sans-serif';
+    g.fillText('e descubra a data', w / 2, h / 2 + 50);
+  }
+  scratchAt(e) {
+    const c = e.currentTarget;
+    const g = c && c.getContext ? c.getContext('2d') : null;
+    if (!g) return;
+    const r = c.getBoundingClientRect();
+    const x = (e.clientX - r.left) * c.width / (r.width || 1), y = (e.clientY - r.top) * c.height / (r.height || 1);
+    g.globalCompositeOperation = 'destination-out';
+    g.strokeStyle = '#000000';
+    g.lineCap = 'round'; g.lineJoin = 'round'; g.lineWidth = 84;
+    g.beginPath();
+    const last = this.scrLast || { x, y };
+    g.moveTo(last.x, last.y); g.lineTo(x + 0.1, y + 0.1); g.stroke();
+    this.scrLast = { x, y };
+  }
+  scratchDone(c) {
+    const g = c && c.getContext ? c.getContext('2d') : null;
+    if (!g) return false;
+    const d = g.getImageData(0, 0, c.width, c.height).data;
+    let clear = 0, n = 0;
+    for (let i = 3; i < d.length; i += 4 * 23) { n++; if (d[i] < 40) clear++; }
+    return n > 0 && clear / n > 0.42;
   }
   componentDidUpdate(prev) {
+    this.initScratch();
     const musicChanged = JSON.stringify(prev.music || null) !== JSON.stringify(this.props.music || null);
     if (prev.anim !== this.props.anim || prev.paper !== this.props.paper || musicChanged) {
       clearTimeout(this.t);
@@ -307,15 +581,17 @@ class Component extends DCLogic {
     const accent = p.accent ?? '#CDAE6B';
     const paper = p.paper ?? '#E9E1D0';
     const titulo = p.titulo ?? 'Ana & Pedro';
-    const durations = { envelope: 2300, cortina: 1700, portas: 1800, lacre: 1600, presente: 1700, livro: 1700, iris: 1200, neblina: 1500, nenhuma: 0 };
+    const durations = { envelope: 2300, cortina: 1700, portas: 1800, lacre: 1600, presente: 1700, livro: 1700, iris: 1200, neblina: 1500,
+      dobradura: 2150, ingresso: 1750, raspadinha: 1250, confete: 1600, baloes: 2100, petalas: 2700, persiana: 1450, polaroid: 2800, monograma: 1300, nenhuma: 0 };
     const phase = anim === 'nenhuma' ? 'open' : this.state.phase;
     const op = phase !== 'closed';
     const T = (a, b) => (op ? b : a);
     const darker = this.lum(bg) < this.lum(fg) ? bg : fg;
     const paperInk = this.contrast(paper, bg) >= this.contrast(paper, fg) ? bg : fg;
-    const trigger = ['toque', 'botao', 'deslizar'].indexOf(p.trigger) !== -1 ? p.trigger : 'toque';
+    // raspadinha: abre ao raspar o cartão (o botão continua como alternativa)
+    const trigger = anim === 'raspadinha' ? 'raspar' : (['toque', 'botao', 'deslizar'].indexOf(p.trigger) !== -1 ? p.trigger : 'toque');
     const headline = p.headline !== undefined && p.headline !== null ? String(p.headline) : (anim === 'envelope' ? 'Você recebeu um convite' : '');
-    const hintText = (p.hint && String(p.hint).trim()) || (trigger === 'botao' ? 'Abrir convite' : (trigger === 'deslizar' ? 'Deslize para cima para abrir' : (anim === 'envelope' ? 'Toque para abrir a carta' : 'Toque para abrir')));
+    const hintText = (p.hint && String(p.hint).trim() && trigger !== 'raspar') ? String(p.hint).trim() : (trigger === 'raspar' ? 'Prefere não raspar? Toque aqui' : (trigger === 'botao' ? 'Abrir convite' : (trigger === 'deslizar' ? 'Deslize para cima para abrir' : (anim === 'envelope' ? 'Toque para abrir a carta' : (anim === 'confete' ? 'Toque para estourar' : (anim === 'polaroid' ? 'Toque para revelar a foto' : 'Toque para abrir'))))));
     const doOpen = () => {
       // um toque no botão também chega ao fundo da tela: abre uma vez só
       if (this.opened || this.state.phase !== 'closed') return;
@@ -330,6 +606,9 @@ class Component extends DCLogic {
       }, durations[anim] || 0);
     };
     this.tapOutside = anim !== 'nenhuma' && trigger === 'toque' ? doOpen : null;
+    const rnd = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
+    const fest = [accent, '#FFD166', '#EF476F', '#06D6A0', '#4CC9F0', '#B388FF', this.mixHex(accent, '#FFFFFF', 0.5)];
+    const paperLight = this.mixHex(paper, '#FFFFFF', 0.28);
     const words = titulo.split(' ').filter((w) => w && w !== '&' && w !== 'e');
     const autoInitials = titulo.indexOf('&') !== -1 && words.length >= 2
       ? words[0][0] + '&' + words[words.length - 1][0]
@@ -374,11 +653,93 @@ class Component extends DCLogic {
       isEnvelope: anim === 'envelope', isCortina: anim === 'cortina', isPortas: anim === 'portas',
       isLacre: anim === 'lacre', isPresente: anim === 'presente', isLivro: anim === 'livro',
       isIris: anim === 'iris', isNeblina: anim === 'neblina',
+      isDobradura: anim === 'dobradura', isIngresso: anim === 'ingresso', isRaspadinha: anim === 'raspadinha',
+      isConfete: anim === 'confete', isBaloes: anim === 'baloes', isPetalas: anim === 'petalas',
+      isPersiana: anim === 'persiana', isPolaroid: anim === 'polaroid', isMonograma: anim === 'monograma',
+      paperLight,
+      paperAccent: this.contrast(paperLight, accent) >= 3 ? accent : paperInk,
+      uid: this.uid,
+      photo: String(p.photo || ''),
+      hasPhoto: /^(https?:|blob:|\/)/i.test(String(p.photo || '')), noPhoto: !/^(https?:|blob:|\/)/i.test(String(p.photo || '')),
+      foldTop: T('perspective(1400px) rotateX(-180deg)', 'perspective(1400px) rotateX(0deg)'),
+      foldBottom: T('perspective(1400px) rotateX(180deg)', 'perspective(1400px) rotateX(0deg)'),
+      foldGroup: T('scale(1)', 'scale(1.08)'),
+      tkGroup: T('rotate(-3deg)', 'rotate(0deg)'),
+      tkMain: T('none', 'translateY(-135%) rotate(-6deg)'),
+      tkStub: T('none', 'translate(40px, 760px) rotate(32deg)'),
+      scratchOpacity: T('1', '0'),
+      scratch: {
+        down: (e) => {
+          if (e.stopPropagation) e.stopPropagation();
+          if (this.state.phase !== 'closed') return;
+          this.scr = true; this.scrMoves = 0; this.scrLast = null;
+          try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {}
+          this.scratchAt(e);
+        },
+        move: (e) => {
+          if (!this.scr) return;
+          this.scratchAt(e);
+          this.scrMoves = (this.scrMoves || 0) + 1;
+          if (this.scrMoves % 10 === 0 && this.scratchDone(e.currentTarget)) { this.scr = false; doOpen(); }
+        },
+        up: (e) => {
+          if (e && e.stopPropagation) e.stopPropagation();
+          if (!this.scr) return;
+          this.scr = false; this.scrLast = null;
+          if (this.scratchDone(e.currentTarget)) doOpen();
+        }
+      },
+      cfBadge: T('scale(1)', 'scale(1.35)'),
+      confetti: anim !== 'confete' ? [] : Array.from({ length: 70 }, (_, i) => {
+        const a = rnd(i, 1) * Math.PI * 2, dist = 110 + rnd(i, 2) * 300;
+        const w = Math.round(7 + rnd(i, 3) * 9), hgt = rnd(i, 4) > 0.5 ? Math.round(w * 0.45) : w;
+        return {
+          cls: op ? 'ab-burst' : '',
+          style: 'position: absolute; left: 195px; top: 355px; width: ' + w + 'px; height: ' + hgt + 'px; margin: -' + (hgt / 2) + 'px 0 0 -' + (w / 2) + 'px; background: ' + fest[i % fest.length] +
+            '; border-radius: ' + (rnd(i, 5) > 0.7 ? '50%' : '2px') + '; opacity: ' + (op ? '1' : '0') + '; pointer-events: none; --dx: ' + Math.round(Math.cos(a) * dist) + 'px; --dy: ' + Math.round(Math.sin(a) * dist - 70) +
+            'px; --r: ' + Math.round(rnd(i, 6) * 720 - 360) + 'deg; --t: ' + (1.1 + rnd(i, 7) * 0.5).toFixed(2) + 's; --dl: ' + (rnd(i, 8) * 0.12).toFixed(2) + 's'
+        };
+      }),
+      blGroup: T('translateY(0px)', 'translateY(-1150px)'),
+      balloons: anim !== 'baloes' ? [] : [[52, 196, 72], [132, 138, 80], [222, 164, 76], [300, 214, 68], [88, 314, 66], [186, 274, 74], [268, 328, 62]].map((b, i) => {
+        const bw = b[2], bh = Math.round(bw * 1.2);
+        const dx = 195 - (b[0] + bw / 2), dy = 512 - (b[1] + bh);
+        const c = fest[i % fest.length];
+        return {
+          c, cls: 'ab-bob',
+          cord: Math.round(Math.sqrt(dx * dx + dy * dy)) + 'px', cordRot: Math.round(-Math.atan2(dx, dy) * 180 / Math.PI) + 'deg',
+          style: 'position: absolute; left: ' + b[0] + 'px; top: ' + b[1] + 'px; width: ' + bw + 'px; height: ' + bh + 'px; border-radius: 50% 50% 47% 47% / 56% 56% 44% 44%; background: radial-gradient(circle at 34% 28%, ' + this.mixHex(c, '#FFFFFF', 0.35) + ' 0%, ' + c + ' 55%, ' + this.mixHex(c, '#000000', 0.18) + ' 100%); box-shadow: inset -6px -8px 14px rgba(0, 0, 0, 0.12); --r0: ' + (i % 2 ? '3deg' : '-3deg') + '; --t: ' + (2.2 + rnd(i, 3)).toFixed(2) + 's; --dl: -' + (rnd(i, 4) * 2).toFixed(2) + 's'
+        };
+      }),
+      petals: anim !== 'petalas' ? [] : Array.from({ length: 34 }, (_, i) => {
+        const w = Math.round(12 + rnd(i, 1) * 12);
+        const col = [this.mixHex(accent, '#FFFFFF', 0.55), '#F6C9D2', '#FBE3E8', '#FFFFFF', '#F2A7B8', accent][i % 6];
+        const t = 1.5 + rnd(i, 4) * 0.9, dl = rnd(i, 5) * Math.max(0, 2.6 - t - 0.05);
+        return {
+          cls: op ? 'ab-fall' : '',
+          style: 'position: absolute; left: ' + Math.round(rnd(i, 2) * 380) + 'px; top: -40px; width: ' + w + 'px; height: ' + Math.round(w * 1.3) + 'px; border-radius: 80% 0 80% 0; background: ' + col +
+            '; box-shadow: inset -2px -2px 4px rgba(0, 0, 0, 0.08); opacity: 0; pointer-events: none; --dx: ' + Math.round(rnd(i, 3) * 240 - 120) + 'px; --r: ' + Math.round(240 + rnd(i, 6) * 480) + 'deg; --t: ' + t.toFixed(2) + 's; --dl: ' + dl.toFixed(2) + 's'
+        };
+      }),
+      drift: anim !== 'petalas' || op ? [] : Array.from({ length: 9 }, (_, i) => {
+        const w = Math.round(10 + rnd(i, 11) * 10);
+        return { style: 'position: absolute; left: ' + Math.round(rnd(i, 12) * 370) + 'px; top: -40px; width: ' + w + 'px; height: ' + Math.round(w * 1.3) + 'px; border-radius: 80% 0 80% 0; background: ' + ['#F6C9D2', this.mixHex(accent, '#FFFFFF', 0.5), '#FBE3E8'][i % 3] + '; opacity: 0; pointer-events: none; --dx: ' + Math.round(rnd(i, 13) * 160 - 80) + 'px; --r: ' + Math.round(180 + rnd(i, 14) * 360) + 'deg; --t: ' + (7 + rnd(i, 15) * 4).toFixed(2) + 's; --dl: -' + (rnd(i, 16) * 9).toFixed(2) + 's' };
+      }),
+      slats: anim !== 'persiana' ? [] : Array.from({ length: 10 }, (_, i) => ({
+        style: 'position: absolute; left: 0; right: 0; top: ' + (i * 84.4).toFixed(1) + 'px; height: 85px; display: block; background: linear-gradient(180deg, ' + this.mixHex(paper, '#FFFFFF', 0.2) + ' 0%, ' + paper + ' 55%, ' + this.mixHex(paper, '#000000', 0.12) +
+          ' 100%); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.08); transform: ' + (op ? 'perspective(900px) rotateX(90deg)' : 'perspective(900px) rotateX(0deg)') + '; transition: transform .55s cubic-bezier(.6,0,.3,1) ' + (0.25 + i * 0.06).toFixed(2) + 's'
+      })),
+      plCard: T('rotate(-3deg)', 'rotate(0deg) translateY(-30px) scale(1.9)'),
+      plFilter: T('grayscale(1) contrast(0.55) brightness(1.25) blur(3px)', 'none'),
+      plDev: T('0.9', '0'),
+      mnZoom: T('scale(1)', 'scale(9)'),
+      mnFade: T('1', '0'),
+
       hint: hintText,
-      hintBg: trigger === 'botao' ? accent : 'rgba(20, 20, 20, 0.62)',
+      hintBg: trigger === 'botao' ? accent : (trigger === 'raspar' ? 'rgba(20, 20, 20, 0.45)' : 'rgba(20, 20, 20, 0.62)'),
       hintFg: trigger === 'botao' ? (p.btnFg ?? '#1F3329') : '#FFFFFF',
       hintIcon: trigger === 'botao' ? 'M3 7l9 6 9-6M3 7h18v12H3z' : (trigger === 'deslizar' ? 'M12 19V5M6 11l6-6 6 6' : 'M9 11V5a2 2 0 0 1 4 0v5M13 10V9a2 2 0 0 1 4 0v3M17 11a2 2 0 0 1 4 0v3a7 7 0 0 1-7 7h-1a7 7 0 0 1-5.6-2.8L4 14.6a1.8 1.8 0 0 1 2.8-2.2L9 15'),
-      openAria: trigger === 'toque' ? 'Toque para abrir o convite' : hintText,
+      openAria: trigger === 'toque' ? 'Toque para abrir o convite' : (trigger === 'raspar' ? 'Abrir o convite sem raspar' : hintText),
       hasHeadline: !!headline,
       headline,
       overlayCursor: trigger === 'toque' ? 'pointer' : 'default',

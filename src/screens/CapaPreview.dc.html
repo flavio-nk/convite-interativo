@@ -8,7 +8,7 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&amp;family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;family=Cinzel:wght@500;600;700&amp;family=Fraunces:ital,wght@0,400;0,600;1,400&amp;family=Pinyon+Script&amp;family=Unbounded:wght@600;700;800&amp;display=swap">
 <style>
 body{margin:0}
 </style>
@@ -141,10 +141,100 @@ body{margin:0}
       </div>
     </sc-if>
 
+
+    <sc-if value="{{isRevista}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; background: linear-gradient(160deg, {{ph}} 0%, color-mix(in srgb, {{ph}} 70%, {{accent}}) 100%)">
+        <div style="position: absolute; left: 0; right: 0; top: 40%; display: flex; justify-content: center"><svg width="20%" viewBox="0 0 24 24" fill="none" stroke="{{fg}}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.45"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg></div>
+        <div style="position: absolute; inset: 0; background: linear-gradient(180deg, color-mix(in srgb, {{bg}} 55%, transparent) 0%, transparent 34%, transparent 56%, color-mix(in srgb, {{bg}} 88%, transparent) 100%)"></div>
+        <div style="position: absolute; left: 6cqw; right: 6cqw; top: 5cqw; display: flex; flex-direction: column; gap: 1.5cqw; text-align: left">
+          <span style="display: flex; justify-content: space-between; font-size: 2.8cqw; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 700"><span>{{kicker}}</span><span>Edição especial</span></span>
+          <span style="font-family: {{font}}; font-size: {{bigTitleSize}}; line-height: 0.9; font-weight: {{weight}}; font-style: {{fstyle}}; text-transform: uppercase; letter-spacing: -0.01em">{{titulo}}</span>
+        </div>
+        <div style="position: absolute; left: 6cqw; right: 6cqw; bottom: 6cqw; display: flex; align-items: flex-end; justify-content: space-between; gap: 3cqw">
+          <span style="display: flex; flex-direction: column; gap: 1cqw; text-align: left"><span style="width: 10cqw; height: 0.6cqw; background: {{accent}}"></span><span style="font-size: 4.4cqw; font-weight: 700">{{data}}</span></span>
+          <span style="padding: 2cqw 4.5cqw; border-radius: {{btnRadius}}; background: {{accent}}; color: {{btnFg}}; font-size: 3.4cqw; font-weight: 700">Confirmar</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isMinimal}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; padding: 9cqw 8cqw; box-sizing: border-box; display: flex; flex-direction: column; text-align: left">
+        <span style="display: flex; justify-content: space-between; padding-bottom: 2.4cqw; border-bottom: 0.3cqw solid color-mix(in srgb, {{fg}} 40%, transparent); font-size: 3cqw; letter-spacing: 0.18em; text-transform: uppercase; font-weight: 600"><span>{{kicker}}</span><span>{{data}}</span></span>
+        <span style="flex: 1 1 auto"></span>
+        <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}; letter-spacing: 0.01em">{{titulo}}</span>
+        <span style="margin-top: 5cqw; display: flex; align-items: flex-end; justify-content: space-between; gap: 4cqw">
+          <span style="width: 34cqw; aspect-ratio: 1 / 1; background: {{ph}}; display: flex; align-items: center; justify-content: center"><svg width="34%" viewBox="0 0 24 24" fill="none" stroke="{{fg}}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.45"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg></span>
+          <span style="font-size: 3.6cqw; font-weight: 700; border-bottom: 0.4cqw solid {{accent}}; padding-bottom: 0.6cqw">Confirmar presença →</span>
+        </span>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isBotanico}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding-top: 9cqw; box-sizing: border-box; text-align: center">
+        <svg viewBox="0 0 100 100" aria-hidden="true" style="position: absolute; left: -3cqw; top: -3cqw; width: 30cqw; transform: scaleY(-1)"><path d="M6 94C26 70 52 44 94 8" stroke="{{accent}}" stroke-width="1.6" fill="none"></path><g fill="{{accent}}"><path d="M24 74c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M24 74c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M46 52c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M46 52c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M68 30c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M68 30c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path></g></svg>
+        <svg viewBox="0 0 100 100" aria-hidden="true" style="position: absolute; right: -4cqw; bottom: -4cqw; width: 26cqw; transform: scaleX(-1); opacity: 0.8"><path d="M6 94C26 70 52 44 94 8" stroke="{{accent}}" stroke-width="1.6" fill="none"></path><g fill="{{accent}}"><path d="M24 74c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M24 74c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M46 52c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M46 52c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M68 30c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M68 30c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path></g></svg>
+        <div style="width: 48%; aspect-ratio: 0.82; border-radius: 50%; background: {{ph}}; box-shadow: 0 0 0 1.4cqw {{bg}}, 0 0 0 1.8cqw {{accent}}; display: flex; align-items: center; justify-content: center"><svg width="30%" viewBox="0 0 24 24" fill="none" stroke="{{fg}}" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.5"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg></div>
+        <div style="flex: 1 1 auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2cqw; padding: 3cqw 10cqw">
+          <span style="font-size: 3.2cqw; letter-spacing: 0.26em; text-transform: uppercase; font-weight: 600; color: {{accent}}">{{kicker}}</span>
+          <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+          <span style="font-size: 4cqw; font-weight: 500; letter-spacing: 0.1em">{{data}}</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isDeco}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0">
+        <div style="position: absolute; inset: 4cqw; border: 0.4cqw solid {{accent}}"></div>
+        <svg viewBox="0 0 60 60" aria-hidden="true" style="position: absolute; left: 6cqw; top: 6cqw; width: 15cqw"><path d="M3 57V3h54" stroke="{{accent}}" stroke-width="1.6" fill="none"></path><path d="M11 57V11h46" stroke="{{accent}}" stroke-width="0.9" fill="none"></path><path d="M3 22h8M22 3v8" stroke="{{accent}}" stroke-width="1.6"></path><path d="M17 17l4 4-4 4-4-4z" fill="{{accent}}"></path></svg>
+        <svg viewBox="0 0 60 60" aria-hidden="true" style="position: absolute; right: 6cqw; top: 6cqw; width: 15cqw; transform: scaleX(-1)"><path d="M3 57V3h54" stroke="{{accent}}" stroke-width="1.6" fill="none"></path><path d="M11 57V11h46" stroke="{{accent}}" stroke-width="0.9" fill="none"></path><path d="M3 22h8M22 3v8" stroke="{{accent}}" stroke-width="1.6"></path><path d="M17 17l4 4-4 4-4-4z" fill="{{accent}}"></path></svg>
+        <svg viewBox="0 0 60 60" aria-hidden="true" style="position: absolute; left: 6cqw; bottom: 6cqw; width: 15cqw; transform: scaleY(-1)"><path d="M3 57V3h54" stroke="{{accent}}" stroke-width="1.6" fill="none"></path><path d="M11 57V11h46" stroke="{{accent}}" stroke-width="0.9" fill="none"></path><path d="M3 22h8M22 3v8" stroke="{{accent}}" stroke-width="1.6"></path><path d="M17 17l4 4-4 4-4-4z" fill="{{accent}}"></path></svg>
+        <svg viewBox="0 0 60 60" aria-hidden="true" style="position: absolute; right: 6cqw; bottom: 6cqw; width: 15cqw; transform: scale(-1, -1)"><path d="M3 57V3h54" stroke="{{accent}}" stroke-width="1.6" fill="none"></path><path d="M11 57V11h46" stroke="{{accent}}" stroke-width="0.9" fill="none"></path><path d="M3 22h8M22 3v8" stroke="{{accent}}" stroke-width="1.6"></path><path d="M17 17l4 4-4 4-4-4z" fill="{{accent}}"></path></svg>
+        <div style="position: absolute; inset: 14cqw 12cqw; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3cqw; text-align: center">
+          <svg viewBox="0 0 80 40" aria-hidden="true" style="width: 26cqw" fill="none" stroke="{{accent}}" stroke-width="1"><path d="M40 38L6 4M40 38L18 2M40 38L30 1M40 38V0M40 38L50 1M40 38L62 2M40 38L74 4M10 38h60"></path></svg>
+          <span style="font-size: 3.2cqw; letter-spacing: 0.34em; text-transform: uppercase; font-weight: 600; color: {{accent}}">{{kicker}}</span>
+          <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.05; font-weight: {{weight}}; font-style: {{fstyle}}; text-transform: uppercase; letter-spacing: 0.08em">{{titulo}}</span>
+          <span style="display: flex; align-items: center; gap: 2.4cqw; font-size: 4cqw; font-weight: 600; letter-spacing: 0.16em"><span style="width: 2cqw; height: 2cqw; background: {{accent}}; transform: rotate(45deg)"></span>{{data}}<span style="width: 2cqw; height: 2cqw; background: {{accent}}; transform: rotate(45deg)"></span></span>
+          <span style="margin-top: 2cqw; padding: 2cqw 5cqw; border: 0.4cqw solid {{accent}}; color: {{fg}}; font-size: 3.2cqw; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700">Confirmar</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isAurora}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; overflow: hidden">
+        <div style="position: absolute; left: -20%; top: -10%; width: 80%; aspect-ratio: 1; border-radius: 50%; background: {{accent}}; filter: blur(10cqw); opacity: 0.75"></div>
+        <div style="position: absolute; right: -25%; top: 25%; width: 85%; aspect-ratio: 1; border-radius: 50%; background: {{ph}}; filter: blur(12cqw); opacity: 0.9"></div>
+        <div style="position: absolute; left: 5%; bottom: -25%; width: 75%; aspect-ratio: 1; border-radius: 50%; background: color-mix(in srgb, {{accent}} 45%, {{fg}}); filter: blur(12cqw); opacity: 0.5"></div>
+        <div style="position: absolute; left: 7cqw; right: 7cqw; top: 50%; transform: translateY(-50%); padding: 8cqw 6cqw; border-radius: 6cqw; background: color-mix(in srgb, {{fg}} 12%, transparent); border: 0.3cqw solid color-mix(in srgb, {{fg}} 30%, transparent); backdrop-filter: blur(3cqw); display: flex; flex-direction: column; align-items: center; gap: 2.6cqw; text-align: center; box-shadow: 0 4cqw 10cqw rgba(0, 0, 0, 0.18)">
+          <span style="font-size: 3.2cqw; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 600">{{kicker}}</span>
+          <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+          <span style="font-size: 4.2cqw; font-weight: 500">{{data}}</span>
+          <span style="margin-top: 1.5cqw; padding: 2.2cqw 5.5cqw; border-radius: {{btnRadius}}; background: {{fg}}; color: {{bg}}; font-size: 3.4cqw; font-weight: 700">Confirmar presença</span>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{isColagem}}" hint-placeholder-val="{{ false }}">
+      <div style="position: absolute; inset: 0; text-align: center">
+        <div style="position: absolute; left: 7cqw; top: 8cqw; width: 42%; padding: 2.2cqw 2.2cqw 7cqw; background: #FFFFFF; transform: rotate(-7deg); box-shadow: 0 2cqw 4cqw rgba(0, 0, 0, 0.18); box-sizing: border-box">
+          <div style="aspect-ratio: 1; background: {{ph}}; display: flex; align-items: center; justify-content: center"><svg width="34%" viewBox="0 0 24 24" fill="none" stroke="#3A3A3A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.4"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg></div>
+        </div>
+        <div style="position: absolute; right: 6cqw; top: 13cqw; width: 40%; padding: 2.2cqw 2.2cqw 7cqw; background: #FFFFFF; transform: rotate(6deg); box-shadow: 0 2cqw 4cqw rgba(0, 0, 0, 0.18); box-sizing: border-box">
+          <div style="aspect-ratio: 1; background: color-mix(in srgb, {{ph}} 70%, {{accent}}); display: flex; align-items: center; justify-content: center"><svg width="34%" viewBox="0 0 24 24" fill="none" stroke="#3A3A3A" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="opacity: 0.4"><path d="M4 5h16v14H4zM4 16l5-5 5 5 2-2 4 4M15 9h.01"></path></svg></div>
+        </div>
+        <span style="position: absolute; left: 20%; top: 6cqw; width: 14cqw; height: 4cqw; background: color-mix(in srgb, {{accent}} 55%, transparent); transform: rotate(-12deg)"></span>
+        <span style="position: absolute; right: 18%; top: 11cqw; width: 14cqw; height: 4cqw; background: color-mix(in srgb, {{accent}} 55%, transparent); transform: rotate(10deg)"></span>
+        <div style="position: absolute; left: 0; right: 0; bottom: 9cqw; display: flex; flex-direction: column; align-items: center; gap: 2cqw; padding: 0 8cqw">
+          <span style="font-size: 3.2cqw; letter-spacing: 0.24em; text-transform: uppercase; font-weight: 700; color: {{accent}}">{{kicker}}</span>
+          <span style="font-family: {{font}}; font-size: {{titleSize}}; line-height: 1.02; font-weight: {{weight}}; font-style: {{fstyle}}">{{titulo}}</span>
+          <span style="padding: 1cqw 3cqw; background: {{accent}}; color: {{btnFg}}; font-size: 4cqw; font-weight: 700; transform: rotate(-2deg)">{{data}}</span>
+        </div>
+      </div>
+    </sc-if>
+
   </div>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"layout":{"editor":"enum","options":["centro","foto-topo","foto-fundo","moldura","fina","dividido","editorial","arco","polaroid"],"default":"arco"},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"bodyFont":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"titleScale":{"editor":null},"aspect":{"editor":null},"$preview":{"width":300,"height":375}}'>
+<script type="text/x-dc" data-dc-script data-props='{"layout":{"editor":"enum","options":["centro","foto-topo","foto-fundo","moldura","fina","dividido","editorial","arco","polaroid","revista","minimal","botanico","deco","aurora","colagem"],"default":"arco"},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"bodyFont":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"titleScale":{"editor":null},"aspect":{"editor":null},"$preview":{"width":300,"height":375}}'>
 class Component extends DCLogic {
   renderVals() {
     const p = this.props;
@@ -160,6 +250,8 @@ class Component extends DCLogic {
       isEditorial: layout === 'editorial',
       isArco: layout === 'arco',
       isPolaroid: layout === 'polaroid',
+      isRevista: layout === 'revista', isMinimal: layout === 'minimal', isBotanico: layout === 'botanico',
+      isDeco: layout === 'deco', isAurora: layout === 'aurora', isColagem: layout === 'colagem',
       aspect: p.aspect ?? '4 / 5',
       bg: p.bg ?? '#1F3329',
       fg: p.fg ?? '#F3EEE4',

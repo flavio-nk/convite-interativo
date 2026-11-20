@@ -117,8 +117,17 @@ const FONTS = {
   bodoni: ["'Bodoni Moda', Georgia, serif", '500', 36], dmserif: ["'DM Serif Display', Georgia, serif", '400', 36],
   italiana: ["'Italiana', serif", '400', 38], greatvibes: ["'Great Vibes', cursive", '400', 46], caveat: ["'Caveat', cursive", '700', 44],
   bricolage: ["'Bricolage Grotesque', sans-serif", '800', 34], syne: ["'Syne', sans-serif", '800', 30],
-  josefin: ["'Josefin Sans', sans-serif", '700', 34], jakarta: ["'Plus Jakarta Sans', sans-serif", '800', 32]
+  josefin: ["'Josefin Sans', sans-serif", '700', 34], jakarta: ["'Plus Jakarta Sans', sans-serif", '800', 32],
+  cinzel: ["'Cinzel', Georgia, serif", '600', 32], pinyon: ["'Pinyon Script', cursive", '400', 46],
+  fraunces: ["'Fraunces', Georgia, serif", '600', 38], abril: ["'Abril Fatface', Georgia, serif", '400', 38],
+  unbounded: ["'Unbounded', sans-serif", '700', 28]
 };
+export { FONTS };
+// nome da fonte a partir da família CSS (temas prontos descrevem a fonte pela família)
+export function fontKeyOf(css) {
+  const c = String(css || '');
+  return Object.keys(FONTS).find((k) => FONTS[k][0] === c) || Object.keys(FONTS).find((k) => c.indexOf(FONTS[k][0].split(',')[0]) !== -1) || 'cormorant';
+}
 
 // Fonte dos textos (o título usa a fonte do tema)
 export const BODY_FONTS = {
@@ -133,6 +142,8 @@ export function themeTokens(th) {
   const f = FONTS[th.fontKey] || FONTS.cormorant;
   const radii = { pilula: '999px', arredondado: '10px', reto: '0px' };
   const L = th.layout || 'centro';
+  const bg = th.bg || '#1F3329', fg = th.fg || '#F3EEE4', accent = th.accent || '#CDAE6B';
+  // [altura, largura, margem, cantos, giro, borda] do quadro de foto padrão de cada layout
   const photo = {
     centro: ['200px', '100%', '0', '10px', 'none', '0'],
     'foto-topo': ['240px', 'calc(100% + 40px)', '-24px -20px 0', '0', 'none', '0'],
@@ -142,36 +153,111 @@ export function themeTokens(th) {
     dividido: ['200px', '100%', '0', '4px', 'none', '0'],
     editorial: ['190px', '100%', '0', '0', 'none', '0'],
     arco: ['230px', '72%', '0 auto', '999px 999px 0 0', 'none', '0'],
-    polaroid: ['210px', '78%', '6px auto 10px', '2px', 'rotate(-3deg)', '8px solid #FFFFFF']
+    polaroid: ['210px', '78%', '6px auto 10px', '2px', 'rotate(-3deg)', '8px solid #FFFFFF'],
+    revista: ['300px', '100%', '0', '0', 'none', '0'],
+    minimal: ['220px', '100%', '0', '0', 'none', '0'],
+    botanico: ['300px', '74%', '0 auto', '50%', 'none', '0'],
+    deco: ['220px', '86%', '0 auto', '0', 'none', '0'],
+    aurora: ['220px', '100%', '0', '26px', 'none', '0'],
+    colagem: ['215px', '82%', '6px auto 10px', '2px', 'rotate(-2deg)', '0']
   }[L] || ['200px', '100%', '0', '10px', 'none', '0'];
-  const bg = th.bg || '#1F3329', fg = th.fg || '#F3EEE4', accent = th.accent || '#CDAE6B';
   // "Moldura fina": filete claro e fino a alguns px da borda, como nos convites impressos
   const thin = '1px solid color-mix(in srgb, ' + fg + ' 82%, transparent)';
+  const glass = L === 'aurora';
+  const bump = { editorial: 8, revista: 14, minimal: -6 }[L] || 0;
   return {
     bg, fg, accent, btnFg: th.btnFg || '#1F3329', paper: th.paper || '#E9E1D0', ph: th.ph || '#2B4538',
     layout: L, anim: th.anim || 'envelope',
-    font: f[0], weight: f[1], titleSize: (L === 'editorial' ? f[2] + 8 : f[2]) + 'px',
+    fx: th.fx || 'nenhum', pageFx: th.pageFx || 'suave',
+    font: f[0], weight: f[1], titleSize: (f[2] + bump) + 'px',
     fstyle: th.italic ? 'italic' : 'normal',
+    titleCase: L === 'deco' || L === 'revista' ? 'uppercase' : 'none',
+    titleTrack: L === 'deco' ? '0.08em' : (L === 'minimal' ? '0.01em' : 'normal'),
     body: BODY_FONTS[th.bodyKey] || BODY_FONTS.jakarta,
     radius: radii[th.radiusKey] || '999px',
-    line: 'color-mix(in srgb, ' + fg + ' 24%, ' + bg + ')',
-    surface: 'color-mix(in srgb, ' + fg + ' 9%, ' + bg + ')',
-    align: (L === 'editorial' || L === 'dividido') ? 'left' : 'center',
-    frame: L === 'moldura' ? '5px double ' + accent : (L === 'fina' ? thin : '0'),
-    band: L === 'dividido' ? '10px solid ' + accent : (L === 'moldura' ? '5px double ' + accent : (L === 'fina' ? thin : '0')),
-    framePad: L === 'moldura' ? '14px' : (L === 'fina' ? '18px' : (L === 'dividido' ? '0 0 0 12px' : '0')),
-    frameInset: L === 'fina' ? '14px 14px 16px' : '22px 20px 28px',
+    line: glass ? 'color-mix(in srgb, ' + fg + ' 28%, transparent)' : 'color-mix(in srgb, ' + fg + ' 24%, ' + bg + ')',
+    surface: glass ? 'color-mix(in srgb, ' + fg + ' 12%, transparent)' : 'color-mix(in srgb, ' + fg + ' 9%, ' + bg + ')',
+    align: (L === 'editorial' || L === 'dividido' || L === 'revista' || L === 'minimal') ? 'left' : 'center',
+    frame: L === 'moldura' ? '5px double ' + accent : (L === 'fina' ? thin : (L === 'deco' ? '1px solid ' + accent : '0')),
+    band: L === 'dividido' ? '10px solid ' + accent : (L === 'moldura' ? '5px double ' + accent : (L === 'fina' ? thin : (L === 'deco' ? '1px solid ' + accent : '0'))),
+    framePad: L === 'moldura' ? '14px' : (L === 'fina' ? '18px' : (L === 'dividido' ? '0 0 0 12px' : (L === 'deco' ? '22px' : '0'))),
+    frameInset: L === 'fina' ? '14px 14px 16px' : (L === 'deco' ? '16px 16px 18px' : '22px 20px 28px'),
+    decor: ['botanico', 'deco', 'aurora', 'minimal', 'revista'].indexOf(L) !== -1 ? L : '',
     photoRatio: LAYOUT_RATIOS[L] || LAYOUT_RATIOS.centro,
-    photoH: photo[0], photoW: photo[1], photoM: photo[2], photoR: photo[3], photoRot: photo[4], photoBorder: photo[5]
+    photoH: photo[0], photoW: photo[1], photoM: photo[2], photoR: photo[3], photoRot: photo[4], photoBorder: photo[5],
+    photoClip: L === 'deco' ? 'polygon(10% 0, 90% 0, 100% 10%, 100% 90%, 90% 100%, 10% 100%, 0 90%, 0 10%)' : 'none',
+    photoShadow: L === 'aurora' ? '0 18px 40px rgba(0, 0, 0, 0.28)' : ((L === 'polaroid' || L === 'colagem') ? '0 8px 18px rgba(0, 0, 0, 0.18)' : 'none')
   };
 }
+
+// ---------- Catálogos de design (os mesmos nomes em todas as telas) ----------
+export const design = {
+  fonts: [
+    ['cormorant', 'Cormorant Garamond', 'clássica'], ['playfair', 'Playfair Display', 'elegante'], ['bodoni', 'Bodoni Moda', 'sofisticada'],
+    ['dmserif', 'DM Serif Display', 'marcante'], ['fraunces', 'Fraunces', 'serifa moderna'], ['cinzel', 'Cinzel', 'maiúsculas clássicas'],
+    ['abril', 'Abril Fatface', 'pôster'], ['italiana', 'Italiana', 'leve'], ['greatvibes', 'Great Vibes', 'cursiva'],
+    ['pinyon', 'Pinyon Script', 'caligrafia'], ['caveat', 'Caveat', 'manuscrita'], ['bricolage', 'Bricolage Grotesque', 'divertida'],
+    ['syne', 'Syne', 'moderna'], ['unbounded', 'Unbounded', 'futurista'], ['josefin', 'Josefin Sans', 'geométrica'], ['jakarta', 'Plus Jakarta Sans', 'neutra']
+  ].map((x) => ({ key: x[0], label: x[1], desc: x[2] })),
+  layouts: [
+    ['centro', 'Centralizado'], ['foto-topo', 'Foto no topo'], ['foto-fundo', 'Foto de fundo'], ['moldura', 'Moldura'], ['fina', 'Moldura fina'],
+    ['dividido', 'Dividido'], ['editorial', 'Editorial'], ['arco', 'Arco'], ['polaroid', 'Polaroid'],
+    ['revista', 'Capa de revista'], ['minimal', 'Minimalista'], ['botanico', 'Botânico'], ['deco', 'Art déco'], ['aurora', 'Aurora'], ['colagem', 'Colagem']
+  ].map((x) => ({ key: x[0], label: x[1] })),
+  anims: [
+    ['envelope', 'Carta', 'O envelope abre e o cartão sobe', 'M3 7l9 6 9-6M3 7h18v12H3z'],
+    ['cortina', 'Cortina', 'Cortinas se abrem para os lados', 'M3 3h18M5 3v18c3-4 4-10 4-18M19 3v18c-3-4-4-10-4-18'],
+    ['portas', 'Portas', 'Portas duplas se abrem em 3D', 'M4 21V3h16v18M12 3v18M9.5 12h.01M14.5 12h.01'],
+    ['lacre', 'Lacre de cera', 'O selo se rompe e o papel se abre', 'M12 3a5 5 0 1 0 0 10 5 5 0 0 0 0-10ZM9 12l-2 9 5-3 5 3-2-9'],
+    ['presente', 'Presente', 'O laço se desfaz e a tampa sobe', 'M3 9h18v4H3zM5 13v8h14v-8M12 9v12M12 9c-2-4-6-4-6-1s6 1 6 1Zm0 0c2-4 6-4 6-1s-6 1-6 1Z'],
+    ['livro', 'Livro', 'A capa vira como um livro', 'M2 5h7a3 3 0 0 1 3 3v12a2 2 0 0 0-2-2H2zM22 5h-7a3 3 0 0 0-3 3v12a2 2 0 0 1 2-2h8z'],
+    ['iris', 'Íris', 'Um círculo se fecha e revela o convite', 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z'],
+    ['neblina', 'Neblina', 'O véu se dissipa e o convite ganha foco', 'M3 8h12M6 12h15M3 16h12M8 20h10'],
+    ['dobradura', 'Carta dobrada', 'O papel se desdobra em três partes', 'M4 3h16v6H4zM4 9l16 6M4 15h16v6H4z'],
+    ['ingresso', 'Ingresso', 'O canhoto se destaca como num ingresso', 'M3 7h18v3a2 2 0 0 0 0 4v3H3v-3a2 2 0 0 0 0-4zM15 7v10'],
+    ['raspadinha', 'Raspadinha', 'O convidado raspa para descobrir', 'M4 4h16v16H4zM8 15l3-3M11 16l5-5M7 11l3-3'],
+    ['confete', 'Explosão de confete', 'Confetes estouram e o convite aparece', 'M5 19l4-11 7 7zM14 4v2M19 9h2M17 6l1.5-1.5M12 2l.5 1'],
+    ['baloes', 'Balões', 'Balões sobem e levam a capa', 'M9 3a5 5 0 0 0-5 5c0 4 5 7 5 7s5-3 5-7a5 5 0 0 0-5-5ZM9 15v6M17 6a3 3 0 0 0-3 3c0 2.5 3 4.5 3 4.5s3-2 3-4.5a3 3 0 0 0-3-3Z'],
+    ['petalas', 'Chuva de pétalas', 'Pétalas caem e o convite surge', 'M12 3c3 3 3 7 0 10-3-3-3-7 0-10ZM5 14c4-1 7 1 7 5-4 1-7-1-7-5ZM19 14c-4-1-7 1-7 5 4 1 7-1 7-5Z'],
+    ['persiana', 'Persianas', 'Lâminas giram e deixam o convite passar', 'M3 4h18M3 8h18M3 12h18M3 16h18M3 20h18'],
+    ['polaroid', 'Foto revelada', 'Uma foto instantânea se revela aos poucos', 'M5 3h14v18H5zM7 5h10v10H7z'],
+    ['monograma', 'Monograma', 'Mergulho nas iniciais do evento', 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20ZM8 15V9l4 4 4-4v6'],
+    ['nenhuma', 'Sem abertura', 'O convite já aparece aberto', 'M5 5l14 14M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18Z']
+  ].map((x) => ({ key: x[0], label: x[1], desc: x[2], icon: x[3] })),
+  fx: [
+    ['nenhum', 'Nenhum'], ['brilhos', 'Brilhos dourados'], ['petalas', 'Pétalas caindo'], ['confete', 'Confete'], ['bolhas', 'Bolhas'],
+    ['neve', 'Neve'], ['coracoes', 'Corações'], ['estrelas', 'Céu estrelado']
+  ].map((x) => ({ key: x[0], label: x[1] })),
+  pageFx: [
+    ['suave', 'Surgir suavemente'], ['deslizar', 'Deslizar para o lado'], ['zoom', 'Aproximar'], ['virar', 'Virar a página'], ['subir', 'Subir']
+  ].map((x) => ({ key: x[0], label: x[1] })),
+  blockAnims: [
+    ['nenhuma', 'Nenhuma'], ['surgir', 'Surgir suavemente'], ['deslizar', 'Deslizar de baixo'], ['zoom', 'Aproximar (zoom)'],
+    ['lateral', 'Entrar pela lateral'], ['desfoque', 'Sair do desfoque'], ['girar', 'Girar de leve'], ['quicar', 'Quicar'], ['maquina', 'Máquina de escrever']
+  ].map((x) => ({ key: x[0], label: x[1] })),
+  ornaments: (() => {
+    const dots = [40, 56, 72, 88, 104, 136, 152, 168, 184, 200].map((x) => 'M' + (x - 2) + ' 15a2 2 0 1 0 4 0a2 2 0 1 0 -4 0').join('') + 'M116 15a4 4 0 1 0 8 0a4 4 0 1 0 -8 0';
+    return [
+      ['floral', 'Laços', 'M20 15H92M148 15H220M92 15c8-10 18-10 28 0M120 15c10-10 20-10 28 0M92 15c8 10 18 10 28 0M120 15c10 10 20 10 28 0', 'M116 15a4 4 0 1 0 8 0a4 4 0 1 0 -8 0'],
+      ['losango', 'Losango', 'M10 15H100M140 15H230', 'M120 5l10 10-10 10-10-10z'],
+      ['folhas', 'Folhas', 'M24 15H216', 'M120 15c-8-9-20-10-28-4 8 7 20 8 28 4ZM120 15c8-9 20-10 28-4-8 7-20 8-28 4ZM62 15c-5-6-12-6-17-3 5 4 12 5 17 3ZM178 15c5-6 12-6 17-3-5 4-12 5-17 3Z'],
+      ['deco', 'Art déco', 'M10 15H84M156 15H230M84 9v12M156 9v12M94 15l26-12 26 12-26 12z', 'M120 9l6 6-6 6-6-6z'],
+      ['coracao', 'Coração', 'M20 15H98M142 15H220', 'M120 26c-9-6-14-10-14-15a6 6 0 0 1 14-3 6 6 0 0 1 14 3c0 5-5 9-14 15Z'],
+      ['estrelas', 'Estrelas', 'M30 15H92M148 15H210', 'M120 2l3 10 10 3-10 3-3 10-3-10-10-3 10-3zM103 11l1.5 3 3 1-3 1.5-1.5 3-1.5-3-3-1.5 3-1zM137 11l1.5 3 3 1-3 1.5-1.5 3-1.5-3-3-1.5 3-1z'],
+      ['ondas', 'Ondas', 'M10 15c10-8 20-8 30 0s20 8 30 0 20-8 30 0 20 8 30 0 20-8 30 0 20 8 30 0 20-8 30 0', ''],
+      ['pontos', 'Pontilhado', '', dots]
+    ].map((x) => ({ key: x[0], label: x[1], d: x[2], f: x[3] }));
+  })(),
+  label(list, key) { const f = (design[list] || []).find((x) => x.key === key); return f ? f.label : ''; }
+};
 
 // ---------- Fotos: enquadramento, giro e filtros (não destrutivo) ----------
 // A foto original nunca é alterada: as edições ficam salvas junto do bloco e
 // são aplicadas na exibição. Proporção do quadro = largura / altura.
 const LAYOUT_RATIOS = {
   centro: 350 / 200, 'foto-topo': 390 / 240, 'foto-fundo': 390 / 320, moldura: 312 / 190, fina: 314 / 190,
-  dividido: 328 / 200, editorial: 350 / 190, arco: 252 / 230, polaroid: 257 / 194
+  dividido: 328 / 200, editorial: 350 / 190, arco: 252 / 230, polaroid: 257 / 194,
+  revista: 350 / 300, minimal: 350 / 220, botanico: 259 / 300, deco: 301 / 220, aurora: 350 / 220, colagem: 271 / 199
 };
 const FORMATS = [
   ['tema', 'Padrão do layout', 0], ['1:1', 'Quadrado (1:1)', 1], ['4:5', 'Retrato (4:5)', 4 / 5],
@@ -242,6 +328,69 @@ function photoStyle(e, r) {
     'transform:rotate(' + g.deg + 'deg) scale(' + (e.flipH ? -1 : 1) + ',' + (e.flipV ? -1 : 1) + ');' + fil;
 }
 
+
+// Formas do quadro: [chave, nome, cantos ou recorte, proporção quando o formato é o do layout]
+const HEART = 'url(data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 92"><path d="M50 90C22 70 2 52 2 28 2 13 14 2 28 2c9 0 17 5 22 13C55 7 63 2 72 2c14 0 26 11 26 26 0 24-20 42-48 62Z"/></svg>') + ')';
+const SHAPES = [
+  ['tema', 'Padrão do layout', null, 0],
+  ['reto', 'Retângulo', 'r:0', 0],
+  ['arredondado', 'Cantos arredondados', 'r:22px', 0],
+  ['circulo', 'Círculo', 'r:50%', 1],
+  ['oval', 'Oval', 'r:50%', 0.8],
+  ['arco', 'Arco', 'r:999px 999px 0 0', 0.82],
+  ['blob', 'Orgânica', 'r:62% 38% 46% 54% / 45% 55% 45% 55%', 1],
+  ['coracao', 'Coração', 'm:' + HEART, 1.08],
+  ['losango', 'Losango', 'c:polygon(50% 0, 100% 50%, 50% 100%, 0 50%)', 1],
+  ['hexagono', 'Hexágono', 'c:polygon(25% 3%, 75% 3%, 100% 50%, 75% 97%, 25% 97%, 0 50%)', 1.12],
+  ['rasgado', 'Papel rasgado', 'c:polygon(0 3%, 8% 0, 17% 2.5%, 26% 0.5%, 36% 3%, 46% 0, 57% 2.5%, 67% 0.5%, 78% 3%, 88% 0.5%, 100% 2.5%, 100% 97%, 91% 100%, 81% 97.5%, 70% 99.5%, 60% 97%, 49% 100%, 39% 97.5%, 28% 99.5%, 18% 97%, 8% 99.5%, 0 97%)', 0]
+];
+const FRAMES = [['tema', 'Padrão do layout'], ['nenhuma', 'Sem moldura'], ['polaroid', 'Polaroid'], ['fita', 'Fita adesiva'], ['sombra', 'Sombra suave'], ['contorno', 'Contorno deslocado'], ['dupla', 'Filete duplo']];
+const MOTIONS = [['nenhum', 'Parada'], ['kenburns', 'Zoom lento (cinema)'], ['flutuar', 'Flutuar'], ['respirar', 'Respirar']];
+
+function photoLook(b, T, idx) {
+  b = b || {}; T = T || {};
+  const L = T.layout || 'centro';
+  const shapeKey = SHAPES.some((x) => x[0] === b.shape) ? b.shape : 'tema';
+  let frameKey = FRAMES.some((x) => x[0] === b.pframe) ? b.pframe : 'tema';
+  const byTheme = shapeKey === 'tema' && frameKey === 'tema';
+  // colagem: fotos tortas, alternando o giro, com fita adesiva
+  if (frameKey === 'tema' && L === 'colagem') frameKey = 'fita';
+  const tilt = L === 'colagem' ? ((idx || 0) % 2 ? 'rotate(2.4deg)' : 'rotate(-2.2deg)') : T.photoRot;
+  const sh = SHAPES.find((x) => x[0] === shapeKey);
+  let radius = T.photoR || '0', clip = T.photoClip || 'none', mask = '';
+  if (sh && sh[2]) {
+    const kind = sh[2].slice(0, 2), v = sh[2].slice(2);
+    radius = kind === 'r:' ? v : '0'; clip = kind === 'c:' ? v : 'none'; mask = kind === 'm:' ? v : '';
+  }
+  const outer = ['position: relative', 'box-sizing: border-box'];
+  const inner = ['position: relative', 'display: flex', 'flex-direction: column', 'align-items: center', 'justify-content: center', 'gap: 6px', 'box-sizing: border-box', 'overflow: hidden', 'background: ' + (T.ph || '#2B4538'), 'border-radius: ' + radius];
+  if (clip !== 'none') inner.push('clip-path: ' + clip);
+  if (mask) inner.push('-webkit-mask-image: ' + mask, 'mask-image: ' + mask, '-webkit-mask-size: 100% 100%', 'mask-size: 100% 100%');
+  let tape = false, polaroid = false;
+  if (byTheme || frameKey === 'tema') {
+    outer.push('width: ' + (T.photoW || '100%'), 'margin: ' + (T.photoM || '0'), 'transform: ' + (tilt || 'none'));
+    if (T.photoBorder && T.photoBorder !== '0') inner.push('border: ' + T.photoBorder);
+    if (T.photoShadow && T.photoShadow !== 'none') outer.push('filter: drop-shadow(' + T.photoShadow + ')');
+  } else {
+    outer.push('width: 100%', 'margin: 0');
+    if (frameKey === 'polaroid') { polaroid = true; outer.push('padding: 10px 10px 44px', 'background: #FFFFFF', 'box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22)', 'transform: rotate(' + ((idx || 0) % 2 ? '2deg' : '-2deg') + ')'); }
+    else if (frameKey === 'fita') { tape = true; outer.push('padding: 7px', 'background: #FFFFFF', 'box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18)', 'transform: rotate(' + ((idx || 0) % 2 ? '1.6deg' : '-1.8deg') + ')'); }
+    else if (frameKey === 'sombra') outer.push('filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.32))');
+    else if (frameKey === 'contorno') outer.push('padding: 0 10px 10px 0');
+    else if (frameKey === 'dupla') outer.push('padding: 5px', 'border: 4px double ' + (T.accent || '#CDAE6B'));
+  }
+  if (frameKey === 'fita' && byTheme) { tape = true; outer.push('padding: 7px', 'background: #FFFFFF'); }
+  const offset = frameKey === 'contorno' && !byTheme;
+  return {
+    outer: outer.join('; '), inner: inner.join('; '),
+    tape, polaroid, offset,
+    offsetStyle: offset ? 'position: absolute; left: 10px; top: 10px; right: 0; bottom: 0; border: 1.5px solid ' + (T.accent || '#CDAE6B') + '; border-radius: ' + radius + (clip !== 'none' ? '; clip-path: ' + clip : '') : '',
+    motion: ['kenburns', 'flutuar', 'respirar'].indexOf(b.motion) !== -1 ? 'pm-' + b.motion : '',
+    caption: !!b.caption && !!String(b.label || '').trim(),
+    shape: shapeKey, frame: frameKey
+  };
+}
+
 export const photo = {
   formats: FORMATS.map((f) => ({ key: f[0], label: f[1] })),
   filters: FILTERS.map((f) => ({ key: f[0], label: f[1], css: f[2] })),
@@ -250,12 +399,19 @@ export const photo = {
   placeRatio: PLACE_RATIO,
   // proporção (largura/altura) do espaço da foto do local num bloco de mapa
   placeRatioOf(b) { const r = b && Number(b.photoRatio); return r && isFinite(r) ? clamp(r, 0.6, 6) : PLACE_RATIO; },
-  // proporção do quadro de um bloco de foto, conforme o formato escolhido e o layout do tema
-  ratio(edit, layout) {
+  // proporção do quadro de um bloco de foto, conforme o formato escolhido, a forma e o layout do tema
+  ratio(edit, layout, shape) {
     const fmtKey = edit && edit.frame;
     const f = FORMATS.find((x) => x[0] === fmtKey);
-    return f && f[2] ? f[2] : (LAYOUT_RATIOS[layout] || LAYOUT_RATIOS.centro);
+    if (f && f[2]) return f[2];
+    const sh = SHAPES.find((x) => x[0] === shape);
+    return sh && sh[3] ? sh[3] : (LAYOUT_RATIOS[layout] || LAYOUT_RATIOS.centro);
   },
+  shapes: SHAPES.map((x) => ({ key: x[0], label: x[1] })),
+  frames: FRAMES.map((x) => ({ key: x[0], label: x[1] })),
+  motions: MOTIONS.map((x) => ({ key: x[0], label: x[1] })),
+  // aparência do quadro de um bloco de foto: forma, moldura, legenda e movimento
+  look(b, T, idx) { return photoLook(b, T, idx); },
   filterCss,
   style: photoStyle,
   // desloca a foto ao arrastar (dx, dy em frações da largura do quadro)
@@ -280,7 +436,7 @@ export const photo = {
 // ---------- Tamanho da fonte dos blocos ----------
 // O tamanho escolhido vale para o texto principal do bloco (em px); os demais
 // textos do bloco (rótulos, legendas) acompanham na mesma proporção.
-const FONT_BASE = { texto: 15, orientacoes: 14, botao: 15, mapa: 16, contagem: 30, rsvp: 15 };
+const FONT_BASE = { texto: 15, orientacoes: 14, botao: 15, mapa: 16, contagem: 30, rsvp: 15, programacao: 16, citacao: 22 };
 const FONT_RANGE = { titulo: [16, 96], contagem: [14, 72] };
 export function fontBase(type, T) {
   if (type === 'titulo') return parseInt((T && T.titleSize) || '40', 10) || 40;
@@ -410,6 +566,9 @@ export const api = {
   qrPng,
   fmt,
   themeTokens,
+  design,
+  FONTS,
+  fontKeyOf,
   BODY_FONTS,
   themeHint,
   setFrameColor,

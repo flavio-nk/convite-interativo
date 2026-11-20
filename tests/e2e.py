@@ -486,7 +486,7 @@ def t_photos(pg, browser):
     pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
     ok('Foto: Esc fecha o editor', count(pg, '[data-testid="pe-frame"]') == 0)
     pg.select_option('#foto-format', '1:1'); pg.wait_for_timeout(200)
-    ok('Foto: formato quadrado', 'aspect-ratio: 1' in (pg.locator('[data-canvas] [data-bid] >> nth=0').locator('div').first.get_attribute('style') or ''))
+    ok('Foto: formato quadrado', 'aspect-ratio: 1' in (pg.locator('[data-canvas] [data-bid] >> nth=0').locator('[data-photo-frame] > div').first.get_attribute('style') or ''))
     # fundo da página
     page_sec(pg); pg.set_input_files('#bg-file', FIX + 'paisagem.jpg'); pg.wait_for_timeout(1200)
     ok('Fundo: aparece na prévia', count(pg, 'main [data-testid="page-bg"] img') == 1)
@@ -1272,6 +1272,146 @@ def t_savedate(pg):
     ok('Páginas: abas da prévia seguem a nova ordem', [t.strip() for t in pg.locator('nav[aria-label="Páginas do convite"] button').all_inner_texts()] == n2)
 
 
+
+def api_invite(pg, theme, pages, opening=None, title='Ana & Pedro'):
+    base = dict(baseName='Teste', bg='#1F3329', fg='#F3EEE4', accent='#CDAE6B', btnFg='#1F3329', paper='#E9E1D0', ph='#2B4538', fontKey='cormorant', italic=False, layout='centro', radiusKey='pilula', anim='nenhuma')
+    base.update(theme)
+    body = dict(title='Design ' + base['anim'] + ' ' + base['layout'], kicker='Casamento', coverTitle=title, status='publicado', theme=base, themeBase=base,
+                eventDate='2027-04-17T19:00:00.000Z', opening=opening or {'headline': 'Você recebeu um convite'}, pages=pages)
+    return pg.evaluate("(b) => fetch('/api/invites', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(b)}).then(r => r.json())", body)
+
+
+def t_design(pg, browser):
+    """Convites mais bonitos: aberturas, layouts, fotos, galeria, divisores, efeitos e temas novos."""
+    errs = []
+    # ---------- galeria de temas ----------
+    go(pg, 'Temas', 1500)
+    for name in ['Jardim botânico', 'Gatsby', 'Aurora', 'Capa de revista', 'Chá revelação', 'Balões', 'Memórias']:
+        ok('Temas novos: ' + name, count(pg, '[aria-label="Tema ' + name + '"]') == 1)
+    ok('Temas novos: selo "Novo"', count(pg, '[data-testid="badge-novo"]') >= 10, count(pg, '[data-testid="badge-novo"]'))
+    pg.select_option('#f-anim', 'raspadinha'); pg.wait_for_timeout(300)
+    ok('Temas: filtro pelas aberturas novas', count(pg, '[aria-label="Tema Chá revelação"]') == 1 and count(pg, '[aria-label="Tema Jardim"]') == 0)
+    pg.select_option('#f-anim', 'todas'); pg.select_option('#f-layout', 'deco'); pg.wait_for_timeout(300)
+    ok('Temas: filtro pelos layouts novos', count(pg, '[aria-label="Tema Gatsby"]') == 1 and count(pg, '[aria-label="Tema Jardim"]') == 0)
+    pg.select_option('#f-layout', 'todos')
+
+    # ---------- editor: blocos novos ----------
+    pages = [{'id': 'capa', 'name': 'Capa', 'blocks': [{'id': 'c1', 'type': 'foto', 'src': 'upload', 'label': 'Nós dois', 'anim': 'nenhuma'}, {'id': 'c2', 'type': 'titulo', 'text': 'Ana & Pedro'}, {'id': 'c3', 'type': 'contagem'}]},
+             {'id': 'p2', 'name': 'Detalhes', 'blocks': [{'id': 'd1', 'type': 'titulo', 'text': 'Detalhes'}]}]
+    inv = api_invite(pg, {'layout': 'botanico'}, pages)
+    state['design'] = inv['id']
+    pg.on('pageerror', lambda e: errs.append(str(e)))
+    go(pg, 'Editor/' + inv['id'], 2200)
+    ok('Editor: layout botânico com ramos na prévia', pg.locator('[data-canvas] svg[viewBox="0 0 100 100"]').count() == 2)
+    # foto: forma, moldura, legenda e movimento
+    pg.click('[data-ovl="c1"]'); pg.wait_for_timeout(200)
+    pg.set_input_files('#media-file', FIX + 'foto.png'); pg.wait_for_timeout(1500)
+    pg.select_option('#foto-shape', 'coracao'); pg.select_option('#foto-frame', 'polaroid'); pg.select_option('#foto-motion', 'kenburns')
+    pg.check('#foto-caption'); pg.wait_for_timeout(300)
+    fr = pg.locator('[data-canvas] [data-photo-frame]').first
+    ok('Foto: forma e moldura na prévia', fr.get_attribute('data-photo-shape') == 'coracao' and fr.get_attribute('data-photo-frame') == 'polaroid')
+    ok('Foto: legenda escrita na moldura', 'Nós dois' in fr.inner_text())
+    ok('Foto: movimento lento', pg.locator('[data-canvas] .pm-kenburns').count() == 1)
+    # contagem: estilo
+    pg.click('[data-ovl="c3"]'); pg.wait_for_timeout(200)
+    pg.select_option('#cd-style', 'flip'); pg.wait_for_timeout(200)
+    ok('Contagem: estilo relógio de placas', pg.locator('[data-canvas] [data-cd-style="flip"]').count() == 1)
+    # galeria
+    add_block(pg, 'Galeria de fotos')
+    ok('Galeria: bloco novo com espaços de exemplo', pg.locator('[data-canvas] [data-gallery="carrossel"]').count() == 1)
+    pg.set_input_files('#gal-files', [FIX + 'foto.png', FIX + 'paisagem.jpg', FIX + 'foto.png']); pg.wait_for_timeout(2500)
+    ok('Galeria: três fotos enviadas', pg.locator('[data-testid="gal-list"] li').count() == 3)
+    pg.click('button[aria-label="Remover a foto 3"]'); pg.wait_for_timeout(200)
+    pg.click('button[aria-label="Mover a foto 2 para antes"]'); pg.wait_for_timeout(200)
+    ok('Galeria: remover e reordenar', pg.locator('[data-testid="gal-list"] li').count() == 2)
+    pg.click('button[data-gstyle="mosaico"]'); pg.wait_for_timeout(200)
+    ok('Galeria: estilo mosaico', pg.locator('[data-canvas] [data-gallery="mosaico"] img').count() == 2)
+    # divisor, programação, frase
+    add_block(pg, 'Divisor')
+    pg.click('button[data-ostyle="estrelas"]'); pg.wait_for_timeout(150)
+    ok('Divisor: estilo escolhido', pg.locator('button[data-ostyle="estrelas"]').get_attribute('aria-pressed') == 'true')
+    add_block(pg, 'Programação')
+    pg.fill('#blk-text', '16h Cerimônia | Capela\n19h30 Festa'); pg.locator('#blk-text').blur(); pg.wait_for_timeout(200)
+    add_block(pg, 'Frase em destaque')
+    pg.fill('#blk-text', 'O amor é paciente.'); pg.locator('#blk-text').blur()
+    pg.fill('#quote-author', '1 Coríntios 13'); pg.locator('#quote-author').blur(); pg.wait_for_timeout(200)
+    # aparência: efeitos e transição, fontes e layouts novos
+    tab(pg, 'Tema')
+    ok('Aparência: 15 layouts e 16 fontes', pg.locator('#th-layout option').count() == 15 and pg.locator('#th-font option').count() == 16)
+    pg.select_option('#th-fx', 'neve'); pg.select_option('#th-pagefx', 'deslizar'); pg.wait_for_timeout(300)
+    ok('Aparência: efeito de neve na prévia', pg.locator('[data-canvas] [data-fx="neve"] span').count() > 10)
+    tab(pg, 'Abertura')
+    ok('Abertura: 18 opções', pg.locator('#op-anim option').count() == 18)
+    pg.select_option('#op-anim', 'polaroid'); pg.wait_for_timeout(300)
+    pg.set_input_files('#op-photo', FIX + 'paisagem.jpg'); pg.wait_for_timeout(1500)
+    ok('Abertura: foto revelada na prévia', pg.locator('main img[src*="paisagem"], main img[src^="/api/upload"], main img[src^="blob:"]').count() >= 1)
+    wait_saved(pg, 10000)
+    saved = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", inv['id'])
+    blocks = saved['pages'][0]['blocks']
+    gal = [b for b in blocks if b['type'] == 'galeria']
+    ok('Salvo: galeria com 2 fotos enviadas', len(gal) == 1 and len(gal[0].get('items', [])) == 2 and all(not i['url'].startswith('blob:') for i in gal[0]['items']), gal)
+    ok('Salvo: efeito, transição e foto da abertura', saved['theme'].get('fx') == 'neve' and saved['theme'].get('pageFx') == 'deslizar' and bool(saved['opening'].get('photoUrl')) and not saved['opening']['photoUrl'].startswith('blob:'))
+    ok('Editor: sem erros de script', not errs, errs[:3])
+
+    # ---------- convidado ----------
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    gerrs = []
+    g.on('pageerror', lambda e: gerrs.append(str(e)))
+    g.goto(BASE + 'c/' + inv['id']); g.wait_for_timeout(1500)
+    ok('Convidado: abertura com a foto', g.locator('img[src*="upload"], img[src*="paisagem"]').count() >= 1)
+    g.mouse.click(195, 420); g.wait_for_timeout(3300)
+    ok('Convidado: abriu depois de revelar a foto', count(g, 'nav[aria-label="Páginas do convite"]') == 1)
+    ok('Convidado: neve caindo', g.locator('[data-fx="neve"] span').count() > 10)
+    ok('Convidado: foto em coração com polaroid', g.locator('[data-photo-shape="coracao"][data-photo-frame="polaroid"]').count() == 1)
+    ok('Convidado: programação com horários', '19h30' in text(g) and 'Cerimônia' in text(g))
+    ok('Convidado: frase com autor', 'O amor é paciente.' in text(g) and '1 CORÍNTIOS 13' in text(g).upper())
+    ok('Convidado: divisor', g.locator('svg[viewBox="0 0 240 30"]').count() >= 1)
+    g.locator('[data-gallery="mosaico"] button').first.click(); g.wait_for_timeout(400)
+    ok('Convidado: foto da galeria amplia', count(g, '[data-testid="lightbox"]') == 1 and '1 de 2' in g.inner_text('[data-testid="lightbox"]'))
+    g.click('button[aria-label="Próxima foto"]'); g.wait_for_timeout(150)
+    ok('Convidado: passa para a próxima foto', '2 de 2' in g.inner_text('[data-testid="lightbox"]'))
+    g.keyboard.press('Escape'); g.wait_for_timeout(200)
+    ok('Convidado: Esc fecha a foto', count(g, '[data-testid="lightbox"]') == 0)
+    g.click('nav[aria-label="Páginas do convite"] button:has-text("Detalhes")'); g.wait_for_timeout(150)
+    ok('Convidado: transição deslizando para o lado', g.locator('main.pg-deslizar-n').count() == 1)
+    ok('Convidado: sem erros de script', not gerrs, gerrs[:3])
+    ctx.close()
+
+    # ---------- todas as aberturas novas abrem ----------
+    simple = [{'id': 'capa', 'name': 'Capa', 'blocks': [{'id': 'c1', 'type': 'titulo', 'text': 'Ana & Pedro'}]}, {'id': 'p2', 'name': 'Mais', 'blocks': [{'id': 'm1', 'type': 'texto', 'text': 'Oi'}]}]
+    for anim in ['dobradura', 'ingresso', 'raspadinha', 'confete', 'baloes', 'petalas', 'persiana', 'polaroid', 'monograma']:
+        iv = api_invite(pg, {'anim': anim}, simple)
+        ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+        aerrs = []
+        g.on('pageerror', lambda e: aerrs.append(str(e)))
+        g.goto(BASE + 'c/' + iv['id']); g.wait_for_timeout(1300)
+        closed = count(g, 'nav[aria-label="Páginas do convite"]') == 0
+        if anim == 'raspadinha':
+            box = g.locator('canvas[data-scratch]').bounding_box()
+            g.mouse.click(195, 200); g.wait_for_timeout(300)
+            still = count(g, 'canvas[data-scratch]') == 1
+            for row in range(6):
+                y = box['y'] + 15 + row * (box['height'] - 30) / 5
+                g.mouse.move(box['x'] + 5, y); g.mouse.down(); g.mouse.move(box['x'] + box['width'] - 5, y, steps=14); g.mouse.up()
+            ok('Abertura raspadinha: tocar fora não abre (precisa raspar)', still)
+        else:
+            g.mouse.click(195, 420)
+        g.wait_for_timeout(3200)
+        ok('Abertura ' + anim + ': fecha e depois abre o convite', closed and count(g, 'nav[aria-label="Páginas do convite"]') == 1 and not aerrs, aerrs[:2])
+        ctx.close()
+
+    # ---------- tema próprio com efeito ----------
+    go(pg, 'CriarTema', 1500)
+    pg.fill('#t-name' if count(pg, '#t-name') else 'input[id*="name"]', 'Tema efeitos')
+    pg.click('button:has-text("Próximo")'); pg.wait_for_timeout(200)
+    pg.select_option('#t-font', 'cinzel')
+    pg.click('button:has-text("Próximo")'); pg.wait_for_timeout(300)
+    pg.select_option('#t-fx', 'brilhos'); pg.select_option('#t-pagefx', 'virar')
+    ok('Criar tema: layouts e aberturas novos', pg.locator('button.tile').count() >= 15 + 18)
+    pg.click('button:has-text("Salvar tema")'); pg.wait_for_timeout(1200)
+    th = pg.evaluate("() => fetch('/api/themes').then(r => r.json()).then(l => l.find(t => t.name === 'Tema efeitos'))")
+    ok('Criar tema: salva fonte, efeito e transição', th and th.get('fontKey') == 'cinzel' and th.get('fx') == 'brilhos' and th.get('pageFx') == 'virar', th)
+
 def t_ux(pg, browser):
     # novo convite completo: casamento com Save the Date
     go(pg, 'Main', 1200)
@@ -1286,7 +1426,7 @@ def t_ux(pg, browser):
     ok('UX: título do convite com o evento', pg.input_value('#inv-title') == 'Casamento Amanda & Flávio')
     # adicionar bloco com descrição
     pg.click('[data-testid="add-block"]'); pg.wait_for_timeout(200)
-    ok('UX: adicionar bloco mostra os tipos com descrição', count(pg, 'button.addb') == 9 and 'Formulário de presença' in text(pg))
+    ok('UX: adicionar bloco mostra os tipos com descrição', count(pg, 'button.addb') == 13 and 'Formulário de presença' in text(pg) and 'Galeria de fotos' in text(pg))
     pg.keyboard.press('Escape'); pg.wait_for_timeout(100)
     n0 = len(ovl(pg))
     add_block(pg, 'Texto'); pg.wait_for_timeout(300)
@@ -1422,7 +1562,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('design', lambda: t_design(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

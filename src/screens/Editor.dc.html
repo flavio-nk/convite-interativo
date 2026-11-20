@@ -8,7 +8,7 @@
 <body>
 <x-dc>
 <helmet>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Abril+Fatface&amp;family=Bodoni+Moda:wght@500;600&amp;family=Bricolage+Grotesque:wght@600;800&amp;family=Caveat:wght@700&amp;family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&amp;family=DM+Serif+Display&amp;family=Great+Vibes&amp;family=Italiana&amp;family=Josefin+Sans:wght@600;700&amp;family=Playfair+Display:ital,wght@0,600;1,500&amp;family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Syne:wght@700;800&amp;family=Cinzel:wght@500;600;700&amp;family=Fraunces:ital,wght@0,400;0,600;1,400&amp;family=Pinyon+Script&amp;family=Unbounded:wght@600;700;800&amp;display=swap">
 <style>
 .sr-file{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
 .sr-file:focus-visible~* .mus-pick{outline:2px solid #5B3FD6;outline-offset:2px}
@@ -238,7 +238,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
         <sc-if value="{{isOpeningView}}" hint-placeholder-val="{{ false }}">
           <div style="width: 340px; height: 720px; overflow: hidden">
             <div style="width: 390px; height: 844px; transform: scale(0.8718); transform-origin: top left">
-              <dc-import name="Abertura" key="{{openingKey}}" recipient="{{op.recipient}}" headline="{{op.headlineValue}}" hint="{{op.hint}}" trigger="{{op.trigger}}" initials="{{op.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{coverKicker}}" titulo="{{op.titleValue}}" data="{{op.subtitleValue}}" btn-radius="{{T.radius}}" show-link="{{noLink}}" music="{{musicCfg}}" hint-size="390px,844px"></dc-import>
+              <dc-import name="Abertura" key="{{openingKey}}" photo="{{op.photo}}" recipient="{{op.recipient}}" headline="{{op.headlineValue}}" hint="{{op.hint}}" trigger="{{op.trigger}}" initials="{{op.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{coverKicker}}" titulo="{{op.titleValue}}" data="{{op.subtitleValue}}" btn-radius="{{T.radius}}" show-link="{{noLink}}" music="{{musicCfg}}" hint-size="390px,844px"></dc-import>
             </div>
           </div>
         </sc-if>
@@ -314,6 +314,27 @@ button:disabled{opacity:.5;cursor:not-allowed}
                           </sc-for>
                         </select>
                       </div>
+                      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+                        <div>
+                          <label class="lbl" for="foto-shape">Forma</label>
+                          <select class="fld" id="foto-shape" value="{{sel.shape}}" onChange="{{f.shape}}">
+                            <sc-for list="{{photoShapes}}" as="ps" hint-placeholder-count="8"><option value="{{ps.key}}">{{ps.label}}</option></sc-for>
+                          </select>
+                        </div>
+                        <div>
+                          <label class="lbl" for="foto-frame">Moldura</label>
+                          <select class="fld" id="foto-frame" value="{{sel.pframe}}" onChange="{{f.pframe}}">
+                            <sc-for list="{{photoFrames}}" as="pf2" hint-placeholder-count="6"><option value="{{pf2.key}}">{{pf2.label}}</option></sc-for>
+                          </select>
+                        </div>
+                      </div>
+                      <div>
+                        <label class="lbl" for="foto-motion">Movimento da foto</label>
+                        <select class="fld" id="foto-motion" value="{{sel.motion}}" onChange="{{f.motion}}">
+                          <sc-for list="{{photoMotions}}" as="pm" hint-placeholder-count="4"><option value="{{pm.key}}">{{pm.label}}</option></sc-for>
+                        </select>
+                      </div>
+                      <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input id="foto-caption" type="checkbox" checked="{{sel.caption}}" onChange="{{f.caption}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Mostrar a legenda no convite</label>
                       <sc-if value="{{sel.hasPhoto}}" hint-placeholder-val="{{ true }}">
                         <div style="display: flex; flex-direction: column; gap: 8px">
                           <button onClick="{{editSelPhoto}}" style="min-height: 44px; border-radius: 10px; border: 0; background: #5B3FD6; color: #FFFFFF; font-weight: 600; font-size: 14px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px">
@@ -339,12 +360,72 @@ button:disabled{opacity:.5;cursor:not-allowed}
                 </div>
               </sc-if>
 
+              <sc-if value="{{sel.isGaleria}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; flex-direction: column; gap: 14px">
+                  <div>
+                    <span class="lbl">Estilo da galeria</span>
+                    <div role="group" aria-label="Estilo da galeria" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+                      <sc-for list="{{sel.gStyles}}" as="gs" hint-placeholder-count="5">
+                        <button onClick="{{gs.pick}}" aria-pressed="{{gs.on}}" data-gstyle="{{gs.key}}" style="min-height: 64px; padding: 6px; border-radius: 10px; border: 2px solid {{gs.ring}}; background: {{gs.bg}}; color: #17151F; font-size: 12px; font-weight: 600; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px">
+                          <svg width="26" height="20" viewBox="0 0 26 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="{{gs.icon}}"></path></svg>
+                          {{gs.label}}
+                        </button>
+                      </sc-for>
+                    </div>
+                  </div>
+                  <div>
+                    <span class="lbl">Fotos da galeria · {{sel.gCount}}</span>
+                    <sc-if value="{{sel.gHas}}" hint-placeholder-val="{{ true }}">
+                      <ol data-testid="gal-list" style="list-style: none; margin: 0 0 10px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px">
+                        <sc-for list="{{sel.gItems}}" as="gt" hint-placeholder-count="3">
+                          <li style="position: relative; aspect-ratio: 1; border-radius: 10px; overflow: hidden; background: #ECEAF3">
+                            <img src="{{gt.url}}" alt="{{gt.alt}}" style="width: 100%; height: 100%; object-fit: cover; display: block; opacity: {{gt.op}}">
+                            <span style="position: absolute; left: 4px; top: 4px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: rgba(23, 21, 31, 0.7); color: #FFFFFF; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; box-sizing: border-box">{{gt.n}}</span>
+                            <button onClick="{{gt.remove}}" aria-label="{{gt.removeAria}}" style="position: absolute; right: 4px; top: 4px; width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(23, 21, 31, 0.7); color: #FFFFFF; font-size: 15px; line-height: 1; cursor: pointer">×</button>
+                            <span style="position: absolute; left: 4px; right: 4px; bottom: 4px; display: flex; justify-content: space-between">
+                              <button onClick="{{gt.left}}" disabled="{{gt.first}}" aria-label="{{gt.leftAria}}" style="width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.9); color: #17151F; font-size: 14px; cursor: pointer">‹</button>
+                              <button onClick="{{gt.right}}" disabled="{{gt.last}}" aria-label="{{gt.rightAria}}" style="width: 26px; height: 26px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.9); color: #17151F; font-size: 14px; cursor: pointer">›</button>
+                            </span>
+                          </li>
+                        </sc-for>
+                      </ol>
+                    </sc-if>
+                    <label style="position: relative; width: 100%; box-sizing: border-box; padding: 18px 14px; border-radius: 12px; border: 1.5px dashed #B9B4CC; background: #FAFAFC; color: #3D3A4A; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 14px; text-align: center">
+                      <strong>{{sel.gAddLabel}}</strong>
+                      <span style="font-size: 12px; color: #5E5A6B">Escolha várias de uma vez · os convidados tocam na foto para ampliar</span>
+                      <input id="gal-files" type="file" accept="image/*" multiple onChange="{{onGalFiles}}" aria-label="Adicionar fotos à galeria" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer">
+                    </label>
+                  </div>
+                </div>
+              </sc-if>
+
+              <sc-if value="{{sel.isOrnamento}}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <span class="lbl">Desenho do divisor</span>
+                  <div role="group" aria-label="Desenho do divisor" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+                    <sc-for list="{{sel.ornStyles}}" as="os" hint-placeholder-count="8">
+                      <button onClick="{{os.pick}}" aria-pressed="{{os.on}}" aria-label="{{os.label}}" data-ostyle="{{os.key}}" style="min-height: 52px; padding: 6px 10px; border-radius: 10px; border: 2px solid {{os.ring}}; background: {{os.bg}}; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+                        <svg viewBox="0 0 240 30" width="120" height="15" fill="none" stroke="#3B26A8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{os.d}}"></path><path d="{{os.f}}" fill="#3B26A8" stroke="none"></path></svg>
+                        <span style="font-size: 11px; color: #5E5A6B; font-weight: 600">{{os.label}}</span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+
               <sc-if value="{{sel.isTextual}}" hint-placeholder-val="{{ false }}">
                 <div>
                   <label class="lbl" for="blk-text">{{sel.textLabel}}</label>
                   <textarea class="fld" id="blk-text" rows="4" value="{{sel.text}}" onChange="{{onText}}" style="resize: vertical; line-height: 1.5"></textarea>
                   <sc-if value="{{sel.isOrient}}" hint-placeholder-val="{{ false }}">
                     <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Uma orientação por linha: traje, estacionamento, horários, crianças.</span>
+                  </sc-if>
+                  <sc-if value="{{sel.isProgramacao}}" hint-placeholder-val="{{ false }}">
+                    <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Um momento por linha, começando pelo horário: “16h Cerimônia | Capela do jardim”. O que vem depois da barra aparece menor.</span>
+                  </sc-if>
+                  <sc-if value="{{sel.isCitacao}}" hint-placeholder-val="{{ false }}">
+                    <label class="lbl" for="quote-author" style="margin-top: 12px">Autor ou referência (opcional)</label>
+                    <input class="fld" id="quote-author" value="{{sel.label}}" onChange="{{onLabel}}" placeholder="Ex.: 1 Coríntios 13">
                   </sc-if>
                 </div>
               </sc-if>
@@ -415,6 +496,15 @@ button:disabled{opacity:.5;cursor:not-allowed}
                     <label class="lbl" for="cd-date">Contar até</label>
                     <input class="fld" id="cd-date" type="datetime-local" value="{{sel.targetLocal}}" onChange="{{f.target}}">
                     <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Em branco, usa a data do evento (aba Evento).</span>
+                  </div>
+                  <div>
+                    <label class="lbl" for="cd-style">Estilo</label>
+                    <select class="fld" id="cd-style" value="{{sel.cdStyle}}" onChange="{{f.cdStyle}}">
+                      <option value="cartoes">Cartões</option>
+                      <option value="minimal">Números grandes</option>
+                      <option value="circulos">Círculos</option>
+                      <option value="flip">Relógio de placas</option>
+                    </select>
                   </div>
                   <div>
                     <label class="lbl" for="cd-end">Quando o evento começar, mostrar</label>
@@ -508,10 +598,7 @@ button:disabled{opacity:.5;cursor:not-allowed}
               <div>
                 <label class="lbl" for="blk-anim">Ao aparecer na tela</label>
                 <select class="fld" id="blk-anim" value="{{sel.anim}}" onChange="{{onAnim}}">
-                  <option value="nenhuma">Nenhuma</option>
-                  <option value="surgir">Surgir suavemente</option>
-                  <option value="deslizar">Deslizar de baixo</option>
-                  <option value="zoom">Aproximar (zoom)</option>
+                  <sc-for list="{{blockAnims}}" as="ba" hint-placeholder-count="9"><option value="{{ba.key}}">{{ba.label}}</option></sc-for>
                 </select>
               </div>
 
@@ -672,32 +759,14 @@ button:disabled{opacity:.5;cursor:not-allowed}
             <div>
               <label class="lbl" for="th-font">Fonte dos títulos</label>
               <select class="fld" id="th-font" value="{{T.fontKey}}" onChange="{{onFont}}">
-                <option value="cormorant">Cormorant Garamond</option>
-                <option value="playfair">Playfair Display</option>
-                <option value="bodoni">Bodoni Moda</option>
-                <option value="dmserif">DM Serif Display</option>
-                <option value="italiana">Italiana</option>
-                <option value="greatvibes">Great Vibes</option>
-                <option value="caveat">Caveat</option>
-                <option value="bricolage">Bricolage Grotesque</option>
-                <option value="syne">Syne</option>
-                <option value="josefin">Josefin Sans</option>
-                <option value="jakarta">Plus Jakarta Sans</option>
+                <sc-for list="{{fontOptions}}" as="fo" hint-placeholder-count="16"><option value="{{fo.key}}">{{fo.label}}</option></sc-for>
               </select>
             </div>
             <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked="{{T.italic}}" onChange="{{toggleItalic}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Títulos em itálico</label>
             <div>
               <label class="lbl" for="th-layout">Layout das páginas</label>
               <select class="fld" id="th-layout" value="{{T.layout}}" onChange="{{onLayout}}">
-                <option value="centro">Centralizado</option>
-                <option value="foto-topo">Foto no topo</option>
-                <option value="foto-fundo">Foto de fundo</option>
-                <option value="moldura">Moldura</option>
-                <option value="fina">Moldura fina</option>
-                <option value="dividido">Dividido</option>
-                <option value="editorial">Editorial</option>
-                <option value="arco">Arco</option>
-                <option value="polaroid">Polaroid</option>
+                <sc-for list="{{layoutOptions}}" as="lo" hint-placeholder-count="15"><option value="{{lo.key}}">{{lo.label}}</option></sc-for>
               </select>
             </div>
             <div>
@@ -706,6 +775,19 @@ button:disabled{opacity:.5;cursor:not-allowed}
                 <option value="pilula">Pílula</option>
                 <option value="arredondado">Arredondado</option>
                 <option value="reto">Reto</option>
+              </select>
+            </div>
+            <div>
+              <label class="lbl" for="th-fx">Efeito animado de fundo</label>
+              <select class="fld" id="th-fx" value="{{T.fx}}" onChange="{{onFx}}">
+                <sc-for list="{{fxOptions}}" as="fx" hint-placeholder-count="8"><option value="{{fx.key}}">{{fx.label}}</option></sc-for>
+              </select>
+              <span style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Partículas leves passando atrás do conteúdo, em todas as páginas.</span>
+            </div>
+            <div>
+              <label class="lbl" for="th-pagefx">Transição entre páginas</label>
+              <select class="fld" id="th-pagefx" value="{{T.pageFx}}" onChange="{{onPageFx}}">
+                <sc-for list="{{pageFxOptions}}" as="px" hint-placeholder-count="5"><option value="{{px.key}}">{{px.label}}</option></sc-for>
               </select>
             </div>
           </section>
@@ -732,17 +814,27 @@ button:disabled{opacity:.5;cursor:not-allowed}
           <div>
             <label class="lbl" for="op-anim">Animação</label>
             <select class="fld" id="op-anim" value="{{T.anim}}" onChange="{{onOpenAnim}}">
-              <option value="envelope">Carta se abrindo</option>
-              <option value="cortina">Cortina</option>
-              <option value="portas">Portas duplas</option>
-              <option value="lacre">Lacre de cera</option>
-              <option value="presente">Caixa de presente</option>
-              <option value="livro">Capa de livro</option>
-              <option value="iris">Íris</option>
-              <option value="neblina">Neblina</option>
-              <option value="nenhuma">Sem abertura (já abre o convite)</option>
+              <sc-for list="{{animOptions}}" as="ao" hint-placeholder-count="18"><option value="{{ao.key}}">{{ao.label}}</option></sc-for>
             </select>
           </div>
+          <span style="margin-top: -6px; font-size: 12px; color: #5E5A6B">{{animDesc}}</span>
+          <sc-if value="{{op.wantsPhoto}}" hint-placeholder-val="{{ false }}">
+            <div style="display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 12px; background: #F7F6FB">
+              <span class="lbl" style="margin: 0">Foto revelada na abertura</span>
+              <sc-if value="{{op.hasPhoto}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center; gap: 10px">
+                  <img src="{{op.photo}}" alt="" style="width: 54px; height: 62px; object-fit: cover; border-radius: 4px; border: 4px solid #FFFFFF; box-shadow: 0 2px 6px rgba(0,0,0,0.18)">
+                  <span style="flex: 1; font-size: 13px; color: #3D3A4A">{{op.photoStatus}}</span>
+                  <button onClick="{{op.removePhoto}}" style="min-height: 36px; padding: 0 10px; border-radius: 9px; border: 1px solid #F1C4BE; background: #FFFFFF; color: #B42318; font-weight: 600; font-size: 13px; cursor: pointer">Remover</button>
+                </div>
+              </sc-if>
+              <label style="position: relative; min-height: 42px; padding: 0 12px; border-radius: 10px; border: 1px dashed #B9B4CC; background: #FFFFFF; color: #3B26A8; font-weight: 600; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center">
+                {{op.photoLabel}}
+                <input id="op-photo" type="file" accept="image/*" onChange="{{op.onPhoto}}" aria-label="Escolher a foto da abertura" style="position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer">
+              </label>
+              <span style="font-size: 12px; color: #5E5A6B">Sem foto, aparecem as iniciais sobre as cores do tema.</span>
+            </div>
+          </sc-if>
           <sc-if value="{{hasOpeningAnim}}" hint-placeholder-val="{{ true }}">
             <div style="display: flex; flex-direction: column; gap: 14px">
               <div>
@@ -1202,10 +1294,11 @@ class Component extends DCLogic {
     if (it) {
       return {
         baseName: it.baseName || it.name, bg: it.bg, fg: it.fg, accent: it.accent, btnFg: it.btnFg, paper: it.paper, ph: it.ph,
-        fontKey: it.fontKey || 'cormorant', italic: !!it.italic, layout: it.layout || 'centro', radiusKey: it.radiusKey || 'pilula', anim: it.anim || 'envelope'
+        fontKey: it.fontKey || 'cormorant', italic: !!it.italic, layout: it.layout || 'centro', radiusKey: it.radiusKey || 'pilula', anim: it.anim || 'envelope',
+        fx: it.fx || 'nenhum', pageFx: it.pageFx || 'suave'
       };
     }
-    return { baseName: 'Jardim', bg: '#1F3329', fg: '#F3EEE4', accent: '#CDAE6B', btnFg: '#1F3329', paper: '#E9E1D0', ph: '#2B4538', fontKey: 'cormorant', italic: false, layout: 'arco', radiusKey: 'pilula', anim: 'envelope' };
+    return { baseName: 'Jardim', bg: '#1F3329', fg: '#F3EEE4', accent: '#CDAE6B', btnFg: '#1F3329', paper: '#E9E1D0', ph: '#2B4538', fontKey: 'cormorant', italic: false, layout: 'arco', radiusKey: 'pilula', anim: 'envelope', fx: 'nenhum', pageFx: 'suave' };
   }
 
   newPages(b, it) {
@@ -1468,6 +1561,7 @@ class Component extends DCLogic {
         const o = Object.assign({}, x, { fileUrl: strip(x.fileUrl || '') });
         if (!o.fileUrl && !keepLocal && x.fileUrl && /^blob:/.test(x.fileUrl)) o.fileName = '';
         delete o.uploading; delete o.uploadPct;
+        if (x.type === 'galeria') o.items = (x.items || []).map((it) => ({ url: strip(it.url || ''), fileName: it.fileName || '' })).filter((it) => it.url);
         if (x.type === 'mapa') {
           o.photoUrl = strip(x.photoUrl || '');
           if (!o.photoUrl) o.photoName = '';
@@ -1484,7 +1578,9 @@ class Component extends DCLogic {
     const cover = capa && capa.blocks.find((x) => x.type === 'titulo');
     return {
       id: this.inviteId, title: st.title, kicker: st.kicker, eventDate: st.eventDate, coverTitle: cover ? cover.text : st.title,
-      status: st.published ? 'publicado' : 'rascunho', theme: st.theme, themeBase: st.themeBase || this.baseTheme(), music, pages, opening: st.opening, personal: st.personal,
+      status: st.published ? 'publicado' : 'rascunho', theme: st.theme, themeBase: st.themeBase || this.baseTheme(), music, pages,
+      opening: (() => { const o = Object.assign({}, st.opening, { photoUrl: strip(st.opening.photoUrl || '') }); delete o.photoUploading; if (!o.photoUrl) delete o.photoUrl; return o; })(),
+      personal: st.personal,
       createdAt: this.createdAt
     };
   }
@@ -1657,6 +1753,8 @@ class Component extends DCLogic {
     items.push({ key: 'publicado', label: 'Publicar e compartilhar', ok: !!st.published, detail: st.published ? 'no ar' : 'ainda é rascunho', fix: null });
     const fotos = all.filter((o) => o.b.type === 'foto' && !this.mediaUrl(o.b));
     const warns = [];
+    const gals = all.filter((o) => o.b.type === 'galeria' && !(o.b.items || []).some((it) => it && it.url));
+    if (gals.length) warns.push({ key: 'galerias', label: gals.length === 1 ? '1 galeria sem fotos' : gals.length + ' galerias sem fotos', detail: 'galerias vazias não aparecem para o convidado', fix: go(gals[0]), fixLabel: 'Adicionar' });
     if (fotos.length) warns.push({ key: 'fotos', label: fotos.length === 1 ? '1 foto sem imagem' : fotos.length + ' fotos sem imagem', detail: 'aparecem como espaço vazio no convite', fix: go(fotos[0]), fixLabel: 'Adicionar' });
     return { items, warns, done: items.filter((i) => i.ok).length, total: items.length };
   }
@@ -1665,7 +1763,7 @@ class Component extends DCLogic {
   startInline(id) {
     const cur = this.curPage();
     const b = cur.blocks.find((x) => x.id === id);
-    if (!b || ['titulo', 'texto', 'orientacoes', 'botao'].indexOf(b.type) === -1) return;
+    if (!b || ['titulo', 'texto', 'orientacoes', 'botao', 'citacao', 'programacao'].indexOf(b.type) === -1) return;
     this.setState({ sel: id, panel: 'bloco', inline: { id, text: b.text || '' } });
     setTimeout(() => { try { const el = document.querySelector('[data-testid="inline-edit"]'); if (el) { el.focus(); el.select(); } } catch (e) {} }, 40);
   }
@@ -1704,6 +1802,51 @@ class Component extends DCLogic {
     this.setState(patch);
   }
 
+  // ---------- galeria de fotos ----------
+  patchItems(bid, fn) {
+    this.setState((st) => ({ pages: st.pages.map((p) => (p.blocks.some((x) => x.id === bid) ? Object.assign({}, p, { blocks: p.blocks.map((x) => (x.id === bid ? Object.assign({}, x, { items: fn((x.items || []).slice()) }) : x)) }) : p)) }));
+  }
+
+  addGalleryFiles(bid, files) {
+    const added = files.slice(0, 30).map((f) => ({ url: URL.createObjectURL(f), fileName: f.name, uploading: true, f }));
+    this.patchItems(bid, (items) => items.concat(added.map((a) => ({ url: a.url, fileName: a.fileName, uploading: true }))));
+    added.forEach((a) => {
+      api.upload(a.f)
+        .then((r) => { this.histMute = true; this.patchItems(bid, (items) => items.map((it) => (it.url === a.url ? { url: r.url, fileName: a.fileName } : it))); })
+        .catch((err) => {
+          this.patchItems(bid, (items) => items.filter((it) => it.url !== a.url));
+          this.setState({ toast: 'Não foi possível enviar ' + a.fileName + ': ' + err.message });
+        });
+    });
+  }
+
+  galleryVals(s) {
+    if (!s || s.type !== 'galeria') return {};
+    const items = s.items || [];
+    const gst = s.gstyle || 'carrossel';
+    const icons = {
+      carrossel: 'M6 4h14v12H6zM2 6v8M24 6v8', grade: 'M3 2h9v7H3zM14 2h9v7h-9zM3 11h9v7H3zM14 11h9v7h-9z',
+      mosaico: 'M2 2h14v16H2zM18 2h6v7h-6zM18 11h6v7h-6z', colagem: 'M3 4l10-2 2 11-10 2zM12 6l10 1-1 11-10-1z', filme: 'M1 3h24v14H1zM1 6h24M1 14h24M7 6v8M13 6v8M19 6v8'
+    };
+    const names = { carrossel: 'Carrossel', grade: 'Grade', mosaico: 'Mosaico', colagem: 'Colagem', filme: 'Filme' };
+    const mv = (i, d) => this.patchItems(s.id, (arr) => { const j = i + d; if (j < 0 || j >= arr.length) return arr; const t = arr[i]; arr[i] = arr[j]; arr[j] = t; return arr; });
+    return {
+      gStyles: Object.keys(names).map((k) => {
+        const on = gst === k;
+        return { key: k, label: names[k], icon: icons[k], on: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', bg: on ? '#F4F1FE' : '#FFFFFF', pick: () => this.patchSel({ gstyle: k }) };
+      }),
+      gCount: items.length === 1 ? '1 foto' : items.length + ' fotos', gHas: items.length > 0,
+      gAddLabel: items.length ? 'Adicionar mais fotos' : 'Escolher fotos',
+      gItems: items.map((it, i) => ({
+        url: it.url, n: String(i + 1), alt: 'Foto ' + (i + 1), op: it.uploading ? '0.5' : '1',
+        first: i === 0, last: i === items.length - 1,
+        removeAria: 'Remover a foto ' + (i + 1), leftAria: 'Mover a foto ' + (i + 1) + ' para antes', rightAria: 'Mover a foto ' + (i + 1) + ' para depois',
+        remove: () => this.patchItems(s.id, (arr) => arr.filter((_, j) => j !== i)),
+        left: () => mv(i, -1), right: () => mv(i, 1)
+      }))
+    };
+  }
+
   patchBlock(id, patch) {
     this.setState((s) => ({ pages: s.pages.map((p) => Object.assign({}, p, { blocks: p.blocks.map((x) => (x.id === id ? Object.assign({}, x, patch) : x)) })) }));
   }
@@ -1728,7 +1871,11 @@ class Component extends DCLogic {
       contagem: { label: 'Contagem', icon: 'M12 9v4l3 2M12 21a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM9 2h6' },
       botao: { label: 'Botão', icon: 'M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7' },
       orientacoes: { label: 'Orientações', icon: 'M9 6h11M9 12h11M9 18h11M4 6h.01M4 12h.01M4 18h.01' },
-      rsvp: { label: 'Confirmação', icon: 'M9 11l3 3 8-8M20 12v7H4V5h11' }
+      rsvp: { label: 'Confirmação', icon: 'M9 11l3 3 8-8M20 12v7H4V5h11' },
+      galeria: { label: 'Galeria de fotos', icon: 'M3 7h13v12H3zM7 7V4h14v12h-5M3 15l4-4 4 4 2-2 3 3' },
+      ornamento: { label: 'Divisor', icon: 'M3 12h6M15 12h6M12 8l4 4-4 4-4-4z' },
+      programacao: { label: 'Programação', icon: 'M8 5h12M8 12h12M8 19h12M4 4v16M4 5h.01M4 12h.01M4 19h.01' },
+      citacao: { label: 'Frase em destaque', icon: 'M7 7H4v6h3l-1 4M17 7h-3v6h3l-1 4' }
     };
   }
 
@@ -1875,7 +2022,9 @@ class Component extends DCLogic {
       const blk = this.state.pages.reduce((f, p) => f || p.blocks.find((x) => x.id === pe.id), null);
       return api.photo.placeRatioOf(blk);
     }
-    return pe.kind === 'bg' ? api.photo.pageRatio : api.photo.ratio(pe.draft, this.state.theme.layout);
+    if (pe.kind === 'bg') return api.photo.pageRatio;
+    const blk = this.state.pages.reduce((f, p) => f || p.blocks.find((x) => x.id === pe.id), null);
+    return api.photo.ratio(pe.draft, this.state.theme.layout, blk && blk.shape);
   }
 
   peSet(patch) {
@@ -2316,7 +2465,7 @@ class Component extends DCLogic {
     const free = !!cur.free;
     const d = st.drag;
     const M = this.meta();
-    const animNames = { surgir: 'Surgir', deslizar: 'Deslizar', zoom: 'Zoom' };
+    const animNames = { surgir: 'Surgir', deslizar: 'Deslizar', zoom: 'Zoom', lateral: 'Lateral', desfoque: 'Desfoque', girar: 'Girar', quicar: 'Quicar', maquina: 'Digitar' };
     const live = (b) => (d && d.free && d.id === b.id && rects[b.id] ? { x: d.x, y: d.y, w: d.w, h: rects[b.id].h } : rects[b.id]);
 
     const warn = {};
@@ -2431,46 +2580,11 @@ class Component extends DCLogic {
   themeVals() {
     const th = this.state.theme;
     const base = this.baseTheme();
-    const fonts = {
-      cormorant: ["'Cormorant Garamond', Georgia, serif", '500', 40], playfair: ["'Playfair Display', Georgia, serif", '600', 36],
-      bodoni: ["'Bodoni Moda', Georgia, serif", '500', 36], dmserif: ["'DM Serif Display', Georgia, serif", '400', 36],
-      italiana: ["'Italiana', serif", '400', 38], greatvibes: ["'Great Vibes', cursive", '400', 46], caveat: ["'Caveat', cursive", '700', 44],
-      bricolage: ["'Bricolage Grotesque', sans-serif", '800', 34], syne: ["'Syne', sans-serif", '800', 30],
-      josefin: ["'Josefin Sans', sans-serif", '700', 34], jakarta: ["'Plus Jakarta Sans', sans-serif", '800', 32]
-    };
-    const f = fonts[th.fontKey] || fonts.cormorant;
-    const radii = { pilula: '999px', arredondado: '10px', reto: '0px' };
-    const L = th.layout;
-    const photo = {
-      centro: ['200px', '100%', '0', '10px', 'none', '0'],
-      'foto-topo': ['240px', 'calc(100% + 40px)', '-24px -20px 0', '0', 'none', '0'],
-      'foto-fundo': ['320px', 'calc(100% + 40px)', '-24px -20px 0', '0', 'none', '0'],
-      moldura: ['190px', '100%', '0', '0', 'none', '0'],
-      fina: ['190px', '100%', '0', '0', 'none', '0'],
-      dividido: ['200px', '100%', '0', '4px', 'none', '0'],
-      editorial: ['190px', '100%', '0', '0', 'none', '0'],
-      arco: ['230px', '72%', '0 auto', '999px 999px 0 0', 'none', '0'],
-      polaroid: ['210px', '78%', '6px auto 10px', '2px', 'rotate(-3deg)', '8px solid #FFFFFF']
-    }[L] || ['200px', '100%', '0', '10px', 'none', '0'];
     const modified = Object.keys(base).some((k) => base[k] !== th[k]);
-    return {
-      baseName: th.baseName,
-      bg: th.bg, fg: th.fg, accent: th.accent, btnFg: th.btnFg, paper: th.paper, ph: th.ph,
-      fontKey: th.fontKey, italic: th.italic, layout: L, radiusKey: th.radiusKey, anim: th.anim,
-      font: f[0], weight: f[1],
-      titleSize: (L === 'editorial' ? f[2] + 8 : f[2]) + 'px',
-      fstyle: th.italic ? 'italic' : 'normal',
-      body: api.BODY_FONTS[th.bodyKey] || api.BODY_FONTS.jakarta,
-      radius: radii[th.radiusKey],
-      line: 'color-mix(in srgb, ' + th.fg + ' 24%, ' + th.bg + ')',
-      surface: 'color-mix(in srgb, ' + th.fg + ' 9%, ' + th.bg + ')',
-      align: (L === 'editorial' || L === 'dividido') ? 'left' : 'center',
-      frame: L === 'moldura' ? '5px double ' + th.accent : (L === 'fina' ? '1px solid color-mix(in srgb, ' + th.fg + ' 82%, transparent)' : '0'),
-      band: L === 'dividido' ? '10px solid ' + th.accent : (L === 'moldura' ? '5px double ' + th.accent : (L === 'fina' ? '1px solid color-mix(in srgb, ' + th.fg + ' 82%, transparent)' : '0')),
-      framePad: L === 'moldura' ? '14px' : (L === 'fina' ? '18px' : (L === 'dividido' ? '0 0 0 12px' : '0')),
-      photoH: photo[0], photoW: photo[1], photoM: photo[2], photoR: photo[3], photoRot: photo[4], photoBorder: photo[5],
+    return Object.assign(api.themeTokens(th), {
+      baseName: th.baseName, fontKey: th.fontKey, italic: th.italic, radiusKey: th.radiusKey,
       modified, unmodified: !modified
-    };
+    });
   }
 
   renderVals() {
@@ -2489,8 +2603,8 @@ class Component extends DCLogic {
         isMapa: x.type === 'mapa', isBotao: x.type === 'botao', isRsvp: x.type === 'rsvp',
         hasAnim: x.anim && x.anim !== 'nenhuma',
         mediaUrl: this.mediaUrl(x),
-        ratio: String(api.photo.ratio(x.edit, st.theme.layout)),
-        imgStyle: api.photo.style(x.edit, api.photo.ratio(x.edit, st.theme.layout)),
+        ratio: String(api.photo.ratio(x.edit, st.theme.layout, x.shape)),
+        imgStyle: api.photo.style(x.edit, api.photo.ratio(x.edit, st.theme.layout, x.shape)),
         cd: this.countdown(x.target || st.eventDate),
         address: x.address || '',
         hasMedia: x.type === 'foto' && !!this.mediaUrl(x),
@@ -2547,12 +2661,17 @@ class Component extends DCLogic {
     const defaults = {
       titulo: { text: 'Novo título' }, texto: { text: 'Escreva aqui.' }, foto: { label: 'Nova foto' },
       video: { label: 'Novo vídeo' }, mapa: { text: 'Nome do local' }, contagem: {},
-      botao: { text: 'Saiba mais' }, orientacoes: { text: 'Primeira orientação\nSegunda orientação' }, rsvp: {}
+      botao: { text: 'Saiba mais' }, orientacoes: { text: 'Primeira orientação\nSegunda orientação' }, rsvp: {},
+      galeria: { gstyle: 'carrossel', items: [] }, ornamento: { ostyle: 'floral' },
+      programacao: { text: '16h Cerimônia | Local da cerimônia\n18h Recepção\n20h Festa' },
+      citacao: { text: 'Escreva aqui uma frase especial.', label: '' }
     };
     const descs = {
       titulo: 'Texto grande, em destaque', texto: 'Parágrafo ou frase curta', foto: 'Uma imagem, com edição', video: 'Arquivo de vídeo',
       mapa: 'Local, foto e rotas no mapa', contagem: 'Dias e horas até o evento', botao: 'Link, página ou WhatsApp',
-      orientacoes: 'Traje, estacionamento…', rsvp: 'Formulário de presença'
+      orientacoes: 'Traje, estacionamento…', rsvp: 'Formulário de presença',
+      galeria: 'Várias fotos: carrossel, grade, colagem…', ornamento: 'Enfeite entre os blocos',
+      programacao: 'Horários do evento em linha do tempo', citacao: 'Versículo, poema ou frase do casal'
     };
     const palette = Object.keys(M).map((type) => ({
       label: M[type].label, icon: M[type].icon, desc: descs[type] || '',
@@ -2596,9 +2715,17 @@ class Component extends DCLogic {
         hasPhoto: s.type === 'foto' && !!this.mediaUrl(s),
         frame: (s.edit && s.edit.frame) || 'tema',
         editLine: api.photo.isEdited(s.edit) ? 'Foto editada. A original continua guardada.' : 'Corte, amplie, gire e aplique filtros.',
-        isTextual: s.type === 'titulo' || s.type === 'texto' || s.type === 'orientacoes',
-        isOrient: s.type === 'orientacoes',
-        textLabel: s.type === 'orientacoes' ? 'Orientações' : (s.type === 'titulo' ? 'Título' : 'Texto'),
+        isTextual: ['titulo', 'texto', 'orientacoes', 'programacao', 'citacao'].indexOf(s.type) !== -1,
+        isOrient: s.type === 'orientacoes', isProgramacao: s.type === 'programacao', isCitacao: s.type === 'citacao',
+        textLabel: ({ orientacoes: 'Orientações', titulo: 'Título', programacao: 'Programação', citacao: 'Frase' })[s.type] || 'Texto',
+        shape: s.shape || 'tema', pframe: s.pframe || 'tema', motion: s.motion || 'nenhum', caption: !!s.caption,
+        cdStyle: s.cdStyle || 'cartoes',
+        isGaleria: s.type === 'galeria', isOrnamento: s.type === 'ornamento',
+        ...this.galleryVals(s),
+        ornStyles: api.design.ornaments.map((o) => {
+          const on = (s.ostyle || 'floral') === o.key;
+          return Object.assign({}, o, { on: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E3E1EA', bg: on ? '#F4F1FE' : '#FFFFFF', pick: () => this.patchSel({ ostyle: o.key }) });
+        }),
         isMapa: s.type === 'mapa', isContagem: s.type === 'contagem', isBotao: s.type === 'botao', isRsvp: s.type === 'rsvp',
         autoplay: !!s.autoplay, loopVid: !!s.loopVid,
         address: s.address || '', showRoutes: s.showRoutes !== false,
@@ -2804,7 +2931,8 @@ class Component extends DCLogic {
       open, attr: open ? 'true' : 'false', arrow: open ? '▴' : '▾', bg: open ? '#F7F6FB' : '#FFFFFF',
       toggle: () => { const nxt = open ? '' : key; this.setState({ apSec: nxt, view: nxt === 'abertura' ? 'opening' : (st.view === 'opening' ? 'pages' : st.view) }); }
     });
-    const animLabels = { envelope: 'Carta', cortina: 'Cortina', portas: 'Portas', lacre: 'Lacre de cera', presente: 'Presente', livro: 'Livro', iris: 'Íris', neblina: 'Neblina', nenhuma: 'Sem abertura' };
+    const animLabels = {};
+    api.design.anims.forEach((a) => { animLabels[a.key] = a.label; });
     const ap = {
       tema: accItem('tema', st.apSec === 'tema'),
       abertura: accItem('abertura', st.apSec === 'abertura'),
@@ -2979,6 +3107,11 @@ class Component extends DCLogic {
       pageOptions: st.pages.map((p) => ({ id: p.id, name: p.name })),
       f: {
         autoplay: () => this.patchSel({ autoplay: !(s && s.autoplay) }),
+        shape: (e) => this.patchSel({ shape: e.target.value, edit: Object.assign({}, (s && s.edit) || {}, { px: 0, py: 0 }) }),
+        pframe: (e) => this.patchSel({ pframe: e.target.value }),
+        motion: (e) => this.patchSel({ motion: e.target.value }),
+        caption: () => this.patchSel({ caption: !(s && s.caption) }),
+        cdStyle: (e) => this.patchSel({ cdStyle: e.target.value }),
         loopVid: () => this.patchSel({ loopVid: !(s && s.loopVid) }),
         address: (e) => this.patchSel({ address: e.target.value }),
         showRoutes: () => this.patchSel({ showRoutes: !(s && s.showRoutes !== false) }),
@@ -3077,12 +3210,44 @@ class Component extends DCLogic {
           subtitlePlaceholder: dots || 'Ex.: 17 · 04 · 2027',
           initialsPlaceholder: autoIni || 'A&P',
           hintPlaceholder: trig === 'botao' ? 'Abrir convite' : (trig === 'deslizar' ? 'Deslize para cima para abrir' : (st.theme.anim === 'envelope' ? 'Toque para abrir a carta' : 'Toque para abrir')),
-          usesInitials: ['envelope', 'lacre', 'portas'].indexOf(st.theme.anim) !== -1,
+          usesInitials: ['envelope', 'lacre', 'portas', 'dobradura', 'confete', 'polaroid', 'monograma'].indexOf(st.theme.anim) !== -1,
+          wantsPhoto: st.theme.anim === 'polaroid',
+          photo: o.photoUrl || '', hasPhoto: !!o.photoUrl,
+          photoStatus: o.photoUploading ? 'Enviando…' : 'Esta foto aparece se revelando na abertura.',
+          photoLabel: o.photoUrl ? 'Trocar foto' : 'Escolher foto',
+          removePhoto: () => this.setState({ opening: Object.assign({}, this.state.opening, { photoUrl: '', photoUploading: false }) }),
+          onPhoto: (e) => {
+            const f = e.target.files && e.target.files[0];
+            try { e.target.value = ''; } catch (err) {}
+            if (!f) return;
+            const local = URL.createObjectURL(f);
+            this.setState({ opening: Object.assign({}, this.state.opening, { photoUrl: local, photoUploading: true }), openingRun: this.state.openingRun + 1 });
+            api.upload(f).then((r) => {
+              if (this.state.opening.photoUrl !== local) return;
+              this.histMute = true;
+              this.setState({ opening: Object.assign({}, this.state.opening, { photoUrl: r.url, photoUploading: false }) });
+            }).catch((err) => {
+              if (this.state.opening.photoUrl === local) this.setState({ opening: Object.assign({}, this.state.opening, { photoUrl: '', photoUploading: false }) });
+              this.setState({ toast: 'Não foi possível enviar a foto: ' + err.message });
+            });
+          },
           onTrigger: set('trigger'), onHeadline: set('headline'), onTitle: set('title'), onSubtitle: set('subtitle'), onHint: set('hint'), onInitials: set('initials'),
           onPaper: (e) => this.patchTheme({ paper: e.target.value })
         };
       })(),
       onFont: (e) => this.patchTheme({ fontKey: e.target.value }),
+      onFx: (e) => this.patchTheme({ fx: e.target.value }),
+      onPageFx: (e) => this.patchTheme({ pageFx: e.target.value }),
+      photoShapes: api.photo.shapes, photoFrames: api.photo.frames, photoMotions: api.photo.motions,
+      blockAnims: api.design.blockAnims, fontOptions: api.design.fonts.map((f) => ({ key: f.key, label: f.label + ' (' + f.desc + ')' })),
+      layoutOptions: api.design.layouts, fxOptions: api.design.fx, pageFxOptions: api.design.pageFx,
+      animOptions: api.design.anims.map((a) => ({ key: a.key, label: a.key === 'nenhuma' ? 'Sem abertura (já abre o convite)' : a.label })),
+      animDesc: (api.design.anims.find((a) => a.key === st.theme.anim) || {}).desc || '',
+      onGalFiles: (e) => {
+        const files = Array.from((e.target.files) || []).filter((f) => /^image\//.test(f.type || 'image/'));
+        try { e.target.value = ''; } catch (err) {}
+        if (s && s.type === 'galeria' && files.length) this.addGalleryFiles(s.id, files);
+      },
       toggleItalic: () => this.patchTheme({ italic: !st.theme.italic }),
       onLayout: (e) => this.patchTheme({ layout: e.target.value }),
       onRadius: (e) => this.patchTheme({ radiusKey: e.target.value }),
@@ -3090,7 +3255,7 @@ class Component extends DCLogic {
       resetTheme: () => this.setState({ theme: this.baseTheme(), toast: 'Tema ' + T.baseName + ' restaurado neste convite.' }),
       saveAsTheme: () => {
         const th = st.theme;
-        api.saveTheme({ name: T.baseName + ' personalizado', cat: st.kicker || 'Casamento', bg: th.bg, fg: th.fg, accent: th.accent, btnFg: th.btnFg, paper: th.paper, ph: th.ph, fontKey: th.fontKey, italic: th.italic, layout: th.layout, radiusKey: th.radiusKey, anim: th.anim })
+        api.saveTheme({ name: T.baseName + ' personalizado', cat: st.kicker || 'Casamento', bg: th.bg, fg: th.fg, accent: th.accent, btnFg: th.btnFg, paper: th.paper, ph: th.ph, fontKey: th.fontKey, italic: th.italic, layout: th.layout, radiusKey: th.radiusKey, anim: th.anim, fx: th.fx || 'nenhum', pageFx: th.pageFx || 'suave', bodyKey: th.bodyKey || 'jakarta' })
           .then((t) => this.setState({ toast: 'Tema salvo em Meus temas como “' + t.name + '”.' }))
           .catch((e) => this.setState({ toast: 'Não foi possível salvar o tema: ' + e.message }));
       },
