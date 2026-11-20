@@ -47,6 +47,10 @@
     {
       "source": "/c/:path*",
       "destination": "/index.html"
+    },
+    {
+      "source": "/pedido",
+      "destination": "/index.html"
     }
   ]
 }

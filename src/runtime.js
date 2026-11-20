@@ -48,6 +48,8 @@ function getDef(name) {
   const nodes = Array.from(xdc.childNodes).filter((n) => n !== helmet);
   const script = doc.querySelector('script[data-dc-script]');
   const titleEl = doc.querySelector('head > title');
+  // sem o script, a tela renderiza vazia sem erro: costuma ser um <sc-if>/<sc-for> sem fechamento
+  if (!script) console.error('Tela ' + name + ': script não encontrado (confira se todo <sc-if> e <sc-for> foi fechado).');
   defs[name] = {
     name,
     title: titleEl ? titleEl.textContent : name,

@@ -12,6 +12,7 @@ import { issueSignedToken, presignUrl } from '@vercel/blob';
 import { handler, query, readBody, send, httpError, newId } from './_lib/http.js';
 import { currentUser, requireUser } from './_lib/auth.js';
 import { blobToken, blobStoreId, relatedNames } from './_lib/env.js';
+import { useUploadKey } from './_lib/pedidos.js';
 
 const DIR = path.join(process.cwd(), '.data', 'uploads');
 // limites por tipo (o navegador reduz as fotos antes de enviar)
@@ -27,6 +28,21 @@ function maxFor(pathname) {
 }
 // SVG fica de fora: pode conter scripts
 const TYPES = ['image/jpeg', 'image/png', 'image/webp', 'image/gif', 'image/avif', 'image/heic', 'image/heif', 'video/*', 'audio/*'];
+
+const IMAGE_TYPES = TYPES.filter((t) => /^image\//.test(t));
+
+// Quem pode enviar: usuário logado (qualquer tipo de mídia) ou o formulário de pedido com um código
+// válido (?pedido=…), que só envia fotos.
+async function uploadRules(req, pathname) {
+  if (await currentUser(req)) return { types: TYPES, max: maxFor(pathname) };
+  const key = query(req).get('pedido');
+  if (key) {
+    if (!/\.(jpe?g|png|webp|gif|avif|heic|heif)$/i.test(String(pathname || ''))) throw httpError(415, 'No pedido, envie só fotos (JPG, PNG ou WebP).');
+    if (!(await useUploadKey(key))) throw httpError(403, 'O envio de fotos deste pedido expirou ou chegou ao limite. Recarregue a página e tente de novo.');
+    return { types: IMAGE_TYPES, max: MAX_BY_KIND.image };
+  }
+  throw httpError(401, 'Entre com seu usuário e senha.');
+}
 
 export function blobAuth(req) {
   const token = blobToken();
@@ -79,10 +95,9 @@ export default handler(async (req, res) => {
         // só seria usado para conferir avisos de "envio concluído", que não usamos
         webhookPublicKey: process.env.BLOB_WEBHOOK_PUBLIC_KEY || 'nao-utilizado',
         getSignedToken: async (pathname) => {
-          if (!(await currentUser(req))) throw httpError(401, 'Entre com seu usuário e senha.');
-          const max = maxFor(pathname);
-          const token = await issueSignedToken(Object.assign({ pathname, operations: ['put'], allowedContentTypes: TYPES, maximumSizeInBytes: max }, auth));
-          return { token, urlOptions: { allowedContentTypes: TYPES, maximumSizeInBytes: max, addRandomSuffix: true } };
+          const r = await uploadRules(req, pathname);
+          const token = await issueSignedToken(Object.assign({ pathname, operations: ['put'], allowedContentTypes: r.types, maximumSizeInBytes: r.max }, auth));
+          return { token, urlOptions: { allowedContentTypes: r.types, maximumSizeInBytes: r.max, addRandomSuffix: true } };
         }
       });
       return send(res, 200, result);
@@ -93,8 +108,8 @@ export default handler(async (req, res) => {
       body,
       request: req,
       onBeforeGenerateToken: async (pathname) => {
-        if (!(await currentUser(req))) throw httpError(401, 'Entre com seu usuário e senha.');
-        return { allowedContentTypes: TYPES, maximumSizeInBytes: maxFor(pathname), addRandomSuffix: true };
+        const r = await uploadRules(req, pathname);
+        return { allowedContentTypes: r.types, maximumSizeInBytes: r.max, addRandomSuffix: true };
       }
     });
     return send(res, 200, result);
@@ -120,8 +135,13 @@ export default handler(async (req, res) => {
     return;
   }
   if (req.method !== 'POST') throw httpError(405, 'Método não permitido.');
-  await requireUser(req);
   const type = String(req.headers['content-type'] || 'application/octet-stream');
+  const user = await currentUser(req);
+  if (!user) {
+    if (!q.get('pedido')) await requireUser(req);
+    if (!/^image\//.test(type) || /svg/i.test(type)) throw httpError(415, 'No pedido, envie só fotos (JPG, PNG ou WebP).');
+    if (!(await useUploadKey(q.get('pedido')))) throw httpError(403, 'O envio de fotos deste pedido expirou ou chegou ao limite. Recarregue a página e tente de novo.');
+  }
   if (!/^(image|video|audio)\//.test(type) || /svg/i.test(type)) throw httpError(415, 'Envie uma imagem (JPG, PNG, WebP, GIF), um vídeo ou um áudio.');
   fs.mkdirSync(DIR, { recursive: true });
   const id = newId(16);

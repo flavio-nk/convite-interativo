@@ -1,4 +1,7 @@
 import qrcode from 'qrcode-generator';
+import { FONTS, fontKeyOf, BODY_FONTS } from './fontes.js';
+import * as catalogo from './catalogo.js';
+import * as montagem from './montagem.js';
 // Acesso aos dados salvos (funções em /api). Disponível para as telas como `api`.
 
 let config = null;
@@ -112,29 +115,7 @@ export const fmt = {
   isPast(iso) { const d = toDate(iso); return !!d && d.getTime() < Date.now(); }
 };
 
-const FONTS = {
-  cormorant: ["'Cormorant Garamond', Georgia, serif", '500', 40], playfair: ["'Playfair Display', Georgia, serif", '600', 36],
-  bodoni: ["'Bodoni Moda', Georgia, serif", '500', 36], dmserif: ["'DM Serif Display', Georgia, serif", '400', 36],
-  italiana: ["'Italiana', serif", '400', 38], greatvibes: ["'Great Vibes', cursive", '400', 46], caveat: ["'Caveat', cursive", '700', 44],
-  bricolage: ["'Bricolage Grotesque', sans-serif", '800', 34], syne: ["'Syne', sans-serif", '800', 30],
-  josefin: ["'Josefin Sans', sans-serif", '700', 34], jakarta: ["'Plus Jakarta Sans', sans-serif", '800', 32],
-  cinzel: ["'Cinzel', Georgia, serif", '600', 32], pinyon: ["'Pinyon Script', cursive", '400', 46],
-  fraunces: ["'Fraunces', Georgia, serif", '600', 38], abril: ["'Abril Fatface', Georgia, serif", '400', 38],
-  unbounded: ["'Unbounded', sans-serif", '700', 28]
-};
-export { FONTS };
-// nome da fonte a partir da família CSS (temas prontos descrevem a fonte pela família)
-export function fontKeyOf(css) {
-  const c = String(css || '');
-  return Object.keys(FONTS).find((k) => FONTS[k][0] === c) || Object.keys(FONTS).find((k) => c.indexOf(FONTS[k][0].split(',')[0]) !== -1) || 'cormorant';
-}
-
-// Fonte dos textos (o título usa a fonte do tema)
-export const BODY_FONTS = {
-  jakarta: "'Plus Jakarta Sans', system-ui, sans-serif",
-  josefin: "'Josefin Sans', sans-serif",
-  cormorant: "'Cormorant Garamond', Georgia, serif"
-};
+export { FONTS, fontKeyOf, BODY_FONTS };
 
 // Valores visuais derivados de um tema (mesma regra do editor).
 export function themeTokens(th) {
@@ -569,6 +550,8 @@ export const api = {
   design,
   FONTS,
   fontKeyOf,
+  catalogo,
+  montagem,
   BODY_FONTS,
   themeHint,
   setFrameColor,
@@ -594,6 +577,13 @@ export const api = {
   setPasswordByLink: (token, password) => call('POST', '/api/auth?action=setpw', { token, password }),
   giveClientAccess: (data) => call('POST', '/api/users?action=client', data),
   newAccessLink: (id) => call('POST', '/api/users?action=link&id=' + enc(id), {}),
+  // pedidos de convite (formulário público e painel dos administradores)
+  startOrder: () => call('POST', '/api/pedidos?action=start', {}),
+  sendOrder: (data) => call('POST', '/api/pedidos?action=send', data),
+  listOrders: () => call('GET', '/api/pedidos'),
+  orderCount: () => call('GET', '/api/pedidos?action=count'),
+  saveOrder: (id, data) => call('PUT', '/api/pedidos?id=' + enc(id), data),
+  chooseVersion: (id, inviteId, dropOthers) => call('POST', '/api/pedidos?action=choose&id=' + enc(id), { inviteId, dropOthers: !!dropOthers }),
   transferInvite: (id, ownerId) => call('PUT', '/api/invites?action=transfer&id=' + enc(id), { ownerId }),
 
   listUsers: () => call('GET', '/api/users'),
@@ -632,7 +622,9 @@ export const api = {
   saveTheme: (t) => call('POST', '/api/themes', t),
   deleteTheme: (id) => call('DELETE', '/api/themes?id=' + enc(id)),
 
-  async upload(file, onProgress) {
+  // opts.pedido: código do formulário público de pedido (envia sem login, só fotos)
+  async upload(file, onProgress, opts) {
+    const pedido = opts && opts.pedido ? 'pedido=' + enc(opts.pedido) : '';
     // limites por tipo (economizam espaço e transferência do armazenamento) e fotos reduzidas antes do envio
     file = await prepareMedia(file);
     const cfg = config || (await api.me());
@@ -641,7 +633,7 @@ export const api = {
       const mod = await import('@vercel/blob/client');
       const send = cfg.uploads === 'blob-oidc' ? mod.uploadPresigned : mod.upload;
       const opts = {
-        handleUploadUrl: '/api/upload',
+        handleUploadUrl: '/api/upload' + (pedido ? '?' + pedido : ''),
         contentType: file.type || undefined,
         onUploadProgress: onProgress ? (e) => onProgress(Math.round(e.percentage)) : undefined
       };
@@ -656,7 +648,7 @@ export const api = {
         return { url: '/api/upload?media=' + enc(b.url) };
       }
     }
-    const r = await fetch('/api/upload?name=' + enc(file.name), {
+    const r = await fetch('/api/upload?name=' + enc(file.name) + (pedido ? '&' + pedido : ''), {
       method: 'POST',
       headers: { 'Content-Type': file.type || 'application/octet-stream' },
       body: file,

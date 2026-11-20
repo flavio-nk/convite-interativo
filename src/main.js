@@ -5,9 +5,13 @@ import { api } from './api.js';
 
 const h = React.createElement;
 
-const ADMIN = new Set(['Main', 'Novo', 'Temas', 'CriarTema', 'Editor', 'Respostas', 'Usuarios']);
+const ADMIN = new Set(['Main', 'Novo', 'Temas', 'CriarTema', 'Editor', 'Respostas', 'Usuarios', 'Pedidos']);
+// telas só de administradores
+const ADMIN_ONLY = new Set(['Usuarios', 'Pedidos']);
+// telas abertas sem login: link de acesso do cliente e formulário de pedido
+const PUBLIC = new Set(['Acesso', 'Pedido']);
 // telas que a conta de cliente não usa (ela não cria convites nem temas)
-const NOT_CLIENT = new Set(['Novo', 'CriarTema', 'Usuarios']);
+const NOT_CLIENT = new Set(['Novo', 'CriarTema', 'Usuarios', 'Pedidos']);
 
 // #/Editor/abc?x=1  →  { name: 'Editor', params: { id: 'abc', x: '1' } }
 // #/c/abc           →  convite do convidado
@@ -20,6 +24,8 @@ function parseRoute() {
     if (pm[2]) params.g = decodeURIComponent(pm[2]);
     return { name: 'Convite', params, key: window.location.pathname };
   }
+  // formulário de pedido: /pedido (link fácil de divulgar)
+  if (/^\/pedido\/?$/.test(window.location.pathname) && !window.location.hash) return { name: 'Pedido', params: {}, key: 'pedido' };
   const raw = window.location.hash.replace(/^#\/?/, '');
   const [pathPart, queryPart] = raw.split('?');
   const parts = pathPart.split('/').filter(Boolean);
@@ -30,7 +36,7 @@ function parseRoute() {
   if (name === 'Convidados') name = 'Respostas'; // a tela de convites individuais foi unida à de respostas
   if (parts[1]) params.id = decodeURIComponent(parts[1]);
   if (name === 'Convite' && parts[2]) params.g = decodeURIComponent(parts[2]);
-  if (name !== 'Convite' && name !== 'Acesso' && !ADMIN.has(name)) name = 'Main';
+  if (name !== 'Convite' && !PUBLIC.has(name) && !ADMIN.has(name)) name = 'Main';
   return { name, params, key: raw };
 }
 
@@ -106,6 +112,10 @@ function App() {
     return h(PhoneFrame, null, h(Guest, { key: route.key + ':' + visit, route }));
   }
   // link de acesso do cliente: abre mesmo sem login (é nele que a senha é criada)
+  if (route.name === 'Pedido') {
+    const Pedido = getComponent('Pedido');
+    return h(Pedido, { key: route.key, route });
+  }
   if (route.name === 'Acesso') {
     const Acesso = getComponent('Acesso');
     return h(Acesso, { key: route.key, route, onLogin: () => refreshMe().then(() => { window.location.hash = '#/Main'; }) });
@@ -116,7 +126,7 @@ function App() {
     return h(Login, { me, onLogin: refreshMe });
   }
   // o painel de administração (Usuários) é só para administradores
-  let name = route.name === 'Usuarios' && !me.admin ? 'Main' : route.name;
+  let name = ADMIN_ONLY.has(route.name) && !me.admin ? 'Main' : route.name;
   // cliente: Temas só para trocar o tema de um convite dele
   if (me.client && (NOT_CLIENT.has(name) || (name === 'Temas' && !route.params.invite))) name = 'Main';
   const Screen = getComponent(name);

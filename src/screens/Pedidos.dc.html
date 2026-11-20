@@ -1,0 +1,405 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Pedidos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#F4F3F8}
+button,input,select,textarea{font-family:inherit}
+a{color:#4A32C4}
+.fld{width:100%;box-sizing:border-box;min-height:44px;padding:10px 12px;border:1px solid #D6D3E0;border-radius:10px;background:#FFFFFF;color:#17151F;font-size:14px}
+.fld:focus{outline:2px solid #5B3FD6;outline-offset:1px;border-color:#5B3FD6}
+.lbl{display:block;font-size:13px;font-weight:600;color:#3D3A4A;margin-bottom:6px}
+.btn{min-height:40px;padding:0 14px;border-radius:10px;border:1px solid #D6D3E0;background:#FFFFFF;color:#17151F;font-weight:600;font-size:14px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:6px;text-decoration:none;white-space:nowrap;box-sizing:border-box}
+.btn:hover{background:#F5F4F8}
+.pri{border:0;background:#5B3FD6;color:#FFFFFF}
+.pri:hover{background:#4A32C4}
+.pri[disabled]{opacity:.6;cursor:default}
+.xbtn:hover{background:rgba(127,120,150,.16)}
+.xbtn:focus-visible{outline:2px solid #5B3FD6;outline-offset:2px}
+.kv{display:grid;grid-template-columns:160px 1fr;gap:6px 14px;margin:0;font-size:14px}
+.kv dt{color:#5E5A6B;font-weight:600}
+.kv dd{margin:0;white-space:pre-line;overflow-wrap:anywhere}
+@media (max-width:640px){.kv{grid-template-columns:1fr}.kv dd{margin-bottom:6px}}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F4F3F8; color: #17151F; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <dc-import name="Topo" active="pedidos" on-logout="{{logout}}" hint-size="100%,64px"></dc-import>
+
+  <main style="max-width: 1100px; margin: 0 auto; padding: 28px 20px 80px; display: flex; flex-direction: column; gap: 20px">
+    <div>
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.15; letter-spacing: -0.02em; font-weight: 800">Pedidos</h1>
+      <p style="margin: 6px 0 0; color: #5E5A6B; max-width: 720px">O cliente preenche o formulário e cada visual que ele escolhe vira uma versão do convite, já montada com os dados e as fotos dele. Escolha uma versão, ajuste no editor e envie o acesso.</p>
+    </div>
+
+    <section aria-labelledby="form-link-t" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; padding: 16px 18px; border-radius: 14px; background: #FFFFFF; border: 1px solid #E3E1EA">
+      <div style="flex: 1 1 280px; min-width: 0">
+        <h2 id="form-link-t" style="margin: 0; font-size: 15px">Link do formulário de pedido</h2>
+        <p style="margin: 2px 0 0; font-size: 14px; color: #5E5A6B; overflow-wrap: anywhere" data-testid="link-formulario">{{formLink}}</p>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px">
+        <button type="button" class="btn" onClick="{{copyForm}}">{{copyFormLabel}}</button>
+        <a class="btn" href="{{formLink}}" target="_blank" rel="noopener">Abrir</a>
+      </div>
+    </section>
+
+    <div role="group" aria-label="Filtrar por situação" style="display: flex; flex-wrap: wrap; gap: 6px">
+      <sc-for list="{{tabs}}" as="t" hint-placeholder-count="5">
+        <button type="button" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" style="min-height: 40px; padding: 0 14px; border-radius: 999px; border: 1px solid {{t.border}}; background: {{t.bg}}; color: {{t.fg}}; font-size: 14px; font-weight: 600; cursor: pointer">{{t.label}}</button>
+      </sc-for>
+    </div>
+
+    <sc-if value="{{loading}}" hint-placeholder-val="{{ false }}">
+      <p style="margin: 0; color: #5E5A6B">Carregando pedidos…</p>
+    </sc-if>
+    <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
+      <p role="alert" style="margin: 0; padding: 12px 14px; border-radius: 10px; background: #FDECEA; color: #8C1D13">{{error}}</p>
+    </sc-if>
+    <sc-if value="{{empty}}" hint-placeholder-val="{{ false }}">
+      <p data-testid="pedidos-vazio" style="margin: 0; padding: 32px 20px; text-align: center; border: 1.5px dashed #CFCBDB; border-radius: 16px; color: #5E5A6B; background: #FFFFFF">{{emptyText}}</p>
+    </sc-if>
+
+    <sc-for list="{{orders}}" as="o" hint-placeholder-count="2">
+      <article data-pedido="{{o.id}}" style="background: #FFFFFF; border: 1px solid #E3E1EA; border-radius: 16px; overflow: hidden">
+        <div style="padding: 16px 18px; display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 12px; border-bottom: 1px solid #EEEDF3">
+          <div style="min-width: 0; flex: 1 1 300px">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+              <h2 style="margin: 0; font-size: 18px; overflow-wrap: anywhere">{{o.names}}</h2>
+              <span style="padding: 2px 10px; border-radius: 999px; background: {{o.stBg}}; color: {{o.stFg}}; font-size: 12px; font-weight: 700">{{o.stLabel}}</span>
+            </div>
+            <p style="margin: 4px 0 0; font-size: 14px; color: #3D3A4A">{{o.kindLabel}} · {{o.when}}{{o.placeText}}</p>
+            <p style="margin: 2px 0 0; font-size: 13px; color: #5E5A6B">Pedido de <strong>{{o.contactName}}</strong> em {{o.created}}</p>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+            <a class="btn" href="{{o.waHref}}" target="_blank" rel="noopener noreferrer" aria-label="Conversar com {{o.contactName}} pelo WhatsApp">WhatsApp {{o.phone}}</a>
+            <sc-if value="{{o.hasEmail}}" hint-placeholder-val="{{ false }}">
+              <a class="btn" href="{{o.mailHref}}">E-mail</a>
+            </sc-if>
+            <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #3D3A4A">Situação
+              <select class="fld" value="{{o.status}}" onChange="{{o.onStatus}}" aria-label="Situação do pedido de {{o.contactName}}" style="width: auto; min-height: 40px">
+                <option value="novo">Novo</option>
+                <option value="producao">Em produção</option>
+                <option value="entregue">Entregue</option>
+                <option value="arquivado">Arquivado</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div style="padding: 16px 18px; display: flex; flex-direction: column; gap: 14px">
+          <div style="display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px">
+            <h3 style="margin: 0; font-size: 15px">{{o.versionsTitle}}</h3>
+            <button type="button" class="btn" onClick="{{o.toggle}}" aria-expanded="{{o.openAttr}}" style="min-height: 36px">{{o.toggleLabel}}</button>
+          </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px">
+            <sc-for list="{{o.versions}}" as="v" hint-placeholder-count="2">
+              <div data-versao="{{v.id}}" style="border: 2px solid {{v.ring}}; border-radius: 14px; padding: 8px; display: flex; flex-direction: column; gap: 8px">
+                <span style="display: block; border-radius: 10px; overflow: hidden; border: 1px solid #ECEAF2">
+                  <dc-import name="CapaPreview" layout="{{v.layout}}" bg="{{v.bg}}" fg="{{v.fg}}" accent="{{v.accent}}" ph="{{v.ph}}" btn-fg="{{v.btnFg}}" font="{{v.font}}" body-font="{{v.bodyFont}}" weight="{{v.weight}}" fstyle="{{v.fstyle}}" kicker="{{v.kicker}}" titulo="{{v.title}}" data="{{v.date}}" btn-radius="{{v.radius}}" title-scale="{{v.ts}}" aspect="4 / 5" hint-size="100%,240px"></dc-import>
+                </span>
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 2px">
+                  <strong style="font-size: 14px">{{v.themeName}}</strong>
+                  <sc-if value="{{v.chosen}}" hint-placeholder-val="{{ false }}">
+                    <span style="padding: 1px 8px; border-radius: 999px; background: #E3F3EA; color: #1E6B43; font-size: 12px; font-weight: 700">Escolhida</span>
+                  </sc-if>
+                </div>
+                <sc-if value="{{v.withClient}}" hint-placeholder-val="{{ false }}">
+                  <span style="font-size: 12px; color: #0B4A75; padding: 0 2px">Já está na conta do cliente</span>
+                </sc-if>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px">
+                  <a class="btn" href="{{v.editHref}}" style="min-height: 38px; font-size: 13px">Editar</a>
+                  <a class="btn" href="{{v.viewHref}}" target="_blank" rel="noopener" style="min-height: 38px; font-size: 13px">Ver</a>
+                </div>
+                <sc-if value="{{v.canSend}}" hint-placeholder-val="{{ true }}">
+                  <button type="button" class="btn pri" onClick="{{v.send}}" aria-label="Enviar a versão {{v.themeName}} ao cliente" style="min-height: 40px; font-size: 13px">Enviar ao cliente…</button>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+          <sc-if value="{{o.noVersions}}" hint-placeholder-val="{{ false }}">
+            <p style="margin: 0; font-size: 14px; color: #5E5A6B">As versões deste pedido foram excluídas.</p>
+          </sc-if>
+
+          <sc-if value="{{o.open}}" hint-placeholder-val="{{ false }}">
+            <div data-testid="pedido-detalhes" style="display: flex; flex-direction: column; gap: 14px; padding: 14px; border-radius: 12px; background: #FAF9FC; border: 1px solid #EEEDF3">
+              <dl class="kv">
+                <sc-for list="{{o.rows}}" as="r" hint-placeholder-count="4">
+                  <dt>{{r.k}}</dt><dd>{{r.v}}</dd>
+                </sc-for>
+              </dl>
+              <sc-if value="{{o.hasPalette}}" hint-placeholder-val="{{ false }}">
+                <div style="display: flex; align-items: center; gap: 8px; font-size: 14px"><span style="color: #5E5A6B; font-weight: 600">Cores da referência</span>
+                  <sc-for list="{{o.palette}}" as="c" hint-placeholder-count="4"><span title="{{c}}" style="width: 26px; height: 26px; border-radius: 8px; border: 1px solid rgba(0,0,0,.12); background: {{c}}"></span></sc-for>
+                </div>
+              </sc-if>
+              <sc-if value="{{o.hasPhotos}}" hint-placeholder-val="{{ false }}">
+                <div>
+                  <span style="display: block; font-size: 14px; color: #5E5A6B; font-weight: 600; margin-bottom: 6px">Fotos enviadas</span>
+                  <div style="display: flex; flex-wrap: wrap; gap: 8px">
+                    <sc-for list="{{o.photos}}" as="p" hint-placeholder-count="3">
+                      <a href="{{p.url}}" target="_blank" rel="noopener" title="{{p.label}}" style="display: block; width: 84px; height: 84px; border-radius: 10px; overflow: hidden; background: #ECEAF3"><img src="{{p.url}}" alt="{{p.label}}" style="width: 100%; height: 100%; object-fit: cover; display: block"></a>
+                    </sc-for>
+                  </div>
+                </div>
+              </sc-if>
+              <div>
+                <label class="lbl" for="nota-{{o.id}}">Anotações internas</label>
+                <textarea class="fld" id="nota-{{o.id}}" rows="3" value="{{o.note}}" onBlur="{{o.saveNote}}" placeholder="Combinados com o cliente, ajustes pedidos, valor…" style="resize: vertical"></textarea>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </article>
+    </sc-for>
+  </main>
+
+  <sc-if value="{{sd.open}}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{sd.backdrop}}" style="position: fixed; inset: 0; z-index: 60; background: rgba(15, 14, 20, 0.6); display: flex; align-items: center; justify-content: center; padding: 16px; box-sizing: border-box">
+      <div role="dialog" aria-modal="true" aria-labelledby="sd-title" data-testid="modal-enviar" style="position: relative; width: min(500px, 100%); max-height: calc(100vh - 32px); overflow: auto; box-sizing: border-box; background: #FFFFFF; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; gap: 14px">
+        <button type="button" class="xbtn" onClick="{{sd.close}}" aria-label="Fechar" title="Fechar" style="position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 10px; border: 0; background: transparent; color: #3D3A4A; cursor: pointer; display: flex; align-items: center; justify-content: center"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+        <sc-if value="{{sd.form}}" hint-placeholder-val="{{ true }}">
+          <form onSubmit="{{sd.submit}}" style="display: flex; flex-direction: column; gap: 14px; margin: 0">
+            <div style="padding-right: 40px">
+              <h2 id="sd-title" style="margin: 0; font-size: 19px">Enviar a versão “{{sd.themeName}}”</h2>
+              <p style="margin: 6px 0 0; font-size: 14px; color: #5E5A6B">O convite passa para a conta do cliente, que recebe um link para criar a senha. Você continua podendo editar tudo.</p>
+            </div>
+            <sc-if value="{{sd.hasClients}}" hint-placeholder-val="{{ false }}">
+              <div>
+                <label class="lbl" for="sd-conta">Conta</label>
+                <select class="fld" id="sd-conta" value="{{sd.userId}}" onChange="{{sd.onUser}}">
+                  <option value="">Criar uma conta nova de cliente</option>
+                  <sc-for list="{{sd.clients}}" as="c" hint-placeholder-count="2"><option value="{{c.id}}">{{c.label}}</option></sc-for>
+                </select>
+              </div>
+            </sc-if>
+            <sc-if value="{{sd.isNew}}" hint-placeholder-val="{{ true }}">
+              <div>
+                <label class="lbl" for="sd-nome">Nome do cliente</label>
+                <input class="fld" id="sd-nome" value="{{sd.name}}" onInput="{{sd.onName}}">
+              </div>
+              <div>
+                <label class="lbl" for="sd-whats">WhatsApp</label>
+                <input class="fld" id="sd-whats" type="tel" value="{{sd.phone}}" onInput="{{sd.onPhone}}">
+              </div>
+              <div>
+                <label class="lbl" for="sd-email">E-mail <span style="font-weight: 500; color: #5E5A6B">(opcional)</span></label>
+                <input class="fld" id="sd-email" type="email" value="{{sd.email}}" onInput="{{sd.onEmail}}">
+              </div>
+            </sc-if>
+            <sc-if value="{{sd.hasOthers}}" hint-placeholder-val="{{ false }}">
+              <label style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 10px; background: #F5F4F8; cursor: pointer">
+                <input id="sd-apagar" type="checkbox" checked="{{sd.drop}}" onChange="{{sd.onDrop}}" style="width: 18px; height: 18px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
+                <span style="font-size: 14px"><strong>{{sd.dropLabel}}</strong><br><span style="color: #5E5A6B">São rascunhos montados automaticamente. Versões já publicadas não são apagadas.</span></span>
+              </label>
+            </sc-if>
+            <sc-if value="{{sd.hasError}}" hint-placeholder-val="{{ false }}">
+              <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{sd.error}}</p>
+            </sc-if>
+            <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px">
+              <button type="button" class="btn" onClick="{{sd.close}}">Cancelar</button>
+              <button type="submit" class="btn pri" disabled="{{sd.busy}}">{{sd.submitLabel}}</button>
+            </div>
+          </form>
+        </sc-if>
+        <sc-if value="{{sd.done}}" hint-placeholder-val="{{ false }}">
+          <div data-testid="enviar-pronto" style="display: flex; flex-direction: column; gap: 14px">
+            <div style="padding-right: 40px">
+              <h2 id="sd-title" style="margin: 0; font-size: 19px">Pronto! Agora é só enviar</h2>
+              <p style="margin: 6px 0 0; font-size: 14px; color: #5E5A6B">O convite está na conta de <strong>{{sd.clientName}}</strong> (usuário <strong>{{sd.username}}</strong>). O link vale por 7 dias e pode ser usado uma vez.</p>
+            </div>
+            <div>
+              <label class="lbl" for="sd-link">Link de acesso</label>
+              <input class="fld" id="sd-link" readonly value="{{sd.link}}" data-testid="enviar-link">
+            </div>
+            <div>
+              <label class="lbl" for="sd-msg">Mensagem pronta</label>
+              <textarea class="fld" id="sd-msg" readonly rows="7" value="{{sd.message}}" style="resize: vertical; line-height: 1.45"></textarea>
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 8px">
+              <a class="btn pri" href="{{sd.waHref}}" target="_blank" rel="noopener noreferrer" data-testid="enviar-whats">Enviar pelo WhatsApp</a>
+              <button type="button" class="btn" onClick="{{sd.copy}}">{{sd.copyLabel}}</button>
+              <button type="button" class="btn" onClick="{{sd.close}}" style="margin-left: auto">Concluir</button>
+            </div>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{hasToast}}" hint-placeholder-val="{{ false }}">
+    <div role="status" style="position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 70; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 12px 18px; border-radius: 12px; background: #17151F; color: #FFFFFF; font-size: 14px">{{toast}}</div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"onLogout":{"editor":null},"$preview":{"width":1280,"height":1000}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    this.state = { orders: null, error: '', tab: 'ativos', open: {}, sd: null, users: null, toast: '', copied: false };
+  }
+  componentDidMount() {
+    this.load();
+    this.onEsc = (e) => { if (e.key === 'Escape' && this.state.sd) this.setState({ sd: null }); };
+    window.addEventListener('keydown', this.onEsc);
+  }
+  componentWillUnmount() { window.removeEventListener('keydown', this.onEsc); clearTimeout(this.toastTimer); }
+  load() {
+    api.listOrders().then((orders) => this.setState({ orders, error: '' })).catch((e) => this.setState({ orders: [], error: e.message }));
+  }
+  say(msg) {
+    clearTimeout(this.toastTimer);
+    this.setState({ toast: msg });
+    this.toastTimer = setTimeout(() => this.setState({ toast: '' }), 3500);
+  }
+  replace(o) { this.setState({ orders: (this.state.orders || []).map((x) => (x.id === o.id ? o : x)) }); }
+  digits(phone) {
+    const d = String(phone || '').replace(/\D/g, '');
+    return d.length === 10 || d.length === 11 ? '55' + d : d;
+  }
+  dateOf(o) {
+    if (!o.day) return 'Data a definir';
+    const ev = api.montagem.eventDateOf(o.day, o.time);
+    return ev ? api.fmt.card(ev) : 'Data a definir';
+  }
+
+  openSend(o, v) {
+    this.setState({ sd: { order: o, version: v, step: 'form', userId: '', name: o.contact.name, phone: o.contact.phone, email: o.contact.email || '', drop: true, busy: false, error: '', result: null, copied: false } });
+    if (!this.state.users) api.listUsers().then((users) => this.setState({ users })).catch(() => {});
+  }
+  patchSd(p) { this.setState({ sd: Object.assign({}, this.state.sd, p) }); }
+  submitSend(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const sd = this.state.sd;
+    if (!sd || sd.busy) return;
+    const el = e && e.target && e.target.elements;
+    const val = (id, cur) => (el && el[id] ? el[id].value : cur);
+    const data = { inviteId: sd.version.id };
+    if (sd.userId) data.userId = sd.userId;
+    else {
+      data.name = String(val('sd-nome', sd.name)).trim();
+      data.phone = String(val('sd-whats', sd.phone)).trim();
+      data.email = String(val('sd-email', sd.email)).trim();
+      if (!data.name) { this.patchSd({ error: 'Informe o nome do cliente.' }); return; }
+    }
+    const others = (sd.order.versions || []).length > 1;
+    this.patchSd({ busy: true, error: '' });
+    api.chooseVersion(sd.order.id, sd.version.id, others && sd.drop)
+      .then(() => api.giveClientAccess(data))
+      .then((r) => api.saveOrder(sd.order.id, { status: 'entregue' }).then((o) => { this.replace(o); return r; }))
+      .then((r) => { this.patchSd({ busy: false, step: 'done', result: r }); this.setState({ users: null }); })
+      .catch((err) => { this.patchSd({ busy: false, error: err.message }); this.load(); });
+  }
+  sdVals() {
+    const sd = this.state.sd;
+    if (!sd) return { open: false };
+    const r = sd.result || {};
+    const ru = r.user || {};
+    const clients = (this.state.users || []).filter((u) => u.role === 'cliente' && u.active);
+    const n = (sd.order.versions || []).length - 1;
+    const msg = r.message || '';
+    return {
+      open: true, form: sd.step === 'form', done: sd.step === 'done',
+      themeName: sd.version.themeName,
+      hasClients: clients.length > 0, clients: clients.map((u) => ({ id: u.id, label: u.name + ' (' + u.username + ')' })),
+      userId: sd.userId, isNew: !sd.userId, onUser: (e) => this.patchSd({ userId: e.target.value, error: '' }),
+      name: sd.name, phone: sd.phone, email: sd.email,
+      onName: (e) => this.patchSd({ name: e.target.value }), onPhone: (e) => this.patchSd({ phone: e.target.value }), onEmail: (e) => this.patchSd({ email: e.target.value }),
+      hasOthers: n > 0, drop: sd.drop, onDrop: (e) => this.patchSd({ drop: !!e.target.checked }),
+      dropLabel: n === 1 ? 'Apagar a outra versão deste pedido' : 'Apagar as outras ' + n + ' versões deste pedido',
+      hasError: !!sd.error, error: sd.error, busy: sd.busy,
+      submitLabel: sd.busy ? 'Enviando…' : 'Passar convite e gerar link',
+      submit: (e) => this.submitSend(e),
+      clientName: ru.name || '', username: ru.username || '', link: r.link || '', message: msg,
+      waHref: 'https://wa.me/' + this.digits(ru.phone || sd.phone) + '?text=' + encodeURIComponent(msg),
+      copyLabel: sd.copied ? 'Copiado!' : 'Copiar mensagem',
+      copy: () => { try { navigator.clipboard.writeText(msg).then(() => this.patchSd({ copied: true })); } catch (err) {} },
+      close: () => this.setState({ sd: null }),
+      backdrop: (e) => { if (e.target === e.currentTarget) this.setState({ sd: null }); }
+    };
+  }
+
+  renderVals() {
+    const st = this.state;
+    const all = st.orders || [];
+    const K = api.montagem.KINDS;
+    const ST = { novo: ['Novo', '#FDECEA', '#8C1D13'], producao: ['Em produção', '#FFF1D6', '#8A4B00'], entregue: ['Entregue', '#DDF3E4', '#135C2E'], arquivado: ['Arquivado', '#ECEBF0', '#4A4757'] };
+    const tabsDef = [['ativos', 'Em aberto', (o) => o.status === 'novo' || o.status === 'producao'], ['entregue', 'Entregues', (o) => o.status === 'entregue'], ['arquivado', 'Arquivados', (o) => o.status === 'arquivado'], ['todos', 'Todos', () => true]];
+    const tab = tabsDef.find((t) => t[0] === st.tab) || tabsDef[0];
+    const rad = { pilula: '999px', arredondado: '10px', reto: '0px' };
+    const music = { valsa: 'Valsa suave', caixinha: 'Caixinha de música', festa: 'Festa animada' };
+    const formLink = window.location.origin + '/pedido';
+    const orders = all.filter(tab[2]).map((o) => {
+      const s = ST[o.status] || ST.novo;
+      const dots = o.day ? o.day.slice(8, 10) + ' · ' + o.day.slice(5, 7) + ' · ' + o.day.slice(0, 4) : '';
+      const open = !!st.open[o.id];
+      const c = o.contact || {};
+      const ph = o.photos || {};
+      const photos = [].concat(ph.main ? [{ url: ph.main.url, label: 'Foto principal' }] : [], ph.venue ? [{ url: ph.venue.url, label: 'Foto do local' }] : [], (ph.gallery || []).map((g, i) => ({ url: g.url, label: 'Galeria ' + (i + 1) })));
+      const rows = [
+        ['Evento', (K[o.kind] || {}).label + ' · ' + o.names],
+        ['Data', this.dateOf(o)],
+        ['Local', [o.place, o.address].filter(Boolean).join(' — ')],
+        ['Confirmação de presença', o.rsvp === false ? 'Não' : 'Sim'],
+        ['Frase da capa', o.phrase], ['Traje', o.dress], ['Programação', o.program], ['Lista de presentes', o.gifts],
+        ['Outras informações', o.notes], ['Música', music[o.music] || 'Sem música'],
+        ['WhatsApp', c.phone], ['E-mail', c.email], ['Recado do cliente', c.message]
+      ].filter((r) => r[1]).map((r) => ({ k: r[0], v: r[1] }));
+      const versions = (o.versions || []).map((v) => {
+        const t = v.theme || {};
+        const F = api.FONTS[t.fontKey] || api.FONTS.cormorant;
+        return {
+          id: v.id, themeName: v.themeName || 'Versão', chosen: v.chosen, ring: v.chosen ? '#1E8A4C' : '#E3E1EA',
+          withClient: v.ownerId !== 'admin',
+          canSend: v.ownerId === 'admin',
+          layout: t.layout, bg: t.bg, fg: t.fg, accent: t.accent, ph: t.ph, btnFg: t.btnFg, font: F[0], weight: F[1], fstyle: t.italic ? 'italic' : 'normal',
+          bodyFont: api.BODY_FONTS[t.bodyKey] || api.BODY_FONTS.jakarta, radius: rad[t.radiusKey] || '999px', ts: t.titleScale || 1,
+          kicker: v.kicker, title: v.coverTitle || o.names, date: dots || 'Data a definir',
+          editHref: '#/Editor/' + v.id, viewHref: '#/c/' + v.id,
+          send: () => this.openSend(o, v)
+        };
+      });
+      return {
+        id: o.id, names: o.names, status: o.status, stLabel: s[0], stBg: s[1], stFg: s[2],
+        kindLabel: (K[o.kind] || {}).label || 'Evento', when: this.dateOf(o), placeText: o.place ? ' · ' + o.place : '',
+        contactName: c.name, phone: c.phone,
+        created: new Date(o.createdAt).toLocaleDateString('pt-BR') + ' às ' + new Date(o.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+        waHref: 'https://wa.me/' + this.digits(c.phone), hasEmail: !!c.email, mailHref: 'mailto:' + (c.email || ''),
+        onStatus: (e) => api.saveOrder(o.id, { status: e.target.value }).then((x) => { this.replace(x); this.say('Pedido de ' + c.name + ': ' + ST[x.status][0] + '.'); }).catch((err) => this.say(err.message)),
+        versionsTitle: versions.length === 1 ? '1 versão montada' : versions.length + ' versões montadas',
+        versions, noVersions: !versions.length,
+        open, openAttr: open ? 'true' : 'false', toggleLabel: open ? 'Esconder o pedido' : 'Ver o pedido completo',
+        toggle: () => this.setState({ open: Object.assign({}, st.open, { [o.id]: !open }) }),
+        rows, hasPalette: !!o.palette, palette: o.palette ? [o.palette.bg, o.palette.accent, o.palette.fg, o.palette.paper] : [],
+        hasPhotos: photos.length > 0, photos,
+        note: o.note || '',
+        saveNote: (e) => { const v = e.target.value; if (v !== (o.note || '')) api.saveOrder(o.id, { note: v }).then((x) => { this.replace(x); this.say('Anotação salva.'); }).catch((err) => this.say(err.message)); }
+      };
+    });
+    const loading = st.orders === null;
+    return {
+      logout: () => { if (this.props.onLogout) this.props.onLogout(); },
+      formLink,
+      copyFormLabel: st.copied ? 'Copiado!' : 'Copiar link',
+      copyForm: () => { try { navigator.clipboard.writeText(formLink).then(() => this.setState({ copied: true })); } catch (e) {} },
+      tabs: tabsDef.map((t) => {
+        const on = t[0] === tab[0];
+        return { label: t[1] + ' · ' + all.filter(t[2]).length, pressed: on ? 'true' : 'false', bg: on ? '#17151F' : '#FFFFFF', fg: on ? '#FFFFFF' : '#17151F', border: on ? '#17151F' : '#D6D3E0', pick: () => this.setState({ tab: t[0] }) };
+      }),
+      orders, loading,
+      hasError: !!st.error, error: st.error,
+      empty: !loading && !st.error && orders.length === 0,
+      emptyText: all.length ? 'Nenhum pedido nesta situação.' : 'Nenhum pedido ainda. Divulgue o link do formulário: cada pedido chega aqui com as versões do convite já montadas.',
+      sd: this.sdVals(),
+      hasToast: !!st.toast, toast: st.toast
+    };
+  }
+}
+</script>
+</body>
+</html>

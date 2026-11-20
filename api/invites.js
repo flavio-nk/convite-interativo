@@ -38,6 +38,7 @@ function summarize(inv, owners, stats) {
     ownerName: owners && owners[ownerOf(inv)] ? owners[ownerOf(inv)].name : '',
     ownerRole: owners && owners[ownerOf(inv)] ? owners[ownerOf(inv)].role : '',
     transferredAt: inv.transferredAt || null,
+    pedidoId: inv.pedidoId || null,
     updatedAt: inv.updatedAt,
     createdAt: inv.createdAt,
     slug: inv.slug || '',
@@ -146,7 +147,7 @@ export default handler(async (req, res) => {
       const count = Object.values(await hgetall(KEY)).filter((x) => ownerOf(x) === user.id).length;
       if (count >= MAX_INVITES_PER_USER) throw httpError(403, 'Limite de ' + MAX_INVITES_PER_USER + ' convites por usuário atingido. Exclua convites antigos para criar novos.');
     }
-    delete body.slug;
+    delete body.slug; delete body.pedidoId; delete body.transferredAt; delete body.transferredBy;
     const inv = clean(body, null);
     inv.id = newId();
     inv.ownerId = user.id;
@@ -196,7 +197,7 @@ export default handler(async (req, res) => {
     const restore = body.__rsvps;
     const restoreGuests = body.__guests;
     delete body.__rsvps; delete body.__guests; delete body.guest;
-    delete body.transferredAt; delete body.transferredBy;
+    delete body.transferredAt; delete body.transferredBy; delete body.pedidoId;
     const existing = await hget(KEY, id);
     // só o "Desfazer" (que manda as respostas apagadas junto) pode recriar um convite excluído
     if (!existing && !restoring) throw httpError(404, 'Este convite foi excluído.');

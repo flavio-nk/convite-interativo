@@ -1406,6 +1406,121 @@ def t_client(pg, browser):
     pg.screenshot(path=os.environ['SHOTS'] + '/usuarios-clientes.png', full_page=True) if os.environ.get('SHOTS') else None
 
 
+def t_pedido(pg, browser):
+    """Formulário público de pedido, montagem automática das versões e envio ao cliente."""
+    import json as _j
+    J = "async ([m, u, b]) => { const r = await fetch(u, {method: m, headers: {'content-type': 'application/json'}, body: b}); let d = null; try { d = await r.json(); } catch (e) {} return [r.status, d]; }"
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844})
+    cp = ctx.new_page(); cp.set_default_timeout(8000)
+    cp.on('pageerror', lambda e: errors.append('[pedido] %s' % e))
+    cp.goto(BASE + 'pedido'); cp.wait_for_timeout(1200)
+    ok('Pedido: formulário abre sem login em /pedido', count(cp, '[data-testid="pd-etapa"]') == 1 and 'Etapa 1 de 5' in text(cp), text(cp)[:200])
+    cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(200)
+    ok('Pedido: exige o tipo de evento', 'Escolha o tipo de evento' in text(cp))
+    cp.click('[data-kind="casamento"]'); cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(200)
+    ok('Pedido: exige os nomes', 'Nomes do casal' in text(cp) and count(cp, '[role=alert]') == 1)
+    cp.fill('#pd-names', 'Helena & Rafael'); cp.fill('#pd-day', '2027-09-12'); cp.fill('#pd-time', '16:30')
+    cp.fill('#pd-place', 'Fazenda Santa Clara'); cp.fill('#pd-addr', 'Estrada do Sol, 100, Itu - SP')
+    cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(600)
+    ok('Pedido: galeria de visuais filtrada pelo tipo, com os nomes do cliente', count(cp, '[data-theme="jardim"]') == 1 and count(cp, '[data-theme="festa"]') == 0 and 'Helena & Rafael' in text(cp))
+    cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(200)
+    ok('Pedido: exige pelo menos um visual', 'pelo menos um visual' in text(cp))
+    for t in ['botanico', 'jardim', 'romance']:
+        cp.click('[data-theme="' + t + '"]'); cp.wait_for_timeout(80)
+    cp.click('[data-theme="noite"]'); cp.wait_for_timeout(150)
+    ok('Pedido: no máximo 3 visuais', 'já escolheu 3' in text(cp) and '3 visuais escolhidos' in cp.inner_text('[data-testid="pd-escolhidos"]'))
+    cp.click('[data-theme="romance"]'); cp.wait_for_timeout(100)
+    cp.click('button:has-text("Ver todos os visuais")'); cp.wait_for_timeout(300)
+    ok('Pedido: "Ver todos os visuais" mostra os outros tipos', count(cp, '[data-theme="festa"]') == 1)
+    cp.reload(); cp.wait_for_timeout(1200)
+    ok('Pedido: rascunho guardado ao recarregar a página', 'Etapa 2 de 5' in text(cp) and '2 visuais escolhidos' in cp.inner_text('[data-testid="pd-escolhidos"]'))
+    cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(300)
+    cp.set_input_files('#pd-foto-principal', FIX + 'foto.png'); cp.wait_for_timeout(1500)
+    cp.set_input_files('#pd-galeria', [FIX + 'foto.png', FIX + 'paisagem.jpg']); cp.wait_for_timeout(2500)
+    cp.set_input_files('#pd-foto-local', FIX + 'paisagem.jpg'); cp.wait_for_timeout(1500)
+    ok('Pedido: fotos enviadas sem login (principal, galeria e local)', count(cp, '[data-testid="pd-foto-principal"] img') == 1 and count(cp, '[data-testid="pd-galeria-item"]') == 2 and count(cp, '[data-testid="pd-foto-local"] img') == 1, text(cp)[-300:])
+    cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(300)
+    ok('Pedido: frase da capa sugere o texto padrão do tipo', 'convidam para a celebração' in (cp.get_attribute('#pd-frase', 'placeholder') or ''))
+    cp.fill('#pd-traje', 'Esporte fino'); cp.fill('#pd-prog', '16h30 Cerimônia\n18h Jantar\n20h Festa')
+    cp.fill('#pd-presentes', 'www.listadopresente.com.br/helena'); cp.fill('#pd-orient', 'Estacionamento no local'); cp.select_option('#pd-musica', 'valsa')
+    cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(300)
+    ok('Pedido: resumo antes de enviar', '2 visuais' in text(cp) and '4 fotos' in text(cp), text(cp)[:300])
+    cp.click('[data-testid="pd-enviar"]'); cp.wait_for_timeout(300)
+    ok('Pedido: exige o nome de quem pede', 'Informe o seu nome' in text(cp))
+    cp.fill('#pd-nome', 'Helena Prado'); cp.fill('#pd-whats', '1198'); cp.click('[data-testid="pd-enviar"]'); cp.wait_for_timeout(300)
+    ok('Pedido: exige WhatsApp com DDD', 'WhatsApp com DDD' in cp.inner_text('[role=alert]'))
+    cp.fill('#pd-whats', '(11) 98888-7777'); cp.fill('#pd-msg', 'Queremos tons de verde.')
+    cp.click('[data-testid="pd-enviar"]'); cp.wait_for_timeout(1800)
+    ok('Pedido: enviado com mensagem de confirmação', count(cp, '[data-testid="pd-enviado"]') == 1 and 'Obrigado, Helena' in text(cp), text(cp)[:300])
+    ok('Pedido: rascunho apagado do navegador depois de enviar', cp.evaluate("localStorage.getItem('ci:pedido')") in (None, 'null'))
+    # proteções do servidor
+    base = {'kind': 'casamento', 'names': 'X & Y', 'themes': ['jardim'], 'contact': {'name': 'Z', 'phone': '11999998888'}}
+    st, _ = cp.evaluate(J, ['POST', '/api/pedidos?action=send', _j.dumps(dict(base, photos={'main': {'url': 'https://exemplo.com/foto.jpg'}}))])
+    ok('Pedido: recusa foto de fora da plataforma', st == 400, st)
+    st, _ = cp.evaluate(J, ['POST', '/api/pedidos?action=send', _j.dumps(dict(base, site='http://spam'))])
+    ok('Pedido: campo escondido (robôs) recusado', st == 400, st)
+    st, _ = cp.evaluate(J, ['POST', '/api/pedidos?action=send', _j.dumps(dict(base, themes=['inexistente']))])
+    ok('Pedido: recusa visual inexistente', st == 400, st)
+    st = cp.evaluate("fetch('/api/upload?name=x.png', {method: 'POST', headers: {'Content-Type': 'image/png'}, body: 'x'}).then(r => r.status)")
+    ok('Pedido: envio de arquivo sem login e sem código recusado', st == 401, st)
+    key = cp.evaluate("fetch('/api/pedidos?action=start', {method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}'}).then(r => r.json()).then(d => d.key)")
+    st = cp.evaluate("(k) => fetch('/api/upload?name=x.mp3&pedido=' + k, {method: 'POST', headers: {'Content-Type': 'audio/mpeg'}, body: 'x'}).then(r => r.status)", key)
+    ok('Pedido: código do pedido só envia fotos', st == 415, st)
+    st, _ = cp.evaluate(J, ['GET', '/api/pedidos', None])
+    ok('Pedido: lista de pedidos só para administradores', st == 401, st)
+    ctx.close()
+
+    # administrador: pedido chega com as versões montadas
+    go(pg, 'Main', 1300)
+    ok('Pedidos: aviso de pedido novo no menu', count(pg, '[data-testid="badge-pedidos"]') == 1)
+    ok('Pedidos: cartões das versões marcados como pedido', count(pg, '[data-testid="card-pedido"]') == 2)
+    orders = pg.evaluate("fetch('/api/pedidos').then(r => r.json())")
+    o = [x for x in orders if x['names'] == 'Helena & Rafael'][0]
+    ok('Pedidos: uma versão por visual escolhido', len(o['invites']) == 2 and [v['themeName'] for v in o['versions']] == ['Jardim botânico', 'Jardim'], [v['themeName'] for v in o['versions']])
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", o['invites'][0])
+    pages = {p['name']: p['blocks'] for p in inv['pages']}
+    bl = lambda pn, t: [x for x in pages.get(pn, []) if x['type'] == t]
+    ok('Montagem: páginas conforme o pedido', list(pages.keys()) == ['Capa', 'Detalhes', 'Programação', 'Galeria', 'Presença'], list(pages.keys()))
+    ok('Montagem: capa com nomes e foto do cliente', bl('Capa', 'titulo')[0]['text'] == 'Helena & Rafael' and bl('Capa', 'foto')[0].get('fileUrl', '').startswith('/api/upload'))
+    ok('Montagem: data por extenso e local com foto', bl('Detalhes', 'texto')[0]['text'] == 'Domingo, 12 de setembro de 2027\nÀs 16h30' and bl('Detalhes', 'mapa')[0].get('photoUrl') and bl('Detalhes', 'mapa')[0]['address'] == 'Estrada do Sol, 100, Itu - SP')
+    ok('Montagem: traje e orientações', bl('Detalhes', 'orientacoes')[0]['text'] == 'Traje: Esporte fino\nEstacionamento no local')
+    btn = bl('Detalhes', 'botao')[0]
+    ok('Montagem: botão da lista de presentes com o link', btn['text'] == 'Lista de presentes' and btn.get('action') == 'link' and btn.get('dest') == 'https://www.listadopresente.com.br/helena', btn)
+    ok('Montagem: programação e galeria com as fotos', bl('Programação', 'programacao')[0]['text'].startswith('16h30 Cerimônia') and len(bl('Galeria', 'galeria')[0]['items']) == 2)
+    ok('Montagem: prazo de resposta 30 dias antes', (bl('Presença', 'rsvp')[0].get('deadline') or '').startswith('2027-08-14'), bl('Presença', 'rsvp')[0].get('deadline'))
+    ok('Montagem: data, música, abertura e tema', inv['eventDate'] == '2027-09-12T19:30:00.000Z' and inv['music']['kind'] == 'biblioteca' and inv['music']['preset'] == 'valsa' and inv['opening'].get('photoUrl') and inv['theme']['baseName'] == 'Jardim botânico' and inv['status'] == 'rascunho', [inv['eventDate'], inv['music'], inv['theme'].get('baseName')])
+    ok('Montagem: sem textos de exemplo', not any('[' in (x.get('text') or '') for p in inv['pages'] for x in p['blocks']))
+    go(pg, 'c/' + o['invites'][0], 2500)
+    ok('Montagem: versão abre como convite', 'Helena & Rafael' in text(pg) or count(pg, '[data-testid="abertura"], [data-anim]') > 0, text(pg)[:200])
+
+    go(pg, 'Pedidos', 1500)
+    art = 'article[data-pedido="' + o['id'] + '"]'
+    ok('Pedidos: tela lista o pedido com as versões', count(pg, art) == 1 and count(pg, art + ' [data-versao]') == 2 and 'Helena Prado' in pg.inner_text(art))
+    ok('Pedidos: link do formulário', pg.inner_text('[data-testid="link-formulario"]').endswith('/pedido'))
+    pg.click(art + ' button:has-text("Ver o pedido completo")'); pg.wait_for_timeout(300)
+    det = pg.inner_text(art + ' [data-testid="pedido-detalhes"]')
+    ok('Pedidos: detalhes completos do pedido', 'Queremos tons de verde.' in det and 'Esporte fino' in det and 'Valsa suave' in det and count(pg, art + ' [data-testid="pedido-detalhes"] img') == 4, det[:300])
+    pg.fill('#nota-' + o['id'], 'Cobrar sinal'); pg.click('h1'); pg.wait_for_timeout(700)
+    ok('Pedidos: anotação interna salva', pg.evaluate("(id) => fetch('/api/pedidos').then(r => r.json()).then(l => l.find(x => x.id === id).note)", o['id']) == 'Cobrar sinal')
+    pg.click(art + ' [data-versao="' + o['invites'][0] + '"] button:has-text("Enviar ao cliente")'); pg.wait_for_timeout(500)
+    ok('Enviar: dados do cliente já preenchidos', pg.input_value('#sd-nome') == 'Helena Prado' and pg.input_value('#sd-whats') == '(11) 98888-7777' and pg.is_checked('#sd-apagar'))
+    pg.click('[data-testid="modal-enviar"] button[type=submit]'); pg.wait_for_timeout(1800)
+    ok('Enviar: acesso gerado com link e WhatsApp', count(pg, '[data-testid="enviar-pronto"]') == 1 and '/#/Acesso/' in pg.input_value('[data-testid="enviar-link"]') and pg.get_attribute('[data-testid="enviar-whats"]', 'href').startswith('https://wa.me/5511988887777'), text(pg)[-300:])
+    pg.click('[data-testid="enviar-pronto"] button:has-text("Concluir")'); pg.wait_for_timeout(300)
+    o2 = [x for x in pg.evaluate("fetch('/api/pedidos').then(r => r.json())") if x['id'] == o['id']][0]
+    ok('Enviar: pedido marcado como entregue, com a versão escolhida', o2['status'] == 'entregue' and o2['chosen'] == o['invites'][0] and o2['invites'] == [o['invites'][0]], [o2['status'], o2['chosen']])
+    st, _ = pg.evaluate(J, ['GET', '/api/invites?id=' + o['invites'][1], None])
+    ok('Enviar: a outra versão foi apagada', st == 404, st)
+    ok('Enviar: convite na conta do cliente', o2['versions'][0]['ownerId'] != 'admin')
+    go(pg, 'Pedidos', 1300)
+    ok('Pedidos: entregue sai de "Em aberto"', count(pg, art) == 0)
+    pg.click('button:has-text("Entregues")'); pg.wait_for_timeout(300)
+    ok('Pedidos: aparece em "Entregues", já sem "Enviar ao cliente"', count(pg, art) == 1 and count(pg, art + ' button:has-text("Enviar ao cliente")') == 0 and 'Já está na conta do cliente' in pg.inner_text(art))
+    pg.select_option(art + ' select', 'arquivado'); pg.wait_for_timeout(800)
+    ok('Pedidos: mudar a situação', count(pg, art) == 0 and 'Arquivados · 1' in text(pg))
+    pg.screenshot(path=os.environ['SHOTS'] + '/pedidos.png', full_page=True) if os.environ.get('SHOTS') else None
+
+
 def api_invite(pg, theme, pages, opening=None, title='Ana & Pedro'):
     base = dict(baseName='Teste', bg='#1F3329', fg='#F3EEE4', accent='#CDAE6B', btnFg='#1F3329', paper='#E9E1D0', ph='#2B4538', fontKey='cormorant', italic=False, layout='centro', radiusKey='pilula', anim='nenhuma')
     base.update(theme)
@@ -1695,7 +1810,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('cliente', lambda: t_client(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('design', lambda: t_design(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('cliente', lambda: t_client(pg, b), None), ('pedido', lambda: t_pedido(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('design', lambda: t_design(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

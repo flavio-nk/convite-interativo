@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Pedido de convite</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap">
+<style>
+body{margin:0;background:#F6F4F1}
+button,input,select,textarea{font-family:inherit}
+.pd-in{width:100%;box-sizing:border-box;min-height:48px;padding:10px 14px;border-radius:12px;border:1px solid #D9D4CC;background:#FFFFFF;color:#1B1916;font-size:16px}
+textarea.pd-in{min-height:96px;line-height:1.45;resize:vertical}
+.pd-in:focus{outline:2px solid #5B3FD6;outline-offset:1px;border-color:#5B3FD6}
+.pd-lbl{display:block;font-weight:700;font-size:14px;margin-bottom:6px;color:#1B1916}
+.pd-opt{font-weight:500;color:#6B655C}
+.pd-help{display:block;margin-top:6px;font-size:13px;color:#6B655C}
+.pd-card{background:#FFFFFF;border:1px solid #E7E2DA;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.pd-type:hover{border-color:#B9B1A5}
+.pd-type:focus-visible,.pd-btn:focus-visible,.pd-theme:focus-visible,.pd-up:focus-within{outline:2px solid #5B3FD6;outline-offset:2px}
+.pd-btn{min-height:50px;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:0 24px;border-radius:12px;border:0;background:#5B3FD6;color:#FFFFFF;font-weight:700;font-size:16px;cursor:pointer}
+.pd-btn[disabled]{opacity:.6;cursor:default}
+.pd-ghost{min-height:50px;display:inline-flex;align-items:center;gap:6px;padding:0 10px;border:0;background:transparent;color:#3D3A35;font-weight:600;font-size:15px;cursor:pointer}
+.pd-up{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;min-height:120px;border-radius:14px;border:1.5px dashed #C9C1B5;background:#FBFAF8;color:#3D3A35;font-weight:600;font-size:14px;cursor:pointer;text-align:center;padding:12px;box-sizing:border-box}
+.pd-up:hover{border-color:#5B3FD6;background:#F7F4FF}
+.pd-up input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%}
+.pd-x{position:absolute;top:6px;right:6px;width:32px;height:32px;border-radius:999px;border:0;background:rgba(20,18,16,.72);color:#FFFFFF;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.pd-x:focus-visible{outline:2px solid #FFFFFF;outline-offset:1px}
+.pd-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+</style>
+</helmet>
+<div style="min-height: 100vh; background: #F6F4F1; color: #1B1916; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; line-height: 1.5">
+  <header style="background: #FFFFFF; border-bottom: 1px solid #E7E2DA; position: sticky; top: 0; z-index: 10">
+    <div style="max-width: 760px; margin: 0 auto; padding: 12px 16px; box-sizing: border-box">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap">
+        <strong style="font-size: 16px">Pedido de convite digital</strong>
+        <sc-if value="{{showSteps}}" hint-placeholder-val="{{ true }}">
+          <span data-testid="pd-etapa" style="font-size: 13px; color: #6B655C">Etapa {{stepNum}} de 5 · {{stepName}}</span>
+        </sc-if>
+      </div>
+      <sc-if value="{{showSteps}}" hint-placeholder-val="{{ true }}">
+        <div aria-hidden="true" style="margin-top: 10px; height: 6px; border-radius: 999px; background: #EFEBE5; overflow: hidden"><span style="display: block; height: 100%; width: {{progress}}; background: #5B3FD6; border-radius: 999px; transition: width .3s ease"></span></div>
+      </sc-if>
+    </div>
+  </header>
+
+  <main style="max-width: 760px; margin: 0 auto; padding: 24px 16px 64px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px">
+
+    <sc-if value="{{s1}}" hint-placeholder-val="{{ true }}">
+      <div>
+        <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em">Conte sobre o seu evento</h1>
+        <p style="margin: 8px 0 0; color: #6B655C">Em 5 passos rápidos você mostra como quer o convite. Com isso, montamos uma primeira versão e combinamos os ajustes pelo WhatsApp.</p>
+      </div>
+      <fieldset style="margin: 0; padding: 0; border: 0; min-width: 0">
+        <legend style="font-weight: 700; font-size: 15px; margin-bottom: 10px; padding: 0">Que tipo de evento?</legend>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px">
+          <sc-for list="{{types}}" as="t" hint-placeholder-count="8">
+            <button type="button" class="pd-type" onClick="{{t.pick}}" aria-pressed="{{t.on}}" data-kind="{{t.key}}" style="min-height: 72px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; border-radius: 14px; border: {{t.border}}; background: {{t.bg}}; color: #1B1916; font-weight: 600; font-size: 14px; cursor: pointer; padding: 8px">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5B3FD6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{t.icon}}"></path></svg>
+              {{t.label}}
+            </button>
+          </sc-for>
+        </div>
+      </fieldset>
+      <section class="pd-card" aria-label="Dados do evento">
+        <div>
+          <label class="pd-lbl" for="pd-names">{{namesLabel}}</label>
+          <input class="pd-in" id="pd-names" value="{{f.names}}" onInput="{{on.names}}" placeholder="{{namesPh}}" maxlength="80">
+          <span class="pd-help">Aparece em destaque na capa do convite.</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px">
+          <div>
+            <label class="pd-lbl" for="pd-day">Data</label>
+            <input class="pd-in" id="pd-day" type="date" value="{{f.day}}" onInput="{{on.day}}" onChange="{{on.day}}">
+          </div>
+          <div>
+            <label class="pd-lbl" for="pd-time">Horário</label>
+            <input class="pd-in" id="pd-time" type="time" step="300" value="{{f.time}}" onInput="{{on.time}}" onChange="{{on.time}}">
+          </div>
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-place">Local <span class="pd-opt">(nome do espaço, igreja, salão…)</span></label>
+          <input class="pd-in" id="pd-place" value="{{f.place}}" onInput="{{on.place}}" placeholder="Ex.: Espaço Villa Jardim" maxlength="120">
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-addr">Endereço</label>
+          <input class="pd-in" id="pd-addr" value="{{f.address}}" onInput="{{on.address}}" placeholder="Rua, número, bairro, cidade" maxlength="200">
+          <span class="pd-help">Os convidados recebem um botão para abrir o caminho no mapa.</span>
+        </div>
+        <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer">
+          <input id="pd-rsvp" type="checkbox" checked="{{f.rsvp}}" onChange="{{on.rsvp}}" style="width: 20px; height: 20px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
+          <span><strong>Quero que os convidados confirmem presença pelo convite</strong><span class="pd-help" style="margin-top: 2px">Você acompanha quem vai, quem não vai e quantas pessoas.</span></span>
+        </label>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{s2}}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em">Escolha o visual</h1>
+        <p style="margin: 8px 0 0; color: #6B655C">Marque de 1 a 3 visuais de que você mais gostou. Cada um vira uma versão do seu convite, já com os seus dados; depois a gente ajusta cores, letras e detalhes.</p>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px">
+        <strong data-testid="pd-escolhidos" style="font-size: 15px">{{pickLabel}}</strong>
+        <sc-if value="{{canToggleAll}}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="pd-ghost" onClick="{{toggleAll}}" style="min-height: 40px; text-decoration: underline">{{toggleAllLabel}}</button>
+        </sc-if>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px">
+        <sc-for list="{{themes}}" as="t" hint-placeholder-count="6">
+          <button type="button" class="pd-theme" onClick="{{t.pick}}" aria-pressed="{{t.pressed}}" data-theme="{{t.id}}" aria-label="Visual {{t.name}}" style="position: relative; text-align: left; padding: 8px; border-radius: 16px; border: 2px solid {{t.ring}}; background: #FFFFFF; cursor: pointer; display: flex; flex-direction: column; gap: 8px; color: #1B1916">
+            <span style="display: block; width: 100%; border-radius: 10px; overflow: hidden; border: 1px solid #EFEBE5">
+              <dc-import name="CapaPreview" layout="{{t.layout}}" bg="{{t.bg}}" fg="{{t.fg}}" accent="{{t.accent}}" ph="{{t.ph}}" btn-fg="{{t.btnFg}}" font="{{t.font}}" body-font="{{t.bodyFont}}" weight="{{t.weight}}" fstyle="{{t.fstyle}}" kicker="{{t.kicker}}" titulo="{{t.sample}}" data="{{t.date}}" btn-radius="{{t.radius}}" title-scale="{{t.ts}}" aspect="4 / 5" hint-size="100%,220px"></dc-import>
+            </span>
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 0 4px 2px">
+              <strong style="font-size: 14px">{{t.name}}</strong>
+              <span aria-hidden="true" style="width: 24px; height: 24px; flex: none; border-radius: 999px; border: 2px solid {{t.ring}}; background: {{t.dot}}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 800">{{t.mark}}</span>
+            </span>
+          </button>
+        </sc-for>
+      </div>
+      <section class="pd-card" aria-labelledby="pd-cores-t">
+        <div>
+          <h2 id="pd-cores-t" style="margin: 0; font-size: 17px">Já tem cores definidas? <span class="pd-opt" style="font-size: 14px">(opcional)</span></h2>
+          <p style="margin: 4px 0 0; font-size: 14px; color: #6B655C">Envie uma foto de referência (a paleta da festa, a decoração, um convite de que gostou). Usamos as cores dela em todas as versões.</p>
+        </div>
+        <sc-if value="{{hasPalette}}" hint-placeholder-val="{{ false }}">
+          <div data-testid="pd-paleta" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px">
+            <sc-for list="{{paletteSw}}" as="c" hint-placeholder-count="4">
+              <span title="{{c}}" style="width: 36px; height: 36px; border-radius: 10px; border: 1px solid rgba(0,0,0,.12); background: {{c}}"></span>
+            </sc-for>
+            <button type="button" class="pd-ghost" onClick="{{clearPalette}}" style="min-height: 40px; text-decoration: underline">Usar as cores dos visuais</button>
+          </div>
+        </sc-if>
+        <sc-if value="{{noPalette}}" hint-placeholder-val="{{ true }}">
+          <label class="pd-up" style="min-height: 64px; flex-direction: row">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="13.5" cy="6.5" r="1.5"></circle><circle cx="17.5" cy="10.5" r="1.5"></circle><circle cx="8.5" cy="7.5" r="1.5"></circle><circle cx="6.5" cy="12.5" r="1.5"></circle><path d="M12 2a10 10 0 0 0 0 20c1.1 0 2-.9 2-2 0-.5-.2-1-.5-1.3-.3-.4-.5-.8-.5-1.3 0-1.1.9-2 2-2h2.4A5.6 5.6 0 0 0 22 9.8C22 5.5 17.5 2 12 2Z"></path></svg>
+            {{paletteLabel}}
+            <input id="pd-paleta-foto" type="file" accept="image/*" onChange="{{onPaletteFile}}" aria-label="Foto de referência das cores">
+          </label>
+        </sc-if>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{s3}}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em">Envie as fotos</h1>
+        <p style="margin: 8px 0 0; color: #6B655C">Todas são opcionais, mas deixam o convite com a sua cara. As fotos são reduzidas antes do envio, então pode mandar direto do celular.</p>
+      </div>
+      <section class="pd-card" aria-labelledby="pd-f1">
+        <div>
+          <h2 id="pd-f1" style="margin: 0; font-size: 17px">Foto principal</h2>
+          <p style="margin: 2px 0 0; font-size: 14px; color: #6B655C">{{mainHelp}}</p>
+        </div>
+        <sc-if value="{{ph.main.has}}" hint-placeholder-val="{{ false }}">
+          <div data-testid="pd-foto-principal" style="position: relative; width: 180px; max-width: 100%; aspect-ratio: 4 / 5; border-radius: 14px; overflow: hidden; background: #EFEBE5">
+            <img src="{{ph.main.url}}" alt="Foto principal enviada" style="width: 100%; height: 100%; object-fit: cover; display: block">
+            <button type="button" class="pd-x" onClick="{{ph.main.remove}}" aria-label="Remover a foto principal"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ph.main.empty}}" hint-placeholder-val="{{ true }}">
+          <label class="pd-up">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="m21 16-5-5-9 8"></path></svg>
+            {{ph.main.label}}
+            <input id="pd-foto-principal" type="file" accept="image/*" onChange="{{ph.main.onFile}}" aria-label="Enviar a foto principal" disabled="{{ph.busy}}">
+          </label>
+        </sc-if>
+      </section>
+      <section class="pd-card" aria-labelledby="pd-f2">
+        <div>
+          <h2 id="pd-f2" style="margin: 0; font-size: 17px">Galeria <span class="pd-opt" style="font-size: 14px">(até 10 fotos)</span></h2>
+          <p style="margin: 2px 0 0; font-size: 14px; color: #6B655C">Momentos especiais para uma página de fotos no convite.</p>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px">
+          <sc-for list="{{ph.gallery}}" as="g" hint-placeholder-count="3">
+            <div data-testid="pd-galeria-item" style="position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: #EFEBE5">
+              <img src="{{g.url}}" alt="Foto {{g.n}} da galeria" style="width: 100%; height: 100%; object-fit: cover; display: block">
+              <button type="button" class="pd-x" onClick="{{g.remove}}" aria-label="Remover a foto {{g.n}} da galeria"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+            </div>
+          </sc-for>
+          <sc-if value="{{ph.galleryRoom}}" hint-placeholder-val="{{ true }}">
+            <label class="pd-up" style="min-height: 100px; aspect-ratio: 1">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>
+              {{ph.galleryLabel}}
+              <input id="pd-galeria" type="file" accept="image/*" multiple onChange="{{ph.onGallery}}" aria-label="Adicionar fotos à galeria" disabled="{{ph.busy}}">
+            </label>
+          </sc-if>
+        </div>
+      </section>
+      <section class="pd-card" aria-labelledby="pd-f3">
+        <div>
+          <h2 id="pd-f3" style="margin: 0; font-size: 17px">Foto do local</h2>
+          <p style="margin: 2px 0 0; font-size: 14px; color: #6B655C">Aparece junto com o endereço, para os convidados reconhecerem o lugar.</p>
+        </div>
+        <sc-if value="{{ph.venue.has}}" hint-placeholder-val="{{ false }}">
+          <div data-testid="pd-foto-local" style="position: relative; width: 260px; max-width: 100%; aspect-ratio: 2.6; border-radius: 14px; overflow: hidden; background: #EFEBE5">
+            <img src="{{ph.venue.url}}" alt="Foto do local enviada" style="width: 100%; height: 100%; object-fit: cover; display: block">
+            <button type="button" class="pd-x" onClick="{{ph.venue.remove}}" aria-label="Remover a foto do local"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18"></path></svg></button>
+          </div>
+        </sc-if>
+        <sc-if value="{{ph.venue.empty}}" hint-placeholder-val="{{ true }}">
+          <label class="pd-up" style="min-height: 84px">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11Z"></path><circle cx="12" cy="10" r="2.5"></circle></svg>
+            {{ph.venue.label}}
+            <input id="pd-foto-local" type="file" accept="image/*" onChange="{{ph.venue.onFile}}" aria-label="Enviar a foto do local" disabled="{{ph.busy}}">
+          </label>
+        </sc-if>
+      </section>
+      <sc-if value="{{ph.hasError}}" hint-placeholder-val="{{ false }}">
+        <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{ph.error}}</p>
+      </sc-if>
+    </sc-if>
+
+    <sc-if value="{{s4}}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em">Textos e detalhes</h1>
+        <p style="margin: 8px 0 0; color: #6B655C">Preencha só o que fizer sentido para o seu evento. O que ficar em branco não entra no convite.</p>
+      </div>
+      <section class="pd-card" aria-label="Textos">
+        <div>
+          <label class="pd-lbl" for="pd-frase">Frase da capa <span class="pd-opt">(opcional)</span></label>
+          <input class="pd-in" id="pd-frase" value="{{f.phrase}}" onInput="{{on.phrase}}" placeholder="{{phrasePh}}" maxlength="200">
+          <span class="pd-help">{{phraseHelp}}</span>
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-traje">Traje <span class="pd-opt">(opcional)</span></label>
+          <input class="pd-in" id="pd-traje" value="{{f.dress}}" onInput="{{on.dress}}" placeholder="Ex.: esporte fino" maxlength="80">
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-prog">Programação <span class="pd-opt">(opcional, um horário por linha)</span></label>
+          <textarea class="pd-in" id="pd-prog" value="{{f.program}}" onInput="{{on.program}}" placeholder="16h Cerimônia&#10;17h30 Coquetel&#10;19h Festa" maxlength="800"></textarea>
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-presentes">Link da lista de presentes <span class="pd-opt">(opcional)</span></label>
+          <input class="pd-in" id="pd-presentes" type="url" inputmode="url" value="{{f.gifts}}" onInput="{{on.gifts}}" placeholder="https://…" maxlength="300">
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-orient">Outras informações para os convidados <span class="pd-opt">(opcional, uma por linha)</span></label>
+          <textarea class="pd-in" id="pd-orient" value="{{f.notes}}" onInput="{{on.notes}}" placeholder="Estacionamento no local&#10;Crianças são bem-vindas" maxlength="600"></textarea>
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-musica">Música de fundo</label>
+          <select class="pd-in" id="pd-musica" value="{{f.music}}" onChange="{{on.music}}">
+            <option value="">Sem música</option>
+            <option value="valsa">Valsa suave</option>
+            <option value="caixinha">Caixinha de música</option>
+            <option value="festa">Festa animada</option>
+          </select>
+          <span class="pd-help">Quer uma música específica? Conte na última etapa.</span>
+        </div>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{s5}}" hint-placeholder-val="{{ false }}">
+      <div>
+        <h1 style="margin: 0; font-size: 28px; line-height: 1.2; font-weight: 800; letter-spacing: -0.02em">Para onde mandamos o convite?</h1>
+        <p style="margin: 8px 0 0; color: #6B655C">{{summary}}</p>
+      </div>
+      <form onSubmit="{{submit}}" class="pd-card" style="margin: 0" aria-label="Seus dados">
+        <div>
+          <label class="pd-lbl" for="pd-nome">Seu nome</label>
+          <input class="pd-in" id="pd-nome" autocomplete="name" value="{{f.cname}}" onInput="{{on.cname}}" maxlength="120">
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-whats">WhatsApp com DDD</label>
+          <input class="pd-in" id="pd-whats" type="tel" inputmode="tel" autocomplete="tel" value="{{f.cphone}}" onInput="{{on.cphone}}" placeholder="(11) 98765-4321" maxlength="30">
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-email">E-mail <span class="pd-opt">(opcional)</span></label>
+          <input class="pd-in" id="pd-email" type="email" autocomplete="email" value="{{f.cemail}}" onInput="{{on.cemail}}" maxlength="160">
+        </div>
+        <div>
+          <label class="pd-lbl" for="pd-msg">Quer contar mais alguma coisa? <span class="pd-opt">(opcional)</span></label>
+          <textarea class="pd-in" id="pd-msg" value="{{f.cmsg}}" onInput="{{on.cmsg}}" placeholder="Uma música, uma ideia, um prazo…" maxlength="1000"></textarea>
+        </div>
+        <div class="pd-hp" aria-hidden="true">
+          <label for="pd-site">Não preencha</label>
+          <input id="pd-site" tabindex="-1" autocomplete="off" value="{{f.site}}" onInput="{{on.site}}">
+        </div>
+        <button type="submit" class="pd-btn" disabled="{{busy}}" data-testid="pd-enviar">{{sendLabel}}</button>
+      </form>
+    </sc-if>
+
+    <sc-if value="{{done}}" hint-placeholder-val="{{ false }}">
+      <section data-testid="pd-enviado" class="pd-card" style="align-items: flex-start; padding: 28px 22px">
+        <span style="width: 52px; height: 52px; border-radius: 16px; background: #E3F3EA; color: #1E6B43; display: flex; align-items: center; justify-content: center">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5 9-10"></path></svg>
+        </span>
+        <h1 style="margin: 0; font-size: 26px; line-height: 1.2; font-weight: 800">Pedido enviado!</h1>
+        <p style="margin: 0; color: #3D3A35; font-size: 16px">{{doneText}}</p>
+        <p style="margin: 0; color: #6B655C; font-size: 14px">Você não precisa fazer mais nada agora. Se quiser mudar alguma coisa, é só responder a nossa mensagem.</p>
+      </section>
+    </sc-if>
+
+    <sc-if value="{{hasError}}" hint-placeholder-val="{{ false }}">
+      <p role="alert" style="margin: 0; padding: 10px 12px; border-radius: 10px; background: #FDECEA; color: #8C1D13; font-size: 14px">{{error}}</p>
+    </sc-if>
+
+    <sc-if value="{{showNav}}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px">
+        <sc-if value="{{canBack}}" hint-placeholder-val="{{ false }}">
+          <button type="button" class="pd-ghost" onClick="{{back}}">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="m15 18-6-6 6-6"></path></svg>
+            Voltar
+          </button>
+        </sc-if>
+        <span></span>
+        <sc-if value="{{canNext}}" hint-placeholder-val="{{ true }}">
+          <button type="button" class="pd-btn" onClick="{{next}}" disabled="{{ph.busy}}" data-testid="pd-continuar">
+            {{nextLabel}}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"></path></svg>
+          </button>
+        </sc-if>
+      </div>
+    </sc-if>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"route":{"editor":null},"$preview":{"width":420,"height":900}}'>
+class Component extends DCLogic {
+  constructor(props) {
+    super(props);
+    const blank = { kind: '', names: '', day: '', time: '', place: '', address: '', rsvp: true, phrase: '', dress: '', program: '', gifts: '', notes: '', music: '', cname: '', cphone: '', cemail: '', cmsg: '', site: '' };
+    const saved = api.local.get('ci:pedido') || {};
+    this.state = {
+      step: Math.min(5, Math.max(1, saved.step || 1)),
+      f: Object.assign(blank, saved.f || {}),
+      picks: Array.isArray(saved.picks) ? saved.picks.slice(0, 3) : [],
+      palette: saved.palette || null,
+      photos: Object.assign({ main: null, venue: null, gallery: [] }, saved.photos || {}),
+      showAll: false, uploading: 0, upPct: 0, phError: '', error: '', busy: false, done: null
+    };
+  }
+
+  componentDidMount() {
+    api.me().catch(() => {});
+  }
+
+  persist(patch) {
+    const st = Object.assign({}, this.state, patch);
+    api.local.set('ci:pedido', { step: st.step, f: st.f, picks: st.picks, palette: st.palette, photos: st.photos });
+  }
+  set(patch) { this.persist(patch); this.setState(patch); }
+  field(k, v) { this.set({ f: Object.assign({}, this.state.f, { [k]: v }), error: '' }); }
+
+  // código que libera o envio de fotos deste pedido (vale 12 horas)
+  async key() {
+    const k = api.local.get('ci:pedido-key');
+    if (k && k.key && k.exp > Date.now() + 10 * 60000) return k.key;
+    const r = await api.startOrder();
+    api.local.set('ci:pedido-key', r);
+    return r.key;
+  }
+
+  async uploadOne(file) {
+    const key = await this.key();
+    try {
+      return await api.upload(file, (p) => this.setState({ upPct: p }), { pedido: key });
+    } catch (e) {
+      // código vencido ou cota usada: pede outro e tenta uma vez
+      if (e && /expirou|limite/.test(String(e.message))) {
+        api.local.set('ci:pedido-key', null);
+        return api.upload(file, (p) => this.setState({ upPct: p }), { pedido: await this.key() });
+      }
+      throw e;
+    }
+  }
+
+  async addPhotos(kind, files) {
+    files = Array.from(files || []);
+    if (!files.length) return;
+    if (kind === 'gallery') files = files.slice(0, Math.max(0, 10 - this.state.photos.gallery.length));
+    this.setState({ uploading: files.length, upPct: 0, phError: '' });
+    for (const file of files) {
+      try {
+        const r = await this.uploadOne(file);
+        const item = { url: r.url, name: String(file.name || '').slice(0, 120) };
+        const ph = Object.assign({}, this.state.photos);
+        if (kind === 'gallery') ph.gallery = ph.gallery.concat([item]); else ph[kind] = item;
+        this.set({ photos: ph });
+      } catch (e) {
+        this.setState({ phError: (file.name ? file.name + ': ' : '') + e.message });
+      }
+      this.setState({ uploading: Math.max(0, this.state.uploading - 1), upPct: 0 });
+    }
+  }
+
+  kinds() {
+    const icons = {
+      casamento: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z',
+      aniversario: 'M4 21h16M5 21v-7h14v7M12 14V9M12 6.5a1.5 1.5 0 0 0 1.5-1.5c0-1-1.5-3-1.5-3s-1.5 2-1.5 3A1.5 1.5 0 0 0 12 6.5Z',
+      infantil: 'M12 3a6 6 0 0 0-6 6c0 3.3 2.7 6 6 6s6-2.7 6-6a6 6 0 0 0-6-6ZM12 15v6M9.5 21h5',
+      cha: 'M9 12h.01M15 12h.01M10 16c1.3 1 2.7 1 4 0M5 12a7 7 0 1 0 14 0 7 7 0 0 0-14 0Z',
+      formatura: 'M2 9l10-5 10 5-10 5-10-5ZM6 11v5c3 2 9 2 12 0v-5M22 9v6',
+      corporativo: 'M3 7h18v13H3zM8 7V4h8v3M3 12h18',
+      religioso: 'M12 3v18M7 8h10',
+      outro: 'M12 5v14M5 12h14'
+    };
+    const K = api.montagem.KINDS;
+    return Object.keys(K).map((k) => ({ key: k, label: K[k].label, icon: icons[k] }));
+  }
+
+  themeList() {
+    const st = this.state;
+    const f = st.f;
+    const cat = api.catalogo.CAT_OF[f.kind];
+    const K = api.montagem.KINDS[f.kind] || {};
+    const dots = f.day ? f.day.slice(8, 10) + ' · ' + f.day.slice(5, 7) + ' · ' + f.day.slice(0, 4) : '';
+    const names = String(f.names || '').trim();
+    const all = api.catalogo.themes().filter((x) => x.id !== 'branco');
+    const filtered = cat && !st.showAll ? all.filter((x) => x.cat === cat) : all;
+    // os escolhidos continuam visíveis mesmo com o filtro
+    const list = filtered.concat(all.filter((x) => st.picks.indexOf(x.id) !== -1 && filtered.indexOf(x) === -1));
+    const pal = st.palette;
+    return { all, cat, list: list.map((x) => {
+      const on = st.picks.indexOf(x.id) !== -1;
+      const c = pal ? Object.assign({}, x, pal) : x;
+      return {
+        id: x.id, name: x.name, layout: x.layout, bg: c.bg, fg: c.fg, accent: c.accent, ph: c.ph, btnFg: c.btnFg,
+        font: x.font, bodyFont: api.BODY_FONTS[x.bodyKey] || api.BODY_FONTS.jakarta, weight: x.weight, fstyle: x.fstyle,
+        kicker: x.kicker === 'Save the Date' ? x.kicker : (K.kicker || x.kicker),
+        sample: names || x.sample, date: dots ? (x.starter === 'savedate' ? dots.replace(/ · /g, ' . ') : dots) : x.date,
+        radius: x.radius, ts: x.ts,
+        pressed: on ? 'true' : 'false', ring: on ? '#5B3FD6' : '#E7E2DA', dot: on ? '#5B3FD6' : '#FFFFFF',
+        mark: on ? String(st.picks.indexOf(x.id) + 1) : '',
+        pick: () => {
+          const picks = this.state.picks.slice();
+          const i = picks.indexOf(x.id);
+          if (i !== -1) picks.splice(i, 1);
+          else if (picks.length >= 3) { this.setState({ error: 'Você já escolheu 3 visuais. Desmarque um para escolher outro.' }); return; }
+          else picks.push(x.id);
+          this.set({ picks, error: '' });
+        }
+      };
+    }) };
+  }
+
+  check(step) {
+    const f = this.state.f;
+    if (step === 1) {
+      if (!f.kind) return 'Escolha o tipo de evento.';
+      if (!String(f.names).trim()) return 'Preencha: ' + (api.montagem.KINDS[f.kind] || {}).names + '.';
+    }
+    if (step === 2 && !this.state.picks.length) return 'Escolha pelo menos um visual.';
+    if (step === 3 && this.state.uploading) return 'Espere as fotos terminarem de enviar.';
+    if (step === 4 && f.gifts && !/^(https?:\/\/)?[\w-]+(\.[\w-]+)+/i.test(String(f.gifts).trim())) return 'Confira o link da lista de presentes.';
+    return '';
+  }
+
+  go(step) {
+    this.set({ step, error: '' });
+    try { window.scrollTo({ top: 0 }); } catch (e) {}
+  }
+
+  submit(e) {
+    if (e && e.preventDefault) e.preventDefault();
+    const st = this.state;
+    const f = st.f;
+    const el = e && e.target && e.target.elements;
+    const val = (id, cur) => (el && el[id] ? el[id].value : cur);
+    const contact = { name: String(val('pd-nome', f.cname)).trim(), phone: String(val('pd-whats', f.cphone)).trim(), email: String(val('pd-email', f.cemail)).trim(), message: String(val('pd-msg', f.cmsg)).trim() };
+    if (!contact.name) { this.setState({ error: 'Informe o seu nome.' }); return; }
+    const digits = contact.phone.replace(/\D/g, '');
+    if (digits.length < 10 || digits.length > 13) { this.setState({ error: 'Informe o seu WhatsApp com DDD.' }); return; }
+    if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact.email)) { this.setState({ error: 'Confira o e-mail.' }); return; }
+    this.setState({ busy: true, error: '' });
+    api.sendOrder({
+      kind: f.kind, names: f.names, day: f.day, time: f.time, place: f.place, address: f.address, rsvp: f.rsvp,
+      themes: st.picks, palette: st.palette, photos: st.photos,
+      phrase: f.phrase, dress: f.dress, program: f.program, gifts: f.gifts, notes: f.notes, music: f.music,
+      contact, site: val('pd-site', f.site)
+    }).then(() => {
+      api.local.set('ci:pedido', null);
+      api.local.set('ci:pedido-key', null);
+      this.setState({ busy: false, done: { name: contact.name.split(/\s+/)[0], phone: contact.phone } });
+      try { window.scrollTo({ top: 0 }); } catch (err) {}
+    }).catch((err) => this.setState({ busy: false, error: err.message }));
+  }
+
+  renderVals() {
+    const st = this.state;
+    const f = st.f;
+    const K = api.montagem.KINDS[f.kind] || {};
+    const step = st.done ? 6 : st.step;
+    const names = ['Evento', 'Visual', 'Fotos', 'Textos', 'Contato'];
+    const tl = step === 2 ? this.themeList() : { list: [], cat: null };
+    const ph = st.photos;
+    const busyUp = st.uploading > 0;
+    const upLabel = (base) => (busyUp ? 'Enviando… ' + (st.upPct ? st.upPct + '%' : '') : base);
+    const nPhotos = (ph.main ? 1 : 0) + (ph.venue ? 1 : 0) + ph.gallery.length;
+    const on = {};
+    ['names', 'day', 'time', 'place', 'address', 'phrase', 'dress', 'program', 'gifts', 'notes', 'music', 'cname', 'cphone', 'cemail', 'cmsg', 'site'].forEach((k) => {
+      on[k] = (e) => {
+        const patch = { [k]: e.target.value };
+        if (k === 'day' && e.target.value && !f.time) patch.time = '19:00';
+        this.set({ f: Object.assign({}, this.state.f, patch), error: '' });
+      };
+    });
+    on.rsvp = () => this.field('rsvp', !f.rsvp);
+    const photoSlot = (kind, label) => ({
+      has: !!ph[kind], empty: !ph[kind], url: ph[kind] ? ph[kind].url : '', label: upLabel(label),
+      remove: () => this.set({ photos: Object.assign({}, this.state.photos, { [kind]: null }) }),
+      onFile: (e) => { const fl = e.target.files; this.addPhotos(kind, fl); try { e.target.value = ''; } catch (err) {} }
+    });
+    return {
+      showSteps: !st.done, stepNum: step, stepName: names[step - 1] || '', progress: Math.round((Math.min(step, 5) / 5) * 100) + '%',
+      s1: step === 1, s2: step === 2, s3: step === 3, s4: step === 4, s5: step === 5, done: !!st.done,
+      f, on,
+      types: this.kinds().map((k) => {
+        const sel = f.kind === k.key;
+        return Object.assign({}, k, { on: sel ? 'true' : 'false', border: sel ? '2px solid #5B3FD6' : '1px solid #E7E2DA', bg: sel ? '#F1EDFF' : '#FFFFFF', pick: () => this.field('kind', k.key) });
+      }),
+      namesLabel: K.names || 'Nome do evento', namesPh: K.ph || 'Ex.: Festa de fim de ano',
+      themes: tl.list,
+      pickLabel: st.picks.length ? st.picks.length + (st.picks.length === 1 ? ' visual escolhido' : ' visuais escolhidos') + ' de 3' : 'Nenhum visual escolhido ainda',
+      canToggleAll: !!tl.cat, toggleAllLabel: st.showAll ? 'Ver só os de ' + (K.label || '').toLowerCase() : 'Ver todos os visuais',
+      toggleAll: () => this.setState({ showAll: !st.showAll }),
+      hasPalette: !!st.palette, noPalette: !st.palette,
+      paletteSw: st.palette ? [st.palette.bg, st.palette.accent, st.palette.fg, st.palette.paper] : [],
+      paletteLabel: st.paletteBusy ? 'Lendo as cores…' : 'Enviar foto de referência',
+      clearPalette: () => this.set({ palette: null }),
+      onPaletteFile: (e) => {
+        const file = e.target.files && e.target.files[0];
+        try { e.target.value = ''; } catch (err) {}
+        if (!file) return;
+        this.setState({ paletteBusy: true });
+        api.paletteFromImage(file).then((palette) => { this.set({ palette, paletteBusy: false }); })
+          .catch((err) => this.setState({ paletteBusy: false, error: err.message || 'Não foi possível ler as cores dessa foto.' }));
+      },
+      mainHelp: f.kind === 'casamento' ? 'Uma foto do casal para a capa e para a abertura do convite.' : 'A foto que vai na capa do convite.',
+      ph: {
+        busy: busyUp,
+        main: photoSlot('main', 'Escolher a foto principal'),
+        venue: photoSlot('venue', 'Escolher a foto do local'),
+        gallery: ph.gallery.map((g, i) => ({ url: g.url, n: i + 1, remove: () => { const gl = this.state.photos.gallery.slice(); gl.splice(i, 1); this.set({ photos: Object.assign({}, this.state.photos, { gallery: gl }) }); } })),
+        galleryRoom: ph.gallery.length < 10, galleryLabel: upLabel('Adicionar fotos'),
+        onGallery: (e) => { const fl = e.target.files; this.addPhotos('gallery', fl); try { e.target.value = ''; } catch (err) {} },
+        hasError: !!st.phError, error: st.phError
+      },
+      phrasePh: K.phrase || 'Ex.: Venha comemorar com a gente!',
+      phraseHelp: K.phrase ? 'Se deixar em branco, usamos: “' + K.phrase + '”.' : 'Uma frase curta de convite.',
+      summary: 'Você escolheu ' + st.picks.length + (st.picks.length === 1 ? ' visual' : ' visuais') + ' e enviou ' + nPhotos + (nPhotos === 1 ? ' foto' : ' fotos') + '. Agora é só dizer como falar com você: mandamos o convite pronto para você conferir.',
+      busy: st.busy, sendLabel: st.busy ? 'Enviando…' : 'Enviar pedido',
+      submit: (e) => this.submit(e),
+      doneText: st.done ? 'Obrigado, ' + st.done.name + '! Já começamos a preparar o seu convite. Em breve você recebe uma mensagem no WhatsApp ' + st.done.phone + ' com o link para conferir.' : '',
+      hasError: !!st.error, error: st.error,
+      showNav: !st.done, canBack: step > 1 && step <= 5, canNext: step < 5,
+      nextLabel: step === 4 ? 'Último passo' : 'Continuar',
+      back: () => this.go(Math.max(1, step - 1)),
+      next: () => {
+        const err = this.check(step);
+        if (err) { this.setState({ error: err }); return; }
+        this.go(step + 1);
+      }
+    };
+  }
+}
+</script>
+</body>
+</html>

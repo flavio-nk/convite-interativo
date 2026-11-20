@@ -1301,71 +1301,21 @@ class Component extends DCLogic {
     return { baseName: 'Jardim', bg: '#1F3329', fg: '#F3EEE4', accent: '#CDAE6B', btnFg: '#1F3329', paper: '#E9E1D0', ph: '#2B4538', fontKey: 'cormorant', italic: false, layout: 'arco', radiusKey: 'pilula', anim: 'envelope', fx: 'nenhum', pageFx: 'suave' };
   }
 
+  // páginas iniciais: a regra fica em api.montagem (a mesma usada nos pedidos dos clientes)
   newPages(b, it) {
-    const su = (it && it.setup) || {};
-    const pages = this.basePages(b, it);
-    if (it && it.starter === 'savedate') {
-      // Capa no estilo "Save the Date": foto do casal como fundo da página, letra cursiva, nomes em versalete e data
-      // posições fixas (tela de 390 px): texto no alto, deixando o casal livre na foto
-      const names = String(su.names || '').trim();
-      const dots = it.eventDate ? api.fmt.dots(it.eventDate).replace(/ · /g, ' . ') : '';
-      pages[0] = { id: 'capa', name: 'Capa', free: true, bg: { url: '', dim: 40 }, blocks: [
-        b('c1', 'titulo', { text: 'Save the Date', anim: 'surgir', fontSize: 54, pos: { x: 20, y: 44, w: 350 } }),
-        b('c2', 'texto', { text: names ? names.toUpperCase() : 'NOME & NOME', anim: 'surgir', fontSize: 24, pos: { x: 20, y: 124, w: 350 } }),
-        b('c3', 'texto', { text: '──────  ◆  ──────', fontSize: 12, pos: { x: 95, y: 164, w: 200 } }),
-        b('c4', 'texto', { text: dots || 'DD . MM . AAAA', anim: 'deslizar', fontSize: 30, pos: { x: 20, y: 186, w: 350 } }),
-        b('c5', 'botao', { text: 'Ver detalhes', pos: { x: 115, y: 690, w: 160 } })
-      ] };
-    }
-    return pages;
-  }
-
-  basePages(b, it) {
     it = it || {};
-    const su = it.setup || {};
-    const kind = su.kind || '';
-    const phrases = {
-      casamento: 'convidam para a celebração do seu casamento', aniversario: 'Venha comemorar comigo!', infantil: 'Venha brincar e comemorar com a gente!',
-      cha: 'Venha celebrar a chegada do nosso bebê!', formatura: 'Celebre essa conquista com a gente!', corporativo: 'Contamos com a sua presença.',
-      religioso: 'Participe deste momento especial conosco.'
-    };
     const ev = it.eventDate || null;
-    const when = ev ? api.fmt.long(ev).replace(/, às /, '\nÀs ') : 'Data e horário do evento';
     // prazo de resposta sugerido: 30 dias antes do evento (se ainda der tempo)
     let deadline = null;
     if (ev) {
       const d = new Date(ev); d.setDate(d.getDate() - 30); d.setHours(23, 59, 0, 0);
       if (d.getTime() > Date.now() + 2 * 86400000) deadline = d.toISOString();
     }
-    const pages = [
-      { id: 'capa', name: 'Capa', blocks: [
-        b('c1', 'foto', { label: 'Foto principal', anim: 'surgir' }),
-        b('c2', 'titulo', { text: String(su.names || '').trim() || it.sample || 'Título do evento', anim: 'deslizar' }),
-        b('c3', 'texto', { text: phrases[kind] || (su.names ? 'Você está convidado!' : 'Escreva aqui a frase do convite') }),
-        b('c4', 'contagem', {}),
-        b('c5', 'botao', { text: 'Ver detalhes' })
-      ] },
-      { id: 'detalhes', name: 'Detalhes', blocks: [
-        b('d1', 'titulo', { text: 'Quando e onde' }),
-        b('d2', 'texto', { text: when }),
-        b('d3', 'mapa', { text: String(su.place || '').trim() || 'Nome do local', address: String(su.address || '').trim() }),
-        b('d4', 'orientacoes', { text: 'Traje\nEstacionamento\nOutras orientações' }),
-        b('d5', 'botao', { text: 'Saiba mais' })
-      ] },
-      { id: 'galeria', name: 'Galeria', blocks: [
-        b('g1', 'titulo', { text: 'Galeria' }),
-        b('g2', 'foto', { label: 'Foto 1' }),
-        b('g3', 'foto', { label: 'Foto 2' })
-      ] }
-    ];
-    if (su.rsvp !== false) {
-      pages.push({ id: 'presenca', name: 'Presença', blocks: [
-        b('p1', 'titulo', { text: 'Confirme sua presença' }),
-        b('p2', 'texto', { text: 'Responda até {prazo}' }),
-        b('p3', 'rsvp', deadline ? { deadline } : {})
-      ] });
-    }
-    return pages;
+    return api.montagem.pages(it, {
+      b, deadline,
+      when: ev ? api.fmt.long(ev).replace(/, às /, '\nÀs ') : '',
+      dots: ev ? api.fmt.dots(ev).replace(/ · /g, ' . ') : ''
+    });
   }
 
   palettes() {
