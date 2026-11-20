@@ -14,7 +14,7 @@ import { uploadsMode, blobAuth } from './upload.js';
 const KEEP = 30;
 const PREFIX = 'backups/';
 const DIR = path.join(process.cwd(), '.data', 'backups');
-const FIXED = ['users', 'invites', 'themes', 'deleted', 'slugs'];
+const FIXED = ['users', 'invites', 'themes', 'deleted', 'slugs', 'pedidos'];
 const NAME = /^convite-backup-\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}Z(-[a-z-]+)?\.json$/;
 
 const blobMode = () => uploadsMode() === 'blob' || uploadsMode() === 'blob-oidc';
@@ -38,7 +38,7 @@ async function snapshot() {
   return {
     app: 'convite-interativo', version: 1, createdAt: new Date().toISOString(),
     summary: {
-      users: count('users'), invites: count('invites'), themes: count('themes'),
+      users: count('users'), invites: count('invites'), themes: count('themes'), pedidos: count('pedidos'),
       guests: Object.keys(data).filter((k) => k.startsWith('guests:')).reduce((s, k) => s + count(k), 0),
       rsvps: Object.keys(data).filter((k) => k.startsWith('rsvps:')).reduce((s, k) => s + count(k), 0)
     },
