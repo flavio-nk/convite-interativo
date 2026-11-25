@@ -391,15 +391,30 @@ body{margin:0}
       <sc-if value="{{hasHeadline}}" hint-placeholder-val="{{ true }}">
         <span style="position: absolute; left: 0; right: 0; top: 72px; margin: 0 auto; width: fit-content; max-width: calc(100% - 48px); box-sizing: border-box; display: block; text-align: center; padding: 8px 16px; border-radius: 999px; background: rgba(20, 20, 20, 0.55); color: #FFFFFF; font-size: 12px; letter-spacing: 0.16em; text-transform: uppercase; font-weight: 700; opacity: {{fadeOut}}; transition: opacity .3s ease; pointer-events: none">{{headline}}</span>
       </sc-if>
+      <sc-if value="{{noSoundChoice}}" hint-placeholder-val="{{ true }}">
       <button onClick="{{open}}" aria-label="{{openAria}}" style="position: absolute; left: 0; right: 0; bottom: 64px; margin: 0 auto; width: fit-content; display: flex; align-items: center; gap: 8px; min-height: 44px; max-width: calc(100% - 48px); box-sizing: border-box; padding: 10px 20px; border-radius: 999px; border: 0; background: {{hintBg}}; color: {{hintFg}}; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; font-weight: 700; cursor: pointer; opacity: {{fadeOut}}; transition: opacity .3s ease">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{hintIcon}}"></path></svg>
         {{hint}}
       </button>
+      </sc-if>
+      <!-- convite com música: o convidado escolhe aqui se abre com ou sem som (um toque escolhe e já abre) -->
+      <sc-if value="{{soundChoice}}" hint-placeholder-val="{{ false }}">
+        <div data-testid="escolha-som" style="position: absolute; left: 0; right: 0; bottom: 40px; display: flex; flex-direction: column; align-items: center; gap: 10px; opacity: {{fadeOut}}; transition: opacity .3s ease; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+          <button type="button" data-som="sim" onClick="{{openWithSound}}" aria-label="Abrir o convite com som" style="display: flex; align-items: center; gap: 10px; min-height: 52px; max-width: calc(100% - 48px); box-sizing: border-box; padding: 0 26px; border-radius: 999px; border: 0; background: {{accent}}; color: {{btnFg}}; font-family: inherit; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.3)">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5ZM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"></path></svg>
+            Abrir com som
+          </button>
+          <button type="button" data-som="nao" onClick="{{openSilent}}" aria-label="Abrir o convite sem som" style="display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: 999px; border: 0; background: {{hintBg}}; color: {{hintFg}}; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5ZM16 9l6 6M22 9l-6 6"></path></svg>
+            Abrir sem som
+          </button>
+        </div>
+      </sc-if>
     </div>
   </sc-if>
 </div>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props='{"anim":{"editor":"enum","options":["envelope","cortina","portas","lacre","presente","livro","iris","neblina","dobradura","ingresso","raspadinha","confete","baloes","petalas","persiana","polaroid","monograma","nenhuma"],"default":"envelope"},"layout":{"editor":null},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"paper":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"showLink":{"editor":null},"music":{"editor":null},"onOpen":{"editor":null},"onOpened":{"editor":null},"headline":{"editor":null},"hint":{"editor":null},"trigger":{"editor":null},"initials":{"editor":null},"reveal":{"editor":null},"recipient":{"editor":null},"photo":{"editor":null},"$preview":{"width":390,"height":844}}'>
+<script type="text/x-dc" data-dc-script data-props='{"anim":{"editor":"enum","options":["envelope","cortina","portas","lacre","presente","livro","iris","neblina","dobradura","ingresso","raspadinha","confete","baloes","petalas","persiana","polaroid","monograma","nenhuma"],"default":"envelope"},"layout":{"editor":null},"bg":{"editor":null},"fg":{"editor":null},"accent":{"editor":null},"paper":{"editor":null},"ph":{"editor":null},"btnFg":{"editor":null},"font":{"editor":null},"weight":{"editor":null},"fstyle":{"editor":null},"kicker":{"editor":null},"titulo":{"editor":null},"data":{"editor":null},"btnRadius":{"editor":null},"showLink":{"editor":null},"music":{"editor":null},"onOpen":{"editor":null},"onOpened":{"editor":null},"headline":{"editor":null},"hint":{"editor":null},"trigger":{"editor":null},"initials":{"editor":null},"reveal":{"editor":null},"recipient":{"editor":null},"photo":{"editor":null},"soundChoice":{"editor":null},"$preview":{"width":390,"height":844}}'>
 class Component extends DCLogic {
   constructor(props) {
     super(props);
@@ -592,11 +607,12 @@ class Component extends DCLogic {
     const trigger = anim === 'raspadinha' ? 'raspar' : (['toque', 'botao', 'deslizar'].indexOf(p.trigger) !== -1 ? p.trigger : 'toque');
     const headline = p.headline !== undefined && p.headline !== null ? String(p.headline) : (anim === 'envelope' ? 'Você recebeu um convite' : '');
     const hintText = (p.hint && String(p.hint).trim() && trigger !== 'raspar') ? String(p.hint).trim() : (trigger === 'raspar' ? 'Prefere não raspar? Toque aqui' : (trigger === 'botao' ? 'Abrir convite' : (trigger === 'deslizar' ? 'Deslize para cima para abrir' : (anim === 'envelope' ? 'Toque para abrir a carta' : (anim === 'confete' ? 'Toque para estourar' : (anim === 'polaroid' ? 'Toque para revelar a foto' : 'Toque para abrir'))))));
-    const doOpen = () => {
+    // sound: false = abrir sem som (botão "Abrir sem som"); qualquer outro jeito de abrir = com som
+    const doOpen = (sound) => {
       // um toque no botão também chega ao fundo da tela: abre uma vez só
       if (this.opened || this.state.phase !== 'closed') return;
       this.opened = true;
-      if (typeof this.props.onOpen === 'function') this.props.onOpen();
+      if (typeof this.props.onOpen === 'function') this.props.onOpen(sound !== false);
       const playing = this.musicStart();
       this.setState({ phase: 'opening', musicPlaying: playing, musicError: false, hasMusic: playing });
       clearTimeout(this.t);
@@ -605,7 +621,7 @@ class Component extends DCLogic {
         if (typeof this.props.onOpened === 'function') this.props.onOpened();
       }, durations[anim] || 0);
     };
-    this.tapOutside = anim !== 'nenhuma' && trigger === 'toque' ? doOpen : null;
+    this.tapOutside = anim !== 'nenhuma' && trigger === 'toque' ? () => doOpen() : null;
     const rnd = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
     const fest = [accent, '#FFD166', '#EF476F', '#06D6A0', '#4CC9F0', '#B388FF', this.mixHex(accent, '#FFFFFF', 0.5)];
     const paperLight = this.mixHex(paper, '#FFFFFF', 0.28);
@@ -770,6 +786,9 @@ class Component extends DCLogic {
       contentFilter: anim === 'neblina' ? T('blur(14px)', 'blur(0px)') : 'none',
       contentScale: anim === 'neblina' ? T('scale(1.06)', 'scale(1)') : 'none',
       open: () => doOpen(),
+      soundChoice: !!p.soundChoice, noSoundChoice: !p.soundChoice,
+      openWithSound: (e) => { if (e && e.stopPropagation) e.stopPropagation(); doOpen(true); },
+      openSilent: (e) => { if (e && e.stopPropagation) e.stopPropagation(); doOpen(false); },
       replay: () => {
         this.opened = false;
         clearTimeout(this.t);

@@ -220,9 +220,8 @@ def t_preview(pg):
     pg.click('header button:has-text("Ver como convidado")'); pg.wait_for_timeout(600)
     dlg = '[aria-label="Pré-visualização do convite"]'
     ok('Pré-visualizar abre', count(pg, dlg) == 1)
-    ok('Pré-visualizar: pergunta se quer abrir com som', count(pg, dlg + ' [data-testid="pergunta-som"]') == 1)
-    pg.click(dlg + ' [data-som="sim"]'); pg.wait_for_timeout(500)
-    pg.click(dlg + ' [aria-label="Toque para abrir o convite"]'); pg.wait_for_timeout(3000)
+    ok('Pré-visualizar: abertura com "Abrir com som" e "Abrir sem som"', count(pg, dlg + ' [data-testid="escolha-som"]') == 1)
+    pg.click(dlg + ' [data-som="sim"]'); pg.wait_for_timeout(3000)
     ok('Pré-visualizar: abre e mostra o conteúdo editado', count(pg, dlg + ' >> text=Joana & Bruno') >= 1)
     ok('Pré-visualizar: música ativa', count(pg, dlg + ' [aria-label="Pausar música"]') == 1)
     pg.click('[aria-label="Pré-visualização do convite"] [aria-label="Fechar"]')
@@ -255,22 +254,17 @@ def t_guest(browser):
     g = ctx.new_page()
     g.on('pageerror', lambda e: errors.append('convidado: ' + str(e)))
     g.goto(BASE + '#/c/' + state['id']); g.wait_for_timeout(1800)
-    ok('Convidado: antes de abrir, pergunta se quer com som', count(g, '[data-testid="pergunta-som"]') == 1 and 'Este convite tem música' in g.inner_text('body') and count(g, '[aria-label="Toque para abrir o convite"]') == 0)
-    ok('Convidado: foco em "Abrir com som"', g.evaluate("() => document.activeElement && document.activeElement.dataset.som") == 'sim')
-    # sem som: abre sem música, com o botão para ligar depois
-    g.click('[data-som="nao"]'); g.wait_for_timeout(400)
-    ok('Convidado: depois da resposta, a abertura aparece (ainda fechada)', count(g, '[data-testid="pergunta-som"]') == 0 and count(g, '[aria-label="Toque para abrir o convite"]') == 1 and count(g, 'h1:has-text("Joana & Bruno")') == 0)
-    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(3200)
-    ok('Convidado: "sem som" abre sem música (botão para ligar)', count(g, '[aria-label="Tocar música"]') == 1 and count(g, '[aria-label="Pausar música"]') == 0)
+    ok('Convidado: sem tela de pergunta; a abertura traz "Abrir com som" e "Abrir sem som"', count(g, '[data-testid="escolha-som"]') == 1 and count(g, '[data-som="sim"]') == 1 and count(g, '[data-som="nao"]') == 1 and count(g, '[aria-label="Toque para abrir o convite"]') == 0)
+    # sem som: um toque escolhe e já abre, sem música (botão para ligar depois)
+    g.click('[data-som="nao"]'); g.wait_for_timeout(3200)
+    ok('Convidado: "Abrir sem som" abre o convite sem música', count(g, 'h1:has-text("Joana & Bruno")') == 1 and count(g, '[aria-label="Tocar música"]') == 1 and count(g, '[aria-label="Pausar música"]') == 0)
     g.click('[aria-label="Tocar música"]'); g.wait_for_timeout(300)
     ok('Convidado: dá para ligar a música depois', count(g, '[aria-label="Pausar música"]') == 1)
     g.reload(); g.wait_for_timeout(1800)
-    ok('Convidado: pergunta de novo ao abrir outra vez', count(g, '[data-testid="pergunta-som"]') == 1)
-    g.click('[data-som="sim"]'); g.wait_for_timeout(400)
-    ok('Convidado: convite fechado', count(g, '[aria-label="Toque para abrir o convite"]') == 1)
+    ok('Convidado: convite fechado', count(g, '[data-testid="escolha-som"]') == 1)
     ok('Convidado: abertura mostra o título', 'Joana & Bruno' in g.inner_text('body'))
     ok('Convidado: conteúdo não aparece antes de abrir', count(g, 'h1:has-text("Joana & Bruno")') == 0)
-    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(500)
+    g.click('[data-som="sim"]'); g.wait_for_timeout(500)
     ok('Convidado: o convite surge por trás da animação', count(g, 'h1:has-text("Joana & Bruno")') == 1 and count(g, 'text=Rever abertura') == 0)
     g.wait_for_timeout(2700)
     ok('Convidado: sem tela intermediária', count(g, 'text=Rever abertura') == 0)
@@ -295,8 +289,7 @@ def t_guest(browser):
         g.click('button:has-text("Adicionar à agenda")')
     ok('Convidado: agenda .ics', d.value.suggested_filename.endswith('.ics'))
     g.reload(); g.wait_for_timeout(1500)
-    g.click('[data-som="nao"]'); g.wait_for_timeout(300)
-    g.click('[aria-label="Toque para abrir o convite"]'); g.wait_for_timeout(3200)
+    g.click('[data-som="nao"]'); g.wait_for_timeout(3200)
     go_rsvp(g); g.wait_for_timeout(500)
     ok('Convidado: ao voltar, resposta lembrada', 'Presença confirmada' in g.inner_text('body'))
     g.click('text=Alterar minha resposta'); g.wait_for_timeout(200)
@@ -307,8 +300,7 @@ def t_guest(browser):
     ctx2 = browser.new_context(viewport={'width': 390, 'height': 844})
     g2 = ctx2.new_page()
     g2.goto(BASE + '#/c/' + state['id']); g2.wait_for_timeout(1500)
-    g2.click('[data-som="nao"]'); g2.wait_for_timeout(300)
-    g2.click('[aria-label="Toque para abrir o convite"]'); g2.wait_for_timeout(3200)
+    g2.click('[data-som="nao"]'); g2.wait_for_timeout(3200)
     go_rsvp(g2); g2.wait_for_timeout(500)
     g2.fill('input[autocomplete=name]', 'Dora Silva'); g2.click('button:has-text("Sim, eu vou")')
     g2.click('button:has-text("Enviar resposta")'); g2.wait_for_timeout(1200)
@@ -1554,7 +1546,7 @@ def t_pedido(pg, browser):
     ok('Montagem: data, música, abertura e tema', inv['eventDate'] == '2027-09-12T19:30:00.000Z' and inv['music']['kind'] == 'biblioteca' and inv['music']['preset'] == 'valsa' and inv['opening'].get('photoUrl') and inv['theme']['baseName'] == 'Jardim botânico' and inv['status'] == 'rascunho', [inv['eventDate'], inv['music'], inv['theme'].get('baseName')])
     ok('Montagem: sem textos de exemplo', not any('[' in (x.get('text') or '') for p in inv['pages'] for x in p['blocks']))
     go(pg, 'c/' + o['invites'][0], 2500)
-    if count(pg, '[data-som="sim"]'): pg.click('[data-som="sim"]'); pg.wait_for_timeout(600)
+    if count(pg, '[data-som="sim"]'): pg.click('[data-som="sim"]'); pg.wait_for_timeout(3200)
     ok('Montagem: versão abre como convite', 'Helena & Rafael' in text(pg) or count(pg, '[data-testid="abertura"], [data-anim]') > 0, text(pg)[:200])
 
     go(pg, 'Pedidos', 1500)
@@ -1584,6 +1576,24 @@ def t_pedido(pg, browser):
     ok('Pedidos: mudar a situação', count(pg, art) == 0 and 'Arquivados · 1' in text(pg))
     pg.screenshot(path=os.environ['SHOTS'] + '/pedidos.png', full_page=True) if os.environ.get('SHOTS') else None
 
+
+def t_sound_pill(pg, browser):
+    """Convite com música e sem animação de abertura: pílula discreta "Ouvir a música?" na capa."""
+    import json as _j
+    inv = api_invite(pg, {'anim': 'nenhuma'}, [{'id': 'capa', 'name': 'Capa', 'blocks': [{'id': 't1', 'type': 'titulo', 'text': 'Festa da Lia'}]}, {'id': 'd', 'name': 'Detalhes', 'blocks': [{'id': 't2', 'type': 'titulo', 'text': 'Detalhes'}]}])
+    full = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", inv['id'])
+    full['music'] = {'kind': 'biblioteca', 'preset': 'caixinha', 'volume': 70, 'loop': True}
+    pg.evaluate("([id, b]) => fetch('/api/invites?id=' + id, {method: 'PUT', headers: {'content-type': 'application/json'}, body: b})", [inv['id'], _j.dumps(full)])
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + inv['id']); g.wait_for_timeout(1800)
+    ok('Som (sem abertura): capa aparece direto com a pílula "Ouvir a música?"', count(g, 'h1:has-text("Festa da Lia")') == 1 and count(g, '[data-testid="escolha-som"]') == 1 and 'Ouvir a música?' in g.inner_text('[data-testid="escolha-som"]'))
+    ok('Som (sem abertura): música desligada até responder', count(g, '[aria-label="Tocar música"]') == 1)
+    g.click('[data-som="sim"]'); g.wait_for_timeout(400)
+    ok('Som (sem abertura): "Sim" liga a música e a pílula some', count(g, '[aria-label="Pausar música"]') == 1 and count(g, '[data-testid="escolha-som"]') == 0)
+    g.reload(); g.wait_for_timeout(1800)
+    g.click('[data-som="nao"]'); g.wait_for_timeout(300)
+    ok('Som (sem abertura): "Não" mantém sem música e a pílula some', count(g, '[aria-label="Tocar música"]') == 1 and count(g, '[data-testid="escolha-som"]') == 0)
+    ctx.close()
 
 def api_invite(pg, theme, pages, opening=None, title='Ana & Pedro'):
     base = dict(baseName='Teste', bg='#1F3329', fg='#F3EEE4', accent='#CDAE6B', btnFg='#1F3329', paper='#E9E1D0', ph='#2B4538', fontKey='cormorant', italic=False, layout='centro', radiusKey='pilula', anim='nenhuma')
@@ -1917,7 +1927,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('cliente', lambda: t_client(pg, b), None), ('pedido', lambda: t_pedido(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('design', lambda: t_design(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('cliente', lambda: t_client(pg, b), None), ('pedido', lambda: t_pedido(pg, b), None), ('som sem abertura', lambda: t_sound_pill(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('design', lambda: t_design(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 
