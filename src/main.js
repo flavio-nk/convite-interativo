@@ -116,7 +116,9 @@ function PhoneFrame({ children }) {
   // proporção do convite) valem como toque no convite: a abertura "toque" recebe o aviso.
   const onOutside = (e) => {
     const frame = e.currentTarget.querySelector('[data-frame]');
-    if (frame && frame.contains(e.target)) return;
+    // composedPath guarda o caminho do toque mesmo se o elemento tocado já saiu da tela
+    const path = e.composedPath ? e.composedPath() : [];
+    if (frame && (frame.contains(e.target) || path.indexOf(frame) !== -1)) return;
     window.dispatchEvent(new CustomEvent('ci:tap-outside'));
   };
   return h('div', {

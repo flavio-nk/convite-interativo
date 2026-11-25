@@ -12,6 +12,7 @@
 <style>
 body{margin:0}
 @keyframes ciFade{from{opacity:0}to{opacity:1}}
+[data-som]:focus{outline:none}[data-som]:focus-visible{outline:2px solid var(--ring, currentColor);outline-offset:3px}
 @keyframes ciSpin{to{transform:rotate(360deg)}}
 .ci-spin{animation:ciSpin .9s linear infinite}
 @keyframes ciUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
@@ -474,6 +475,31 @@ body{margin:0}
     </div>
   </sc-if>
 
+  <sc-if value="{{askSound}}" hint-placeholder-val="{{ false }}">
+    <div key="pergunta-som" class="pg-in" style="position: absolute; inset: 0; z-index: 9; background: {{T.bg}}; color: {{T.fg}}; display: flex; align-items: center; justify-content: center; padding: 28px; box-sizing: border-box; font-family: 'Plus Jakarta Sans', system-ui, sans-serif">
+      <div role="dialog" aria-modal="true" aria-labelledby="som-titulo" aria-describedby="som-texto" data-testid="pergunta-som" style="--ring: {{T.fg}}; width: 100%; max-width: 320px; display: flex; flex-direction: column; align-items: center; gap: 18px; text-align: center">
+        <span aria-hidden="true" style="width: 76px; height: 76px; border-radius: 50%; border: 1.5px solid {{T.accent}}; color: {{T.accent}}; display: flex; align-items: center; justify-content: center">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>
+        </span>
+        <div>
+          <h1 id="som-titulo" style="margin: 0; font-family: {{T.font}}; font-weight: {{T.weight}}; font-size: 30px; line-height: 1.15">Este convite tem música</h1>
+          <p id="som-texto" style="margin: 10px 0 0; font-size: 15px; line-height: 1.5; opacity: 0.85">Quer abrir o convite com som?</p>
+        </div>
+        <div style="width: 100%; display: flex; flex-direction: column; gap: 10px; margin-top: 4px">
+          <button type="button" data-som="sim" onClick="{{soundOn}}" style="min-height: 54px; border-radius: {{T.radius}}; border: 0; background: {{T.accent}}; color: {{T.btnFg}}; font-family: inherit; font-weight: 700; font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5ZM15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"></path></svg>
+            Abrir com som
+          </button>
+          <button type="button" data-som="nao" onClick="{{soundOff}}" style="min-height: 54px; border-radius: {{T.radius}}; border: 1.5px solid {{T.line}}; background: transparent; color: {{T.fg}}; font-family: inherit; font-weight: 700; font-size: 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 10px">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4V5ZM16 9l6 6M22 9l-6 6"></path></svg>
+            Abrir sem som
+          </button>
+        </div>
+        <p style="margin: 0; font-size: 13px; line-height: 1.45; opacity: 0.7">Você pode ligar ou desligar a música depois, no botão no canto da tela.</p>
+      </div>
+    </div>
+  </sc-if>
+
   <sc-if value="{{isClosed}}" hint-placeholder-val="{{ true }}">
     <div key="abertura" style="position: absolute; inset: 0; z-index: 5">
       <dc-import name="Abertura" reveal="{{ true }}" photo="{{opening.photo}}" recipient="{{opening.recipient}}" headline="{{opening.headline}}" hint="{{opening.hint}}" trigger="{{opening.trigger}}" initials="{{opening.initials}}" anim="{{T.anim}}" layout="{{T.layout}}" bg="{{T.bg}}" fg="{{T.fg}}" accent="{{T.accent}}" paper="{{T.paper}}" ph="{{T.ph}}" btn-fg="{{T.btnFg}}" font="{{T.font}}" weight="{{T.weight}}" fstyle="{{T.fstyle}}" kicker="{{kicker}}" titulo="{{opening.title}}" data="{{opening.subtitle}}" btn-radius="{{T.radius}}" show-link="{{ false }}" music="{{noMusic}}" on-open="{{onOpen}}" on-opened="{{onOpened}}" hint-size="390px,844px"></dc-import>
@@ -536,7 +562,7 @@ class Component extends DCLogic {
 
   // Passa para a página anterior (-1) ou seguinte (+1). Devolve false se não houver para onde ir.
   step(d) {
-    if (this.props.edit || this.state.phase !== 'pages' || this.state.lb || !d) return false;
+    if (this.props.edit || this.state.phase !== 'pages' || this.state.lb || this.askingSound || !d) return false;
     const ids = this.pageIds || [];
     const i = ids.indexOf(this.curPageId);
     const j = i + (d > 0 ? 1 : -1);
@@ -623,6 +649,11 @@ class Component extends DCLogic {
   }
 
   componentDidUpdate(prev, prevState) {
+    // pergunta do som: o foco vai para "Abrir com som" (teclado e leitores de tela)
+    if (this.askingSound && !this.soundFocused) {
+      this.soundFocused = true;
+      setTimeout(() => { try { const b = document.querySelector('[data-som="sim"]'); if (b) b.focus({ preventScroll: true }); } catch (e) {} }, 60);
+    }
     // avisa a moldura (setas ao lado do convite, no computador) de qual página está aberta
     if (!this.props.edit) {
       const ids = this.pageIds || [];
@@ -1235,8 +1266,22 @@ class Component extends DCLogic {
     this.curPageId = cur.id;
     const mapBlk = allPages.reduce((f, p) => f || (p.blocks || []).find((b) => b.type === 'mapa' && String(b.address || '').trim()), null);
     const cfg = this.musicCfg();
+    // pergunta "com som?" antes de abrir, só quando o convite tem música
+    const askSound = !edit && cfg.kind !== 'nenhuma' && !st.sound && (st.phase === 'closed' || st.phase === 'pages');
+    this.askingSound = askSound;
     return Object.assign(base, {
-      isClosed: !edit && (st.phase === 'closed' || st.phase === 'opening'),
+      // a abertura só aparece depois da resposta sobre o som (assim o toque fora do convite
+      // não abre o envelope por trás da pergunta, e a animação começa do início)
+      isClosed: !edit && !askSound && (st.phase === 'closed' || st.phase === 'opening'),
+      askSound,
+      // stopPropagation: o toque na resposta não pode chegar à moldura (que o trataria como toque para abrir)
+      soundOn: (e) => {
+        if (e && e.stopPropagation) e.stopPropagation();
+        // o toque no botão libera o áudio no celular: a música já começa aqui
+        const ok = this.musicStart();
+        this.setState({ sound: 'on', musicPlaying: ok });
+      },
+      soundOff: (e) => { if (e && e.stopPropagation) e.stopPropagation(); this.musicStop(); this.setState({ sound: 'off', musicPlaying: false }); },
       isPages: edit || st.phase === 'opening' || st.phase === 'pages',
       kicker: this.nm(inv.kicker || ''),
       coverTitle: inv.coverTitle || inv.title,
@@ -1291,7 +1336,12 @@ class Component extends DCLogic {
       },
       fx: this.fxItems(T, rnd),
       lb: this.lightbox(allPages, edit),
-      onOpen: () => { const ok = this.musicStart(); this.setState({ musicPlaying: ok, phase: 'opening' }); },
+      // com som: a música já começou na pergunta (se não, tenta de novo no toque de abrir); sem som: fica desligada
+      onOpen: () => {
+        if (st.sound === 'off' || cfg.kind === 'nenhuma') { this.setState({ phase: 'opening' }); return; }
+        const ok = this.player ? true : this.musicStart();
+        this.setState({ musicPlaying: ok, phase: 'opening' });
+      },
       onOpened: () => this.setState({ phase: 'pages' }),
       hasMusic: !edit && st.phase === 'pages' && cfg.kind !== 'nenhuma',
       musicPlaying: st.musicPlaying, musicPaused: !st.musicPlaying,
