@@ -1229,6 +1229,15 @@ def t_savedate(pg):
     fr = pg.locator('[data-testid="pe-frame"]').bounding_box()
     ok('Mapa: editor de fotos usa a nova proporção do espaço', abs(fr['width'] / fr['height'] - w / 140) < 0.05, (fr, w))
     pg.keyboard.press('Escape'); pg.wait_for_timeout(300)
+    # link do local (Instagram, site…)
+    ok('Mapa: campo "Link do local"', count(pg, '#place-url') == 1)
+    pg.fill('#place-url', 'espaco villa'); pg.press('#place-url', 'Tab'); pg.wait_for_timeout(300)
+    ok('Mapa: link inválido mostra aviso', 'Não reconheci esse link' in pg.inner_text('aside[aria-label="Propriedades"]'))
+    pg.fill('#place-url', '@espaco.villa'); pg.press('#place-url', 'Tab'); pg.wait_for_timeout(1800)
+    inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
+    mp = [b for p in inv['pages'] for b in p['blocks'] if b['type'] == 'mapa'][0]
+    ok('Mapa: @perfil vira o link do Instagram e é salvo', mp.get('placeUrl') == 'https://instagram.com/espaco.villa' and pg.input_value('#place-url') == 'https://instagram.com/espaco.villa', mp.get('placeUrl'))
+    ok('Mapa: confirmação do link no editor', 'Instagram' in (pg.inner_text('[data-testid="place-url-ok"]') if count(pg, '[data-testid="place-url-ok"]') else ''))
     inv = pg.evaluate("(id) => fetch('/api/invites?id=' + id).then(r => r.json())", iid)
     ok('Save the Date: foto de fundo da capa com véu de 40%', inv['pages'][0]['bg']['dim'] == 40 and inv['pages'][0]['bg']['url'], inv['pages'][0].get('bg'))
     inv['status'] = 'publicado'
@@ -1247,6 +1256,16 @@ def t_savedate(pg):
     bx = g.evaluate("() => { const i = document.querySelector('img[alt^=\"Foto de \"]').parentElement.getBoundingClientRect(); return [i.width, i.height]; }")
     ok('Mapa: convidado vê o espaço da foto com a altura escolhida', abs(bx[0] / bx[1] - w / 140) < 0.05, bx)
     ok('Mapa: convidado vê a foto do local com a edição', 'brightness(1.2)' in st and 'width:' in st and 'width:100%' not in st.replace(' ', ''), st)
+    lk = g.evaluate("() => { const a = document.querySelector('a[data-place-link]'); return a ? [a.getAttribute('href'), a.getAttribute('target'), !!a.querySelector('img[alt^=\"Foto de \"]'), a.getAttribute('aria-label'), a.querySelector('[data-testid=place-link-badge]').textContent.trim()] : null; }")
+    ok('Mapa: tocar na foto do local abre o link em outra aba', lk and lk[0] == 'https://instagram.com/espaco.villa' and lk[1] == '_blank' and lk[2], lk)
+    ok('Mapa: selo "Instagram" na foto e descrição para leitores de tela', lk and lk[4] == 'Instagram' and 'Instagram' in lk[3] and 'outra aba' in lk[3], lk)
+    ctx.route('https://instagram.com/**', lambda r: r.fulfill(status=200, content_type='text/html', body='<title>ok</title>'))
+    with ctx.expect_page() as pop:
+        g.click('a[data-place-link]')
+    np = pop.value
+    ok('Mapa: o link abre numa aba nova', 'instagram.com/espaco.villa' in np.url, np.url)
+    np.close()
+    ok('Mapa: o convite continua aberto na mesma página', 'Detalhes' in g.evaluate("() => (document.querySelector('nav[aria-label=\"Páginas do convite\"] [aria-current=page]') || {}).textContent || ''"))
     ctx.close()
     # remover a foto volta ao ícone
     pg.click('button:has-text("Remover foto")'); pg.wait_for_timeout(1800)
@@ -1258,6 +1277,7 @@ def t_savedate(pg):
     n0 = names()
     ok('Páginas: sem setas de ordem (só arrastar)', count(pg, '[aria-label^="Mover a página"]') == 0 and count(pg, '[data-page-handle]') == len(n0), n0)
     # arrastar com o dedo pela alça ⋮⋮ (eventos de toque)
+    pg.evaluate("() => { window.scrollTo(0, 0); document.querySelector('aside [data-page]').scrollIntoView({ block: 'nearest' }); }"); pg.wait_for_timeout(150)
     pg.evaluate("""() => {
       const it = (i) => document.querySelectorAll('aside [data-page]')[i];
       const h = it(1).querySelector('[data-page-handle]').getBoundingClientRect();
@@ -1444,6 +1464,9 @@ def t_pedido(pg, browser):
     ok('Pedido: exige os nomes', 'Nomes do casal' in text(cp) and count(cp, '[role=alert]') == 1)
     cp.fill('#pd-names', 'Helena & Rafael'); cp.fill('#pd-day', '2027-09-12'); cp.fill('#pd-time', '16:30')
     cp.fill('#pd-place', 'Fazenda Santa Clara'); cp.fill('#pd-addr', 'Estrada do Sol, 100, Itu - SP')
+    cp.fill('#pd-placeurl', 'fazenda santa clara'); cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(200)
+    ok('Pedido: confere o Instagram ou site do local', 'Confira o Instagram ou site do local' in text(cp))
+    cp.fill('#pd-placeurl', '@fazendasantaclara')
     cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(600)
     ok('Pedido: galeria de visuais filtrada pelo tipo, com os nomes do cliente', count(cp, '[data-theme="jardim"]') == 1 and count(cp, '[data-theme="festa"]') == 0 and 'Helena & Rafael' in text(cp))
     cp.click('[data-testid="pd-continuar"]'); cp.wait_for_timeout(200)
@@ -1506,6 +1529,7 @@ def t_pedido(pg, browser):
     ok('Montagem: páginas conforme o pedido', list(pages.keys()) == ['Capa', 'Detalhes', 'Programação', 'Galeria', 'Presença'], list(pages.keys()))
     ok('Montagem: capa com nomes e foto do cliente', bl('Capa', 'titulo')[0]['text'] == 'Helena & Rafael' and bl('Capa', 'foto')[0].get('fileUrl', '').startswith('/api/upload'))
     ok('Montagem: data por extenso e local com foto', bl('Detalhes', 'texto')[0]['text'] == 'Domingo, 12 de setembro de 2027\nÀs 16h30' and bl('Detalhes', 'mapa')[0].get('photoUrl') and bl('Detalhes', 'mapa')[0]['address'] == 'Estrada do Sol, 100, Itu - SP')
+    ok('Montagem: link do local no bloco do mapa', bl('Detalhes', 'mapa')[0].get('placeUrl') == 'https://instagram.com/fazendasantaclara', bl('Detalhes', 'mapa')[0].get('placeUrl'))
     ok('Montagem: traje e orientações', bl('Detalhes', 'orientacoes')[0]['text'] == 'Traje: Esporte fino\nEstacionamento no local')
     btn = bl('Detalhes', 'botao')[0]
     ok('Montagem: botão da lista de presentes com o link', btn['text'] == 'Lista de presentes' and btn.get('action') == 'link' and btn.get('dest') == 'https://www.listadopresente.com.br/helena', btn)

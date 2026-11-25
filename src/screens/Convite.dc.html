@@ -262,15 +262,32 @@ body{margin:0}
 
                 <sc-if value="{{b.isMapa}}" hint-placeholder-val="{{ false }}">
                   <div style="border-radius: 14px; overflow: hidden; border: 1px solid {{T.line}}; background: {{T.surface}}; text-align: left">
-                    <sc-if value="{{b.hasPlacePhoto}}" hint-placeholder-val="{{ false }}">
-                      <div style="position: relative; overflow: hidden; aspect-ratio: {{b.placeRatio}}; background: {{T.ph}}">
-                        <img src="{{b.placePhoto}}" alt="{{b.placeAlt}}" loading="lazy" style="{{b.placeImgStyle}}">
-                      </div>
+                    <sc-if value="{{b.placeNoLink}}" hint-placeholder-val="{{ true }}">
+                      <sc-if value="{{b.hasPlacePhoto}}" hint-placeholder-val="{{ false }}">
+                        <div style="position: relative; overflow: hidden; aspect-ratio: {{b.placeRatio}}; background: {{T.ph}}">
+                          <img src="{{b.placePhoto}}" alt="{{b.placeAlt}}" loading="lazy" style="{{b.placeImgStyle}}">
+                        </div>
+                      </sc-if>
+                      <sc-if value="{{b.noPlacePhoto}}" hint-placeholder-val="{{ true }}">
+                        <div aria-hidden="true" style="height: 120px; background: {{T.ph}}; display: flex; align-items: center; justify-content: center; color: {{T.accent}}">
+                          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
+                        </div>
+                      </sc-if>
                     </sc-if>
-                    <sc-if value="{{b.noPlacePhoto}}" hint-placeholder-val="{{ true }}">
-                      <div aria-hidden="true" style="height: 120px; background: {{T.ph}}; display: flex; align-items: center; justify-content: center; color: {{T.accent}}">
-                        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg>
-                      </div>
+                    <sc-if value="{{b.placeHasLink}}" hint-placeholder-val="{{ false }}">
+                      <a href="{{b.placeUrl}}" target="_blank" rel="noopener noreferrer" data-place-link="1" aria-label="{{b.placeLinkAria}}" style="position: relative; display: block; overflow: hidden; color: {{T.accent}}; text-decoration: none; background: {{T.ph}}; {{b.placeBox}}">
+                        <sc-if value="{{b.hasPlacePhoto}}" hint-placeholder-val="{{ false }}">
+                          <img src="{{b.placePhoto}}" alt="{{b.placeAlt}}" loading="lazy" style="{{b.placeImgStyle}}">
+                        </sc-if>
+                        <sc-if value="{{b.noPlacePhoto}}" hint-placeholder-val="{{ true }}">
+                          <span aria-hidden="true" style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z"></path></svg></span>
+                        </sc-if>
+                        <span aria-hidden="true" data-testid="place-link-badge" style="position: absolute; right: 10px; bottom: 10px; display: inline-flex; align-items: center; gap: 6px; max-width: calc(100% - 20px); box-sizing: border-box; padding: 6px 11px; border-radius: 999px; background: rgba(0, 0, 0, 0.62); color: #FFFFFF; font-size: calc(12px * var(--k, 1)); font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; backdrop-filter: blur(4px)">
+                          <sc-if value="{{b.placeIsInsta}}" hint-placeholder-val="{{ false }}"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><rect x="3" y="3" width="18" height="18" rx="5"></rect><circle cx="12" cy="12" r="4"></circle><circle cx="17.5" cy="6.5" r="0.6" fill="currentColor"></circle></svg></sc-if>
+                          {{b.placeLinkLabel}}
+                          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" style="flex: none"><path d="M7 17 17 7M8 7h9v9"></path></svg>
+                        </span>
+                      </a>
                     </sc-if>
                     <div style="padding: 14px 16px 16px; display: flex; flex-direction: column; gap: 10px">
                       <div>
@@ -1046,6 +1063,13 @@ class Component extends DCLogic {
         o.placeAlt = 'Foto de ' + (x.text || 'local do evento');
         o.placeRatio = String(api.photo.placeRatioOf(x));
         o.placeImgStyle = api.photo.style(x.photoEdit, api.photo.placeRatioOf(x));
+        // link do local (Instagram, site…): tocar na foto ou no ícone abre em outra aba
+        const link = api.montagem.placeLink(x.placeUrl);
+        o.placeUrl = link; o.placeHasLink = !!link; o.placeNoLink = !link;
+        o.placeLinkLabel = link ? api.montagem.placeLinkLabel(link) : '';
+        o.placeIsInsta = o.placeLinkLabel === 'Instagram';
+        o.placeLinkAria = 'Ver mais sobre ' + (x.text || 'o local') + (link ? ' (' + (o.placeIsInsta ? 'Instagram' : link.replace(/^https?:\/\/(www\.)?/i, '').split(/[/?#]/)[0]) + ', abre em outra aba)' : '');
+        o.placeBox = o.placePhoto ? 'aspect-ratio: ' + o.placeRatio : 'height: 120px';
       }
       if (o.isBotao) {
         o.press = () => {

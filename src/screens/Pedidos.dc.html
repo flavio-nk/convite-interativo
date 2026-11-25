@@ -345,6 +345,7 @@ class Component extends DCLogic {
         ['Evento', (K[o.kind] || {}).label + ' · ' + o.names],
         ['Data', this.dateOf(o)],
         ['Local', [o.place, o.address].filter(Boolean).join(' — ')],
+        ['Link do local', o.placeUrl],
         ['Confirmação de presença', o.rsvp === false ? 'Não' : 'Sim'],
         ['Frase da capa', o.phrase], ['Traje', o.dress], ['Programação', o.program], ['Lista de presentes', o.gifts],
         ['Outras informações', o.notes], ['Música', music[o.music] || 'Sem música'],

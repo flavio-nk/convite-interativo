@@ -56,6 +56,28 @@ export function deadlineOf(day, now) {
   return d.getTime() > (now || Date.now()) + 2 * 86400000 ? d.toISOString() : null;
 }
 
+// Link do local (perfil no Instagram, site…): aceita "@perfil" (Instagram), endereços sem
+// "https://" (www.espaco.com.br, instagram.com/espaco) e http(s). Devolve '' se não for um link.
+export function placeLink(raw) {
+  let u = String(raw || '').trim();
+  if (!u) return '';
+  const handle = u.match(/^@([A-Za-z0-9._]{1,30})$/);
+  if (handle) return 'https://instagram.com/' + handle[1];
+  if (!/^[a-z][a-z0-9+.-]*:/i.test(u) && /^[\w-]+(\.[\w-]+)+(\/|$|\?|#)/.test(u)) u = 'https://' + u;
+  return /^https?:\/\/[^\s/$.?#][^\s]*$/i.test(u) && u.length <= 300 ? u : '';
+}
+
+// texto do selo sobre a foto do local, conforme o tipo de link
+export function placeLinkLabel(url) {
+  const host = (String(url).match(/^https?:\/\/([^/?#]+)/i) || [])[1] || '';
+  const h = host.toLowerCase().replace(/^www\./, '');
+  if (/(^|\.)instagram\.com$/.test(h) || h === 'instagr.am') return 'Instagram';
+  if (/(^|\.)(facebook\.com|fb\.com|fb\.me)$/.test(h)) return 'Facebook';
+  if (/(^|\.)tiktok\.com$/.test(h)) return 'TikTok';
+  if (/(^|\.)(google\.[a-z.]+|goo\.gl|maps\.app\.goo\.gl)$/.test(h)) return 'Ver no Google';
+  return 'Ver site';
+}
+
 export function block(id, type, extra) {
   return Object.assign({ id, type, text: '', label: '', src: 'upload', anim: 'nenhuma' }, extra);
 }
@@ -96,6 +118,7 @@ export function pages(it, opts) {
     b('d1', 'titulo', { text: 'Quando e onde' }),
     b('d2', 'texto', { text: when }),
     b('d3', 'mapa', Object.assign({ text: String(su.place || '').trim() || 'Nome do local', address: String(su.address || '').trim() },
+      placeLink(su.placeUrl) ? { placeUrl: placeLink(su.placeUrl) } : {},
       fotos.venue && fotos.venue.url ? { photoUrl: fotos.venue.url, photoName: fotos.venue.name || '' } : {}))
   ];
   if (!full) det.push(b('d4', 'orientacoes', { text: 'Traje\nEstacionamento\nOutras orientações' }));
@@ -157,7 +180,7 @@ export function fromOrder(order, theme, now) {
   const th = Object.assign({}, theme);
   if (order.palette) Object.assign(th, order.palette);
   const setup = {
-    kind, names, place: order.place || '', address: order.address || '', rsvp: order.rsvp !== false, full: true,
+    kind, names, place: order.place || '', address: order.address || '', placeUrl: order.placeUrl || '', rsvp: order.rsvp !== false, full: true,
     phrase: order.phrase || '', dress: order.dress || '', notes: order.notes || '', program: order.program || '', gifts: order.gifts || '',
     photos: order.photos || {}
   };

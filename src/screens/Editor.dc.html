@@ -476,6 +476,17 @@ button:disabled{opacity:.5;cursor:not-allowed}
                       </label>
                     </sc-if>
                   </div>
+                  <div>
+                    <label class="lbl" for="place-url">Link do local <span style="font-weight: 500; color: #5E5A6B">(opcional)</span></label>
+                    <input class="fld" id="place-url" type="text" inputmode="url" autocomplete="off" spellcheck="false" placeholder="@perfil do Instagram ou https://site.com.br" value="{{sel.placeUrl}}" onChange="{{f.placeUrl}}" aria-describedby="place-url-help">
+                    <sc-if value="{{sel.placeUrlBad}}" hint-placeholder-val="{{ false }}">
+                      <span role="alert" style="display: block; margin-top: 6px; font-size: 12px; color: #B42318">Não reconheci esse link. Use um endereço como https://site.com.br ou o @perfil do Instagram.</span>
+                    </sc-if>
+                    <sc-if value="{{sel.placeUrlOk}}" hint-placeholder-val="{{ false }}">
+                      <span data-testid="place-url-ok" style="display: block; margin-top: 6px; font-size: 12px; color: #1E6B43">Abre {{sel.placeUrlShow}} · selo “{{sel.placeUrlLabel}}” na foto. <a href="{{sel.placeUrlNorm}}" target="_blank" rel="noopener">Testar link</a></span>
+                    </sc-if>
+                    <span id="place-url-help" style="display: block; margin-top: 6px; font-size: 12px; color: #5E5A6B">Perfil no Instagram, site ou outra página do local. Ao tocar na foto (ou no ícone), o convidado abre esse link.</span>
+                  </div>
                   <label style="display: flex; align-items: center; gap: 10px; min-height: 32px; font-size: 14px"><input type="checkbox" checked="{{sel.showRoutes}}" onChange="{{f.showRoutes}}" style="width: 18px; height: 18px; accent-color: #5B3FD6"> Mostrar botões “Google Maps” e “Waze”</label>
                 </div>
               </sc-if>
@@ -2709,6 +2720,12 @@ class Component extends DCLogic {
         isMapa: s.type === 'mapa', isContagem: s.type === 'contagem', isBotao: s.type === 'botao', isRsvp: s.type === 'rsvp',
         autoplay: !!s.autoplay, loopVid: !!s.loopVid,
         address: s.address || '', showRoutes: s.showRoutes !== false,
+        placeUrl: s.type === 'mapa' ? String(s.placeUrl || '') : '',
+        placeUrlNorm: s.type === 'mapa' ? api.montagem.placeLink(s.placeUrl) : '',
+        placeUrlOk: s.type === 'mapa' && !!api.montagem.placeLink(s.placeUrl),
+        placeUrlBad: s.type === 'mapa' && !!String(s.placeUrl || '').trim() && !api.montagem.placeLink(s.placeUrl),
+        placeUrlLabel: s.type === 'mapa' && api.montagem.placeLink(s.placeUrl) ? api.montagem.placeLinkLabel(api.montagem.placeLink(s.placeUrl)) : '',
+        placeUrlShow: s.type === 'mapa' && api.montagem.placeLink(s.placeUrl) ? api.montagem.placeLink(s.placeUrl).replace(/^https?:\/\/(www\.)?/i, '') : '',
         hasPlacePhoto: !!s.photoUrl, noPlacePhoto: !s.photoUrl, placePhoto: s.photoUrl || '',
         placeName: s.photoName || 'Foto do local',
         placeStatus: s.photoUploading ? 'Enviando' + (s.photoPct ? ' · ' + s.photoPct + '%' : '…') : (api.photo.isEdited(s.photoEdit) ? 'Foto editada. A original continua guardada.' : 'Sem edições'),
@@ -3094,6 +3111,8 @@ class Component extends DCLogic {
         cdStyle: (e) => this.patchSel({ cdStyle: e.target.value }),
         loopVid: () => this.patchSel({ loopVid: !(s && s.loopVid) }),
         address: (e) => this.patchSel({ address: e.target.value }),
+        // guarda o link já completo (ex.: "@espaco" vira https://instagram.com/espaco); se não reconhecer, guarda como digitado para corrigir
+        placeUrl: (e) => { const v = String(e.target.value || '').trim(); this.patchSel({ placeUrl: api.montagem.placeLink(v) || v }); },
         showRoutes: () => this.patchSel({ showRoutes: !(s && s.showRoutes !== false) }),
         target: (e) => this.patchSel({ target: api.fmt.fromLocalInput(e.target.value) }),
         endText: (e) => this.patchSel({ endText: e.target.value }),

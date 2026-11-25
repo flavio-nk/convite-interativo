@@ -90,6 +90,11 @@ textarea.pd-in{min-height:96px;line-height:1.45;resize:vertical}
           <input class="pd-in" id="pd-addr" value="{{f.address}}" onInput="{{on.address}}" placeholder="Rua, número, bairro, cidade" maxlength="200">
           <span class="pd-help">Os convidados recebem um botão para abrir o caminho no mapa.</span>
         </div>
+        <div>
+          <label class="pd-lbl" for="pd-placeurl">Instagram ou site do local <span class="pd-opt">(opcional)</span></label>
+          <input class="pd-in" id="pd-placeurl" inputmode="url" autocomplete="off" spellcheck="false" value="{{f.placeUrl}}" onInput="{{on.placeUrl}}" placeholder="@perfil ou https://…" maxlength="300">
+          <span class="pd-help">Quem tocar na foto do local abre esse link.</span>
+        </div>
         <label style="display: flex; align-items: flex-start; gap: 10px; cursor: pointer">
           <input id="pd-rsvp" type="checkbox" checked="{{f.rsvp}}" onChange="{{on.rsvp}}" style="width: 20px; height: 20px; margin-top: 2px; accent-color: #5B3FD6; flex: none">
           <span><strong>Quero que os convidados confirmem presença pelo convite</strong><span class="pd-help" style="margin-top: 2px">Você acompanha quem vai, quem não vai e quantas pessoas.</span></span>
@@ -322,7 +327,7 @@ textarea.pd-in{min-height:96px;line-height:1.45;resize:vertical}
 class Component extends DCLogic {
   constructor(props) {
     super(props);
-    const blank = { kind: '', names: '', day: '', time: '', place: '', address: '', rsvp: true, phrase: '', dress: '', program: '', gifts: '', notes: '', music: '', cname: '', cphone: '', cemail: '', cmsg: '', site: '' };
+    const blank = { kind: '', names: '', day: '', time: '', place: '', address: '', placeUrl: '', rsvp: true, phrase: '', dress: '', program: '', gifts: '', notes: '', music: '', cname: '', cphone: '', cemail: '', cmsg: '', site: '' };
     const saved = api.local.get('ci:pedido') || {};
     this.state = {
       step: Math.min(5, Math.max(1, saved.step || 1)),
@@ -441,6 +446,7 @@ class Component extends DCLogic {
     const f = this.state.f;
     if (step === 1) {
       if (!f.kind) return 'Escolha o tipo de evento.';
+      if (String(f.placeUrl || '').trim() && !api.montagem.placeLink(f.placeUrl)) return 'Confira o Instagram ou site do local (ex.: @perfil ou https://site.com.br).';
       if (!String(f.names).trim()) return 'Preencha: ' + (api.montagem.KINDS[f.kind] || {}).names + '.';
     }
     if (step === 2 && !this.state.picks.length) return 'Escolha pelo menos um visual.';
@@ -467,7 +473,7 @@ class Component extends DCLogic {
     if (contact.email && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(contact.email)) { this.setState({ error: 'Confira o e-mail.' }); return; }
     this.setState({ busy: true, error: '' });
     api.sendOrder({
-      kind: f.kind, names: f.names, day: f.day, time: f.time, place: f.place, address: f.address, rsvp: f.rsvp,
+      kind: f.kind, names: f.names, day: f.day, time: f.time, place: f.place, address: f.address, placeUrl: f.placeUrl, rsvp: f.rsvp,
       themes: st.picks, palette: st.palette, photos: st.photos,
       phrase: f.phrase, dress: f.dress, program: f.program, gifts: f.gifts, notes: f.notes, music: f.music,
       contact, site: val('pd-site', f.site)
@@ -491,7 +497,7 @@ class Component extends DCLogic {
     const upLabel = (base) => (busyUp ? 'Enviando… ' + (st.upPct ? st.upPct + '%' : '') : base);
     const nPhotos = (ph.main ? 1 : 0) + (ph.venue ? 1 : 0) + ph.gallery.length;
     const on = {};
-    ['names', 'day', 'time', 'place', 'address', 'phrase', 'dress', 'program', 'gifts', 'notes', 'music', 'cname', 'cphone', 'cemail', 'cmsg', 'site'].forEach((k) => {
+    ['names', 'day', 'time', 'place', 'address', 'placeUrl', 'phrase', 'dress', 'program', 'gifts', 'notes', 'music', 'cname', 'cphone', 'cemail', 'cmsg', 'site'].forEach((k) => {
       on[k] = (e) => {
         const patch = { [k]: e.target.value };
         if (k === 'day' && e.target.value && !f.time) patch.time = '19:00';

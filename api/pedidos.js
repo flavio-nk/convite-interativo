@@ -11,7 +11,7 @@ import { hget, hset, hdel, hgetall, hlen } from './_lib/store.js';
 import { validId, rateLimit, clientIp } from './_lib/guard.js';
 import { createUploadKey } from './_lib/pedidos.js';
 import { themeById, themePayload } from '../src/catalogo.js';
-import { KINDS, fromOrder, eventDateOf } from '../src/montagem.js';
+import { KINDS, fromOrder, eventDateOf, placeLink } from '../src/montagem.js';
 
 const KEY = 'pedidos';
 const MAX_ORDERS = 3000;
@@ -35,6 +35,14 @@ function link(v) {
   if (!u) return '';
   if (!/^[a-z][a-z0-9+.-]*:/i.test(u) && /^[\w-]+(\.[\w-]+)+/.test(u)) u = 'https://' + u;
   if (!/^https?:\/\/[^\s]+$/i.test(u)) throw httpError(400, 'O link da lista de presentes precisa começar com https://');
+  return u;
+}
+
+function placeUrlOf(v) {
+  const raw = str(v, 300);
+  if (!raw) return '';
+  const u = placeLink(raw);
+  if (!u) throw httpError(400, 'Confira o Instagram ou site do local (ex.: @perfil ou https://site.com.br).');
   return u;
 }
 
@@ -67,7 +75,7 @@ function validate(body) {
   if (contact.email && !EMAIL.test(contact.email)) throw httpError(400, 'E-mail inválido.');
   return {
     kind, names, day, time,
-    place: str(body.place, 120), address: str(body.address, 200), rsvp: body.rsvp !== false,
+    place: str(body.place, 120), address: str(body.address, 200), placeUrl: placeUrlOf(body.placeUrl), rsvp: body.rsvp !== false,
     themes, palette,
     photos: { main: media(ph.main), venue: media(ph.venue), gallery },
     phrase: str(body.phrase, 200), dress: str(body.dress, 80), notes: str(body.notes, 600), program: str(body.program, 800),
