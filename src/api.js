@@ -117,6 +117,48 @@ export const fmt = {
 
 export { FONTS, fontKeyOf, BODY_FONTS };
 
+// Ícones do menu de páginas do convite (desenho de linha, viewBox 24×24)
+const PAGE_ICONS = {
+  home: 'M3 10.5 12 3l9 7.5M5 9.5V21h14V9.5',
+  pin: 'M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11ZM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5Z',
+  clock: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM12 7v5l3 2',
+  image: 'M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2ZM9 12a2 2 0 1 0 0-4 2 2 0 0 0 0 4ZM21 16l-5-5-9 8',
+  check: 'M12 3a9 9 0 1 0 0 18 9 9 0 0 0 0-18ZM8 12l3 3 5-6',
+  gift: 'M3 8h18v4H3ZM12 8v13M5 12v9h14v-9M12 8S10.5 3 8 3a2.5 2.5 0 0 0 0 5M12 8s1.5-5 4-5a2.5 2.5 0 0 1 0 5',
+  heart: 'M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10Z',
+  calendar: 'M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2ZM16 3v4M8 3v4M3 10h18',
+  play: 'M5 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2ZM10 9l5 3-5 3Z',
+  bed: 'M3 18V7M3 14h18v4M21 14v-3a3 3 0 0 0-3-3h-7v6M7 13a2 2 0 1 0 0-4 2 2 0 0 0 0 4Z',
+  shirt: 'M8 3 3 6l2 4 2-1v12h10V9l2 1 2-4-5-3a4 4 0 0 1-8 0Z',
+  music: 'M9 18V5l12-2v13M9 18a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM21 16a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z',
+  page: 'M7 3h7l5 5v13H7ZM14 3v5h5M10 13h6M10 17h4'
+};
+// Ícone de uma página: primeiro pelo nome (o que o autor quis dizer), depois pelo conteúdo
+export function pageIcon(p, i) {
+  const n = String((p && p.name) || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+  const has = (t) => ((p && p.blocks) || []).some((b) => b.type === t);
+  const fotos = ((p && p.blocks) || []).filter((b) => b.type === 'foto').length;
+  let k = null;
+  if (has('rsvp') || /presen|confirm|rsvp/.test(n)) k = 'check';
+  else if (/presente|lista/.test(n)) k = 'gift';
+  else if (/histori|^nos\b|casal|sobre|mensagem|recado/.test(n)) k = 'heart';
+  else if (/program|cronog|agenda|roteiro|horario/.test(n)) k = 'clock';
+  else if (/galer|foto|album|momento/.test(n)) k = 'image';
+  else if (/hosped|hotel|pousada/.test(n)) k = 'bed';
+  else if (/traje|dress|vestuario/.test(n)) k = 'shirt';
+  else if (/music|playlist/.test(n)) k = 'music';
+  else if (/video|filme/.test(n)) k = 'play';
+  else if (/local|onde|mapa|endere|chegar|cerimon|festa|recep|detalhe|evento|informa/.test(n)) k = 'pin';
+  else if (/data|quando|save/.test(n)) k = 'calendar';
+  else if (has('mapa')) k = 'pin';
+  else if (has('programacao')) k = 'clock';
+  else if (has('galeria') || fotos >= 2) k = 'image';
+  else if (has('video')) k = 'play';
+  else if (i === 0 || /capa|inicio|home/.test(n)) k = 'home';
+  else if (has('contagem')) k = 'calendar';
+  return PAGE_ICONS[k || 'page'];
+}
+
 // Valores visuais derivados de um tema (mesma regra do editor).
 export function themeTokens(th) {
   th = th || {};
@@ -552,6 +594,7 @@ export const api = {
   fontKeyOf,
   catalogo,
   montagem,
+  pageIcon,
   BODY_FONTS,
   themeHint,
   setFrameColor,

@@ -1595,6 +1595,32 @@ def t_sound_pill(pg, browser):
     ok('Som (sem abertura): "Não" mantém sem música e a pílula some', count(g, '[aria-label="Tocar música"]') == 1 and count(g, '[data-testid="escolha-som"]') == 0)
     ctx.close()
 
+def t_nav(pg, browser):
+    """Menu de páginas do convite: ícone + nome; 5 páginas cabem sem cortar."""
+    pages = [
+        {'id': 'capa', 'name': 'Capa', 'blocks': [{'id': 'a1', 'type': 'titulo', 'text': 'Amanda & Flávio'}]},
+        {'id': 'det', 'name': 'Detalhes', 'blocks': [{'id': 'b1', 'type': 'mapa', 'text': 'Espaço Villa', 'address': 'Rua A, 1'}]},
+        {'id': 'prog', 'name': 'Programação', 'blocks': [{'id': 'c1', 'type': 'programacao', 'text': '16h Cerimônia'}]},
+        {'id': 'gal', 'name': 'Galeria', 'blocks': [{'id': 'd1', 'type': 'titulo', 'text': 'Galeria'}]},
+        {'id': 'pres', 'name': 'Presença', 'blocks': [{'id': 'e1', 'type': 'rsvp', 'deadline': '2030-01-01T23:59:00.000Z'}]}]
+    inv = api_invite(pg, {'anim': 'nenhuma'}, pages)
+    ctx = browser.new_context(viewport={'width': 390, 'height': 844}); g = ctx.new_page()
+    g.goto(BASE + '#/c/' + inv['id']); g.wait_for_timeout(1800)
+    info = g.evaluate("""() => [...document.querySelectorAll('nav[aria-label="Páginas do convite"] button')].map(b => { const l = b.querySelector('[data-nav-label]'); return [l.textContent.trim(), l.scrollWidth <= l.clientWidth + 1, (b.querySelector('svg path') || {}).getAttribute ? b.querySelector('svg path').getAttribute('d') : ''] })""")
+    ok('Menu: 5 páginas com o nome inteiro', [x[0] for x in info] == ['Capa', 'Detalhes', 'Programação', 'Galeria', 'Confirmar'] and all(x[1] for x in info), info)
+    ok('Menu: cada página com o próprio ícone', all(x[2] for x in info) and len(set(x[2] for x in info)) == 5, [x[2][:12] for x in info])
+    ok('Menu: "Confirmar" destacado', count(g, '[data-rsvp-tab="1"]') == 1 and 'Confirmar' in g.inner_text('[data-rsvp-tab="1"]'))
+    g.click('nav[aria-label="Páginas do convite"] button:has-text("Galeria")'); g.wait_for_timeout(400)
+    ok('Menu: página aberta marcada', g.get_attribute('nav[aria-label="Páginas do convite"] button:has-text("Galeria")', 'aria-current') == 'page')
+    ctx.close()
+    go(pg, 'Editor/' + inv['id'], 2000)
+    ok('Menu: prévia do editor também com ícones', count(pg, 'main nav[aria-label="Páginas do convite"] button svg') == 5)
+    pg.click('aside button.pg:has-text("Galeria")'); pg.wait_for_timeout(300)
+    pg.click('button:has-text("Esta página")'); pg.wait_for_timeout(200)
+    ok('Menu: nome curto sem aviso', count(pg, '[data-testid="pg-name-longo"]') == 0)
+    pg.fill('#pg-name', 'Lista de presentes dos noivos'); pg.press('#pg-name', 'Tab'); pg.wait_for_timeout(400)
+    ok('Menu: editor avisa quando o nome não cabe no menu', count(pg, '[data-testid="pg-name-longo"]') == 1 and '5 páginas' in pg.inner_text('[data-testid="pg-name-longo"]'))
+
 def api_invite(pg, theme, pages, opening=None, title='Ana & Pedro'):
     base = dict(baseName='Teste', bg='#1F3329', fg='#F3EEE4', accent='#CDAE6B', btnFg='#1F3329', paper='#E9E1D0', ph='#2B4538', fontKey='cormorant', italic=False, layout='centro', radiusKey='pilula', anim='nenhuma')
     base.update(theme)
@@ -1927,7 +1953,7 @@ def main():
       for name, fn, arg in [('login', t_login, pg), ('criar', t_create, pg), ('editar', t_edit_persist, pg), ('prévia', t_preview, pg),
                             ('rascunho', t_unpublished_guest, b), ('publicar', t_publish, pg), ('convidado', t_guest, b),
                             ('respostas', t_rsvps, pg), ('painel', t_dashboard, pg), ('desfazer', t_undo, pg),
-                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('cliente', lambda: t_client(pg, b), None), ('pedido', lambda: t_pedido(pg, b), None), ('som sem abertura', lambda: t_sound_pill(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('design', lambda: t_design(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
+                            ('trocar tema', t_change_theme, pg), ('tema próprio', t_custom_theme, pg), ('abertura', lambda: t_opening(pg, b), None), ('fotos', lambda: t_photos(pg, b), None), ('arrastar', lambda: t_dnd(pg, b), None), ('carregamento', lambda: t_loading(pg, b), None), ('faixas', t_tap_margin, b), ('animação', t_open_anim, b), ('personalizado', lambda: t_personal(pg, b), None), ('robustez', lambda: t_robust(pg, b), None), ('usuários', lambda: t_users(pg, b), None), ('cliente', lambda: t_client(pg, b), None), ('pedido', lambda: t_pedido(pg, b), None), ('som sem abertura', lambda: t_sound_pill(pg, b), None), ('menu de páginas', lambda: t_nav(pg, b), None), ('segurança', lambda: t_security(pg, b), None), ('mídia', lambda: t_media_limits(pg, b), None), ('save the date', lambda: t_savedate(pg), None), ('backup', lambda: t_backup(pg, b), None), ('nova experiência', lambda: t_ux(pg, b), None), ('design', lambda: t_design(pg, b), None), ('login extra', t_login_extras, b), ('sair', t_logout, pg), ('celular', t_mobile, pg)]:
           safe(name, fn, arg)
       b.close()
 

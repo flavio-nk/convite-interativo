@@ -442,8 +442,11 @@ body{margin:0}
         <sc-if value="{{hasNav}}" hint-placeholder-val="{{ true }}">
           <nav aria-label="Páginas do convite" style="position: relative; flex: none; display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}">
             <sc-for list="{{nav}}" as="n" hint-placeholder-count="4">
-              <button onClick="{{n.go}}" aria-current="{{n.current}}" data-rsvp-tab="{{n.rsvpTab}}" style="flex: 1 1 0; min-width: 0; min-height: 60px; border: 0; border-top: 2px solid {{n.line}}; background: transparent; color: {{n.color}}; font-size: 12px; font-weight: 700; font-family: inherit; cursor: pointer; overflow: hidden; padding: 0 4px; display: flex; align-items: center; justify-content: center">
-                <span style="display: inline-flex; align-items: center; justify-content: center; max-width: 100%; min-height: 30px; padding: {{n.pad}}; border-radius: {{T.radius}}; background: {{n.pill}}; color: {{n.pillFg}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{n.label}}</span>
+              <button onClick="{{n.go}}" aria-current="{{n.current}}" data-rsvp-tab="{{n.rsvpTab}}" aria-label="{{n.aria}}" style="flex: 1 1 0; min-width: 0; min-height: 60px; border: 0; background: transparent; color: {{n.color}}; font-family: inherit; cursor: pointer; overflow: hidden; padding: 6px 2px 5px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px">
+                <span aria-hidden="true" style="width: 40px; height: 26px; flex: none; border-radius: {{T.radius}}; display: flex; align-items: center; justify-content: center; background: {{n.iconBg}}; color: {{n.iconFg}}; transition: background .25s ease">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{n.icon}}"></path></svg>
+                </span>
+                <span data-nav-label="1" style="display: block; max-width: 100%; font-size: 10.5px; font-weight: {{n.weight}}; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{n.label}}</span>
               </button>
             </sc-for>
           </nav>
@@ -1237,10 +1240,16 @@ class Component extends DCLogic {
       const on = p.id === cur.id;
       const cta = rsvpOpen && rsvpPage && p.id === rsvpPage.id && !on;
       const doneTab = rsvpPage && p.id === rsvpPage.id && rsvpForm && rsvpForm.done;
+      const label = cta ? (pages.length > 3 ? 'Confirmar' : 'Confirmar presença') : p.name;
       return {
-        name: p.name, label: cta ? (pages.length > 3 ? 'Confirmar' : 'Confirmar presença') : (doneTab ? '✓ ' + p.name : p.name),
-        current: on ? 'page' : 'false', color: on ? T.accent : T.fg, line: on ? T.accent : 'transparent',
-        pill: cta ? T.accent : 'transparent', pillFg: cta ? T.btnFg : 'inherit', pad: cta ? '0 10px' : '0',
+        name: p.name, label,
+        aria: cta ? 'Confirmar presença' : (doneTab ? p.name + ' (presença respondida)' : p.name),
+        current: on ? 'page' : 'false', color: on || cta ? T.accent : T.fg,
+        // ícone pelo nome/conteúdo da página; o da página aberta fica destacado, e o "Confirmar" vem preenchido
+        icon: api.pageIcon(p, pages.indexOf(p)),
+        iconBg: cta ? T.accent : (on ? 'color-mix(in srgb, ' + T.accent + ' 22%, transparent)' : 'transparent'),
+        iconFg: cta ? T.btnFg : 'currentColor',
+        weight: on || cta ? '800' : '600',
         rsvpTab: cta ? '1' : '0',
         go: () => goPage(p.id)
       };

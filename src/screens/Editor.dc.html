@@ -221,7 +221,10 @@ button:disabled{opacity:.5;cursor:not-allowed}
           </div>
           <nav aria-label="Páginas do convite" style="position: relative; display: flex; border-top: 1px solid {{T.line}}; background: {{T.surface}}; font-family: 'Plus Jakarta Sans', sans-serif">
             <sc-for list="{{pageList}}" as="p" hint-placeholder-count="4">
-              <button onClick="{{p.pick}}" style="flex: 1 1 0; min-width: 0; min-height: 52px; border: 0; background: transparent; color: {{p.tabFg}}; font-size: 11px; font-weight: 700; cursor: pointer; border-top: 2px solid {{p.tabLine}}; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 0 4px">{{p.name}}</button>
+              <button onClick="{{p.pick}}" style="flex: 1 1 0; min-width: 0; min-height: 52px; border: 0; background: transparent; color: {{p.tabFg}}; cursor: pointer; overflow: hidden; padding: 4px 2px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px">
+                <span aria-hidden="true" style="width: 34px; height: 22px; flex: none; border-radius: {{T.radius}}; display: flex; align-items: center; justify-content: center; background: {{p.tabIconBg}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="{{p.tabIcon}}"></path></svg></span>
+                <span style="display: block; max-width: 100%; font-size: 10px; font-weight: {{p.tabWeight}}; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{p.name}}</span>
+              </button>
             </sc-for>
           </nav>
         </sc-if>
@@ -655,6 +658,9 @@ button:disabled{opacity:.5;cursor:not-allowed}
             <div>
               <label class="lbl" for="pg-name">Nome no menu do convite</label>
               <input class="fld" id="pg-name" value="{{pageName}}" onChange="{{onPageName}}">
+              <sc-if value="{{pageNameLong}}" hint-placeholder-val="{{ false }}">
+                <span data-testid="pg-name-longo" style="display: block; margin-top: 6px; font-size: 12px; color: #8A4B00">{{pageNameLongText}}</span>
+              </sc-if>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px">
               <span class="lbl" style="margin: 0">Foto de fundo da página</span>
@@ -1929,6 +1935,15 @@ class Component extends DCLogic {
     if (this.pageDragOff) { this.pageDragOff(); this.pageDragOff = null; }
   }
 
+  // cabe no menu do convite? (largura de cada aba no celular, letra de 10,5 px em negrito)
+  navNameFits(name, n) {
+    try {
+      const c = this.measCtx || (this.measCtx = document.createElement('canvas').getContext('2d'));
+      c.font = "800 10.5px 'Plus Jakarta Sans', system-ui, sans-serif";
+      return c.measureText(String(name || '')).width <= 390 / Math.max(1, n) - 6;
+    } catch (e) { return true; }
+  }
+
   movePage(id, to) {
     const pages = this.state.pages.slice();
     const from = pages.findIndex((p) => p.id === id);
@@ -2629,6 +2644,9 @@ class Component extends DCLogic {
         numFg: on ? '#FFFFFF' : '#3D3A4A',
         tabFg: on ? T.accent : T.fg,
         tabLine: on ? T.accent : 'transparent',
+        tabIcon: api.pageIcon(p, i),
+        tabIconBg: on ? 'color-mix(in srgb, ' + T.accent + ' 22%, transparent)' : 'transparent',
+        tabWeight: on ? '800' : '600',
         pick: () => { if (this.pageDragged && Date.now() - this.pageDragged < 400) return; this.dragInfo = null; this.setState({ page: p.id, view: 'pages', drag: null, inline: null, sheet: '', sel: p.blocks.length ? p.blocks[0].id : null }); },
         id: p.id,
         thumb: ((p.blocks.find((x) => x.type === 'titulo') || {}).text || p.name).slice(0, 28),
@@ -3149,6 +3167,9 @@ class Component extends DCLogic {
       pageList, palette, blocks, colorFields,
       noBlocks: blocks.length === 0,
       pageName: cur.name,
+      // o menu do convite tem um espaço por página: nome que não cabe aparece cortado no celular
+      pageNameLong: !this.navNameFits(cur.name, st.pages.length),
+      pageNameLongText: 'Com ' + st.pages.length + ' páginas, esse nome pode aparecer cortado no menu do convite. Prefira um nome mais curto (ex.: “Presentes”, “Local”).',
       onPageName: (e) => {
         const v = e.target.value;
         this.setState({ pages: st.pages.map((p) => (p.id === cur.id ? Object.assign({}, p, { name: v }) : p)) });
