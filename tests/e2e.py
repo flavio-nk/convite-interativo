@@ -1765,11 +1765,27 @@ def t_ux(pg, browser):
     ok('Convidado: link curto /c/ abre o convite', count(g, 'h1:has-text("Vamos casar!")') == 1)
     ok('Convidado: dica de deslizar na capa', count(g, '[data-testid="swipe-hint"]') == 1)
     ok('Convidado: aba de presença vira "Confirmar"', count(g, '[data-rsvp-tab="1"]') == 1 and 'Confirmar' in g.inner_text('[data-rsvp-tab="1"]'))
-    g.evaluate("""() => { const el = document.querySelector('[data-page-inner]').closest('[inert], div'); const t = (x) => new Touch({ identifier: 1, target: el, clientX: x, clientY: 400 });
-      el.dispatchEvent(new TouchEvent('touchstart', { touches: [t(320)], changedTouches: [t(320)], bubbles: true }));
-      el.dispatchEvent(new TouchEvent('touchend', { touches: [], changedTouches: [t(120)], bubbles: true })); }""")
-    g.wait_for_timeout(600)
-    ok('Convidado: deslizar para o lado vai à página seguinte', 'Quando e onde' in g.inner_text('body'))
+    # deslizar de verdade (toques do aparelho): lento e curto volta; longo e lento troca de página
+    cdp = gctx.new_cdp_session(g)
+    def swipe(x0, x1, ms, y=420, shift=False):
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchStart', 'touchPoints': [{'x': x0, 'y': y}]})
+        for i in range(1, 11):
+            g.wait_for_timeout(ms // 10); cdp.send('Input.dispatchTouchEvent', {'type': 'touchMove', 'touchPoints': [{'x': x0 + (x1 - x0) * i / 10, 'y': y}]})
+        moved = g.evaluate("() => getComputedStyle(document.querySelector('[data-testid=paginas] main')).translate") if shift else None
+        cdp.send('Input.dispatchTouchEvent', {'type': 'touchEnd', 'touchPoints': []}); g.wait_for_timeout(700)
+        return moved
+    moved = swipe(330, 280, 600, shift=True)
+    ok('Convidado: a página acompanha o dedo', moved not in (None, 'none', '0px'), moved)
+    ok('Convidado: deslize curto não troca de página', count(g, 'h1:has-text("Vamos casar!")') == 1)
+    swipe(330, 80, 1500)
+    ok('Convidado: deslizar para o lado (mesmo devagar) vai à página seguinte', 'Quando e onde' in g.inner_text('body'))
+    swipe(60, 330, 300)
+    ok('Convidado: deslizar para a direita volta', count(g, 'h1:has-text("Vamos casar!")') == 1)
+    swipe(60, 330, 300)
+    ok('Convidado: na primeira página, deslizar para a direita não sai dela', count(g, 'h1:has-text("Vamos casar!")') == 1)
+    ok('Convidado: no celular, sem setas ao lado', count(g, '[data-page-arrow]') == 0)
+    swipe(330, 80, 250)
+    ok('Convidado: deslize rápido vai à página seguinte', 'Quando e onde' in g.inner_text('body'))
     go_rsvp(g); g.wait_for_timeout(400)
     ok('Convidado: prazo no texto da página', 'Responda até ' in g.inner_text('body') and '{prazo}' not in g.inner_text('body'))
     g.fill('input[autocomplete=name]', 'Bia Teste'); g.click('button:has-text("Sim, eu vou")'); g.click('button:has-text("Enviar resposta")'); g.wait_for_timeout(1200)
@@ -1778,6 +1794,33 @@ def t_ux(pg, browser):
     ok('Convidado: Como chegar usa o endereço', 'Mariana' in __import__('urllib.parse').parse.unquote(href), href)
     ok('Convidado: aba mostra ✓ depois de responder', count(g, '[data-rsvp-tab="1"]') == 0)
     gctx.close()
+    # computador: setas ao lado do convite, teclado, arrastar com o mouse e trackpad
+    dctx = browser.new_context(viewport={'width': 1280, 'height': 900})
+    d = dctx.new_page(); d.set_default_timeout(6000)
+    d.goto(BASE + 'c/' + uid); d.wait_for_timeout(1800)
+    d.click('[aria-label="Toque para abrir o convite"]'); d.wait_for_timeout(3200)
+    first = lambda: count(d, 'h1:has-text("Vamos casar!")') == 1
+    curtab = lambda: d.evaluate("() => (document.querySelector('nav[aria-label=\"Páginas do convite\"] [aria-current=page]') || {}).textContent.trim()")
+    ok('Computador: setas ao lado do convite', count(d, '[data-page-arrow]') == 2 and d.locator('[data-page-arrow=prev]').is_disabled() and not d.locator('[data-page-arrow=next]').is_disabled())
+    ok('Computador: dica fala em setas', 'setas' in (d.inner_text('[data-testid="swipe-hint"]') if count(d, '[data-testid="swipe-hint"]') else ''))
+    t0 = curtab()
+    d.click('[data-page-arrow=next]'); d.wait_for_timeout(500)
+    t1 = curtab()
+    ok('Computador: seta › vai à página seguinte', not first() and t1 != t0, [t0, t1])
+    d.keyboard.press('ArrowLeft'); d.wait_for_timeout(500)
+    ok('Computador: tecla ← volta', first())
+    d.keyboard.press('ArrowRight'); d.wait_for_timeout(500)
+    ok('Computador: tecla → avança', curtab() == t1)
+    d.click('[data-page-arrow=prev]'); d.wait_for_timeout(500)
+    bx = d.locator('[data-testid=paginas]').bounding_box(); cx, cy = bx['x'] + bx['width'] / 2, bx['y'] + bx['height'] / 2
+    d.mouse.move(cx + 120, cy); d.mouse.down()
+    for i in range(10): d.mouse.move(cx + 120 - 25 * i, cy + 2); d.wait_for_timeout(20)
+    d.mouse.up(); d.wait_for_timeout(500)
+    ok('Computador: arrastar com o mouse troca de página', curtab() == t1, curtab())
+    for i in range(6): d.mouse.wheel(-40, 0); d.wait_for_timeout(16)
+    d.wait_for_timeout(500)
+    ok('Computador: deslizar no trackpad troca de página', first())
+    dctx.close()
     # painel: resumo da resposta no cartão e na tela de convidados
     go(pg, 'Main', 1500)
     card = pg.inner_text('article:has-text("Casamento Amanda & Flávio")')

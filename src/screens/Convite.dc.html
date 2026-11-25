@@ -81,7 +81,7 @@ body{margin:0}
        tela, e o navegador cancelaria a animação de abertura. -->
   <div key="camada-paginas">
     <sc-if value="{{isPages}}" hint-placeholder-val="{{ false }}">
-      <div key="paginas" inert="{{L.inert}}" style="{{L.pages}}" onTouchStart="{{swipe.start}}" onTouchEnd="{{swipe.end}}">
+      <div key="paginas" inert="{{L.inert}}" style="{{L.pages}}" data-testid="paginas" onPointerDown="{{swipe.down}}" onWheel="{{swipe.wheel}}">
         <sc-if value="{{deco.aurora}}" hint-placeholder-val="{{ false }}">
           <div aria-hidden="true" data-testid="aurora" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none">
             <div class="au-a" style="position: absolute; left: -30%; top: -12%; width: 90%; aspect-ratio: 1; border-radius: 50%; background: {{T.accent}}; filter: blur(60px); opacity: 0.55"></div>
@@ -90,7 +90,7 @@ body{margin:0}
           </div>
         </sc-if>
         <sc-if value="{{pageBg.has}}" hint-placeholder-val="{{ false }}">
-          <div key="{{pageBg.key}}" class="pg-in" aria-hidden="true" data-testid="page-bg" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none">
+          <div key="{{pageBg.key}}" class="pg-in" aria-hidden="true" data-testid="page-bg" style="position: absolute; inset: 0; overflow: hidden; pointer-events: none; {{swipe.shift}}">
             <img src="{{pageBg.url}}" alt="" style="{{pageBg.imgStyle}}">
             <div style="position: absolute; inset: 0; background: {{T.bg}}; opacity: {{pageBg.dimOpacity}}"></div>
           </div>
@@ -102,7 +102,7 @@ body{margin:0}
             </sc-for>
           </div>
         </sc-if>
-        <main key="{{pageKey}}" class="{{L.mainClass}}" style="{{L.main}}">
+        <main key="{{pageKey}}" class="{{L.mainClass}}" style="{{L.main}}; {{swipe.shift}}">
           <div data-page-inner="1" style="{{L.inner}}">
             <sc-if value="{{deco.botanico}}" hint-placeholder-val="{{ false }}">
               <svg aria-hidden="true" viewBox="0 0 100 100" style="position: absolute; left: -6px; top: -6px; width: 120px; pointer-events: none; transform: scaleY(-1); opacity: 0.55"><path d="M6 94C26 70 52 44 94 8" stroke="{{T.accent}}" stroke-width="1.6" fill="none"></path><g fill="{{T.accent}}"><path d="M24 74c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M24 74c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M46 52c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M46 52c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path><path d="M68 30c-2-10 4-18 14-20-1 10-6 17-14 20Z"></path><path d="M68 30c10 2 16 10 14 20-9-3-14-10-14-20Z" opacity="0.75"></path></g></svg>
@@ -418,7 +418,7 @@ body{margin:0}
         <sc-if value="{{showSwipeHint}}" hint-placeholder-val="{{ false }}">
           <div aria-hidden="true" data-testid="swipe-hint" class="pg-in" style="position: absolute; left: 50%; bottom: 72px; transform: translateX(-50%); z-index: 6; display: flex; align-items: center; gap: 10px; padding: 7px 14px; border-radius: 999px; background: rgba(0, 0, 0, 0.55); color: #FFFFFF; font-size: 12px; font-weight: 700; white-space: nowrap; pointer-events: none">
             <span style="display: flex; gap: 4px"><sc-for list="{{dots}}" as="d" hint-placeholder-count="4"><span style="width: {{d.w}}; height: 6px; border-radius: 3px; background: {{d.c}}"></span></sc-for></span>
-            Deslize para ver mais →
+            {{swipeHintText}}
           </div>
         </sc-if>
         <sc-if value="{{hasNav}}" hint-placeholder-val="{{ true }}">
@@ -475,11 +475,35 @@ class Component extends DCLogic {
     this.state = { hint, inv, error: '', phase: inv ? this.firstPhase(inv) : 'loading', page: null, now: Date.now(), forms: {}, musicPlaying: false };
   }
 
+  // computador com mouse ou trackpad (setas e arrastar com o mouse); no celular, o dedo
+  finePointer() {
+    try { return window.matchMedia('(hover: hover) and (pointer: fine)').matches; } catch (e) { return false; }
+  }
+
   firstPhase(inv) {
     return inv.theme && inv.theme.anim === 'nenhuma' ? 'pages' : 'closed';
   }
 
   componentDidMount() {
+    if (!this.props.edit) {
+      // ← → no teclado trocam de página (menos ao digitar num campo ou com a foto ampliada aberta)
+      this.onKey = (e) => {
+        if (e.defaultPrevented || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+        if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
+        const t = e.target;
+        if (t && t.closest && t.closest('input, textarea, select, [contenteditable="true"], [data-noswipe]')) return;
+        if (this.step(e.key === 'ArrowRight' ? 1 : -1)) e.preventDefault();
+      };
+      // setas ao lado do convite (computador), desenhadas fora do convite
+      this.onGo = (e) => this.step(e.detail && e.detail.d);
+      // depois de arrastar, o clique que o navegador dispara ao soltar não vale
+      this.onClickGuard = (e) => {
+        if (this.swipeAt && Date.now() - this.swipeAt < 350) { e.preventDefault(); e.stopPropagation(); this.swipeAt = 0; }
+      };
+      window.addEventListener('keydown', this.onKey);
+      window.addEventListener('ci:go', this.onGo);
+      window.addEventListener('click', this.onClickGuard, true);
+    }
     this.timer = setInterval(() => { if (this.state.phase === 'pages' || this.state.phase === 'opening') this.setState({ now: Date.now() }); }, 1000);
     if (this.props.invite) { if (!this.props.edit) this.restoreRsvp(); return; }
     const id = this.props.route && this.props.route.params && this.props.route.params.id;
@@ -493,7 +517,104 @@ class Component extends DCLogic {
       .catch((e) => this.setState({ phase: 'error', error: e.status === 404 ? 'Este convite não existe ou ainda não foi publicado.' : e.message }));
   }
 
+  // Passa para a página anterior (-1) ou seguinte (+1). Devolve false se não houver para onde ir.
+  step(d) {
+    if (this.props.edit || this.state.phase !== 'pages' || this.state.lb || !d) return false;
+    const ids = this.pageIds || [];
+    const i = ids.indexOf(this.curPageId);
+    const j = i + (d > 0 ? 1 : -1);
+    if (i < 0 || j < 0 || j >= ids.length) return false;
+    this.viaSwipe = true;
+    this.setState({ page: ids[j], swiped: true, hintGone: true, dir: d > 0 ? 'n' : 'p', swipeX: 0, swipeAnim: false });
+    return true;
+  }
+
+  // Arrastar para o lado (dedo, mouse ou caneta): a página acompanha o movimento e,
+  // ao soltar, troca se passou de ~20% da largura ou se o gesto foi rápido.
+  swipeDown(e) {
+    const st = this.state;
+    if (this.props.edit || st.phase !== 'pages' || st.lb || (this.pageIds || []).length < 2) return;
+    if (e.button !== undefined && e.button > 0) return;
+    const t = e.target;
+    // campos, carrossel e filme de fotos têm o próprio movimento
+    if (t && t.closest && t.closest('input, textarea, select, [contenteditable="true"], [data-noswipe]')) return;
+    const layer = e.currentTarget;
+    const k = layer && layer.getBoundingClientRect ? (layer.getBoundingClientRect().width / 390) || 1 : 1;
+    if (e.pointerType === 'mouse') e.preventDefault(); // não seleciona texto ao arrastar com o mouse
+    this.swipeOff();
+    const sw = { x: e.clientX, y: e.clientY, k, axis: null, last: [{ x: e.clientX, t: Date.now() }] };
+    const move = (ev) => {
+      const dx = ev.clientX - sw.x, dy = ev.clientY - sw.y;
+      if (!sw.axis) {
+        if (Math.abs(dx) + Math.abs(dy) < 8) return;
+        sw.axis = Math.abs(dx) > Math.abs(dy) * 1.2 ? 'x' : 'y';
+        if (sw.axis === 'y') { this.swipeOff(); return; } // rolagem vertical: deixa o navegador cuidar
+      }
+      if (ev.cancelable) ev.preventDefault();
+      sw.last.push({ x: ev.clientX, t: Date.now() });
+      if (sw.last.length > 5) sw.last.shift();
+      const ids = this.pageIds || [];
+      const i = ids.indexOf(this.curPageId);
+      let X = dx / sw.k;
+      // na primeira e na última página, a página resiste (efeito elástico)
+      if ((X > 0 && i <= 0) || (X < 0 && i >= ids.length - 1)) X = X * 0.25;
+      this.setState({ swipeX: Math.round(X), swipeAnim: false });
+    };
+    const up = (ev) => {
+      this.swipeOff();
+      if (sw.axis !== 'x') return;
+      this.swipeAt = Date.now();
+      const dx = (ev.clientX - sw.x) / sw.k;
+      const a = sw.last[0], b = sw.last[sw.last.length - 1];
+      const v = b.t > a.t ? (b.x - a.x) / sw.k / (b.t - a.t) : 0; // px do convite por ms
+      const fast = Math.abs(v) > 0.45 && Math.abs(dx) > 24 && Math.sign(v) === Math.sign(dx);
+      if ((Math.abs(dx) > 78 || fast) && this.step(dx < 0 ? 1 : -1)) return;
+      this.setState({ swipeX: 0, swipeAnim: true });
+    };
+    const cancel = () => { this.swipeOff(); this.setState({ swipeX: 0, swipeAnim: true }); };
+    this.swipeOff = () => {
+      window.removeEventListener('pointermove', move);
+      window.removeEventListener('pointerup', up);
+      window.removeEventListener('pointercancel', cancel);
+      this.swipeOff = () => {};
+    };
+    window.addEventListener('pointermove', move, { passive: false });
+    window.addEventListener('pointerup', up);
+    window.addEventListener('pointercancel', cancel);
+  }
+
+  swipeOff() {}
+
+  // deslizar com dois dedos no trackpad (rolagem horizontal) troca de página
+  swipeWheel(e) {
+    if (this.props.edit || this.state.phase !== 'pages' || this.state.lb) return;
+    if (Math.abs(e.deltaX) <= Math.abs(e.deltaY) || !e.deltaX) return;
+    const t = e.target;
+    if (t && t.closest && t.closest('[data-noswipe]')) return;
+    e.preventDefault(); // evita o "voltar página" do navegador
+    const now = Date.now();
+    // depois de trocar, espera o embalo do trackpad parar
+    if (this.wheelLock && now < this.wheelLock) { this.wheelLock = now + 250; return; }
+    if (!this.wheelAt || now - this.wheelAt > 300) this.wheelSum = 0;
+    this.wheelAt = now;
+    this.wheelSum = (this.wheelSum || 0) + e.deltaX;
+    if (Math.abs(this.wheelSum) > 60) {
+      this.step(this.wheelSum > 0 ? 1 : -1);
+      this.wheelSum = 0;
+      this.wheelLock = now + 250;
+    }
+  }
+
   componentDidUpdate(prev, prevState) {
+    // avisa a moldura (setas ao lado do convite, no computador) de qual página está aberta
+    if (!this.props.edit) {
+      const ids = this.pageIds || [];
+      const sig = (this.state.phase === 'pages' ? ids.length : 0) + ':' + ids.indexOf(this.curPageId);
+      if (sig !== this.pagesSig) {
+        this.pagesSig = sig;
+        window.dispatchEvent(new CustomEvent('ci:pages', { detail: { n: this.state.phase === 'pages' ? ids.length : 0, i: ids.indexOf(this.curPageId) } }));
+      }
+    }
     // dica "deslize para ver mais": some sozinha depois de alguns segundos
     if (this.state.phase === 'pages' && prevState && prevState.phase !== 'pages' && !this.hintT) {
       this.hintT = setTimeout(() => { if (!this.gone) this.setState({ hintGone: true }); }, 5000);
@@ -506,6 +627,13 @@ class Component extends DCLogic {
 
   componentWillUnmount() {
     this.gone = true;
+    if (this.onKey) {
+      window.removeEventListener('keydown', this.onKey);
+      window.removeEventListener('ci:go', this.onGo);
+      window.removeEventListener('click', this.onClickGuard, true);
+      window.dispatchEvent(new CustomEvent('ci:pages', { detail: { n: 0, i: 0 } }));
+    }
+    this.swipeOff();
     clearTimeout(this.hintT);
     clearInterval(this.timer);
     this.musicStop();
@@ -817,10 +945,10 @@ class Component extends DCLogic {
         : 'position: relative; width: 390px; height: 844px; overflow: hidden; background: ' + T.bg + '; ' + font,
       pages: edit
         ? 'position: relative; display: flex; flex-direction: column; min-height: ' + screenH + 'px'
-        : 'position: absolute; inset: 0; display: flex; flex-direction: column',
+        : 'position: absolute; inset: 0; display: flex; flex-direction: column; touch-action: pan-y',
       inert: edit,
-      mainClass: edit ? '' : ({ deslizar: 'pg-deslizar-' + (dir || 'n'), zoom: 'pg-zoom', virar: 'pg-virar-' + (dir || 'n'), subir: 'pg-subir' }[T.pageFx] || 'pg-in'),
-      main: 'position: relative; flex: ' + (edit ? '1 0 auto' : '1 1 auto') + '; ' + (edit ? '' : 'overflow-y: auto; ') +
+      mainClass: edit ? '' : ({ deslizar: 'pg-deslizar-' + (dir || 'n'), zoom: 'pg-zoom', virar: 'pg-virar-' + (dir || 'n'), subir: 'pg-subir' }[T.pageFx] || (this.viaSwipe ? 'pg-deslizar-' + (dir || 'n') : 'pg-in')),
+      main: 'position: relative; flex: ' + (edit ? '1 0 auto' : '1 1 auto') + '; ' + (edit ? '' : 'overflow-y: auto; touch-action: pan-y; ') +
         (free ? 'padding: 0; display: block; ' : 'padding: 22px 20px 28px; display: flex; flex-direction: column; ') + 'font-family: ' + T.body,
       inner: free
         ? 'position: relative; height: ' + freeH + 'px; text-align: ' + T.align
@@ -844,6 +972,7 @@ class Component extends DCLogic {
     if (!inv) return base;
     const goPage = (id) => {
       const a = pages.findIndex((p) => p.id === cur.id), b = pages.findIndex((p) => p.id === id);
+      this.viaSwipe = false;
       this.setState({ page: id, hintGone: true, dir: b < a ? 'p' : 'n' });
     };
     const rnd = (i, k) => { const x = Math.sin(i * 12.9898 + k * 78.233) * 43758.5453; return x - Math.floor(x); };
@@ -1115,26 +1244,11 @@ class Component extends DCLogic {
       routeHref: mapBlk ? 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent((mapBlk.text ? mapBlk.text + ', ' : '') + mapBlk.address) : '#',
       showSwipeHint: hasNav && !edit && st.phase === 'pages' && !st.swiped && !st.hintGone && cur.id === pages[0].id,
       dots: pages.map((p) => ({ w: p.id === cur.id ? '16px' : '6px', c: p.id === cur.id ? '#FFFFFF' : 'rgba(255,255,255,0.5)' })),
+      swipeHintText: this.finePointer() ? 'Use as setas ou arraste para ver mais →' : 'Deslize para ver mais →',
       swipe: {
-        start: (e) => {
-          const t = e.touches && e.touches[0];
-          // carrossel e filme de fotos rolam na horizontal: não trocam de página
-          const inside = e.target && e.target.closest && e.target.closest('[data-noswipe]');
-          this.touch = t && !inside ? { x: t.clientX, y: t.clientY, at: Date.now() } : null;
-        },
-        end: (e) => {
-          const s0 = this.touch; this.touch = null;
-          const t = e.changedTouches && e.changedTouches[0];
-          if (!s0 || !t || edit || st.phase !== 'pages') return;
-          const dx = t.clientX - s0.x, dy = t.clientY - s0.y;
-          // deslize na horizontal (não confundir com rolar a página)
-          if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5 || Date.now() - s0.at > 900) return;
-          const ids = this.pageIds || [];
-          const i = ids.indexOf(this.curPageId);
-          const j = dx < 0 ? i + 1 : i - 1;
-          if (i < 0 || j < 0 || j >= ids.length) return;
-          this.setState({ page: ids[j], swiped: true, dir: dx < 0 ? 'n' : 'p' });
-        }
+        down: (e) => this.swipeDown(e),
+        wheel: (e) => this.swipeWheel(e),
+        shift: !edit && (st.swipeX || st.swipeAnim) ? 'translate: ' + (st.swipeX || 0) + 'px 0; transition: ' + (st.swipeAnim ? 'translate .28s cubic-bezier(.2,.8,.2,1)' : 'none') + ';' : '',
       },
       pageBg: (() => {
         const bg = cur.bg && cur.bg.url ? cur.bg : null;
