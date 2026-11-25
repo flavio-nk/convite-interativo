@@ -1256,12 +1256,35 @@ def t_savedate(pg):
     # ordem das páginas
     names = lambda: [__import__('re').sub(r'^\d+\.\s*', '', x.strip()) for x in pg.locator('aside button.pg span[style*="font-weight: 600"]').all_inner_texts()]
     n0 = names()
-    ok('Páginas: setas de ordem em cada página', count(pg, '[aria-label^="Mover a página"][aria-label$="para cima"]') == len(n0) and pg.locator('[aria-label="Mover a página ' + n0[0] + ' para cima"]').is_disabled(), n0)
-    pg.click('[aria-label="Mover a página Detalhes para baixo"]'); pg.wait_for_timeout(300)
+    ok('Páginas: sem setas de ordem (só arrastar)', count(pg, '[aria-label^="Mover a página"]') == 0 and count(pg, '[data-page-handle]') == len(n0), n0)
+    # arrastar com o dedo pela alça ⋮⋮ (eventos de toque)
+    pg.evaluate("""() => {
+      const it = (i) => document.querySelectorAll('aside [data-page]')[i];
+      const h = it(1).querySelector('[data-page-handle]').getBoundingClientRect();
+      const t = it(2).getBoundingClientRect();
+      const ev = (type, el, x, y) => el.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerType: 'touch', pointerId: 7, button: 0, clientX: x, clientY: y }));
+      ev('pointerdown', it(1).querySelector('[data-page-handle]'), h.x + h.width / 2, h.y + h.height / 2);
+      ev('pointermove', window, h.x + h.width / 2, h.y + 20);
+      ev('pointermove', window, t.x + t.width / 2, t.y + t.height / 2);
+      ev('pointerup', window, t.x + t.width / 2, t.y + t.height / 2);
+    }"""); pg.wait_for_timeout(300)
     n1 = names()
-    ok('Páginas: seta para baixo troca a página com a seguinte', n1[:3] == [n0[0], n0[2], 'Detalhes'], n1)
-    pg.click('[aria-label="Mover a página Detalhes para cima"]'); pg.wait_for_timeout(300)
-    ok('Páginas: seta para cima desfaz', names() == n0, names())
+    ok('Páginas: arrastar com o dedo pela alça muda a ordem', n1[:3] == [n0[0], n0[2], n0[1]], n1)
+    # toque fora da alça não arrasta (o dedo rola a lista)
+    pg.evaluate("""() => {
+      const it = (i) => document.querySelectorAll('aside [data-page]')[i];
+      const a = it(1).getBoundingClientRect(), t = it(2).getBoundingClientRect();
+      const ev = (type, el, x, y) => el.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, pointerType: 'touch', pointerId: 8, button: 0, clientX: x, clientY: y }));
+      ev('pointerdown', it(1).querySelector('button.pg span:last-child'), a.x + a.width - 20, a.y + a.height / 2);
+      ev('pointermove', window, t.x + t.width - 20, t.y + t.height / 2);
+      ev('pointerup', window, t.x + t.width - 20, t.y + t.height / 2);
+    }"""); pg.wait_for_timeout(300)
+    ok('Páginas: com o dedo, fora da alça, não arrasta', names() == n1, names())
+    # teclado: Alt + ↑ desfaz
+    pg.locator('aside [data-page]').nth(2).locator('button.pg').focus()
+    pg.keyboard.press('Alt+ArrowUp'); pg.wait_for_timeout(300)
+    ok('Páginas: Alt + seta para cima no teclado muda a ordem', names() == n0, names())
+    ok('Páginas: foco continua na página movida', pg.evaluate("() => document.activeElement.closest('[data-page]').getAttribute('data-page')") == pg.locator('aside [data-page]').nth(1).get_attribute('data-page'))
     last = n0[-1]
     pg.locator('[data-page]').nth(len(n0) - 1).drag_to(pg.locator('[data-page]').nth(1)); pg.wait_for_timeout(400)
     n2 = names()
